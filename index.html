@@ -783,6 +783,10 @@ body{padding-inline:8px}
 @media (prefers-reduced-motion: no-preference){#rwBody .gift .bimg{animation:wob 1.2s ease-in-out infinite}@keyframes wob{0%,100%{transform:rotate(0)}15%{transform:rotate(-7deg)}30%{transform:rotate(7deg)}45%{transform:rotate(-4deg)}60%{transform:rotate(0)}}}
 .rc .qm{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#e9d9f2;color:#7a5a96;font-style:normal;font-weight:800;font-size:14px}
 .rc.mys b{color:#7a5a96}
+
+#devBtn{position:fixed;right:10px;top:calc(60px + env(safe-area-inset-top,0px));z-index:200;width:40px;height:40px;border-radius:50%;border:2px solid #fff;background:#5b4038;color:#fff;font-size:20px;box-shadow:0 3px 10px rgba(0,0,0,.3)}
+.devg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.devg .btn{font-size:13px;padding:10px 6px}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -910,6 +914,25 @@ body{padding-inline:8px}
   <div class="starbox" id="starBody"></div>
 </section>
 
+<section class="sheet" id="dev" role="dialog" aria-label="테스트 모드" hidden>
+  <header><h2>🛠 테스트 모드</h2><button class="x" data-close>닫기</button></header>
+  <p class="have" id="devInfo"></p>
+  <div class="devg">
+    <button class="btn" data-dev="coin">코인 +1000</button>
+    <button class="btn" data-dev="energy">에너지 가득</button>
+    <button class="btn" data-dev="inf">에너지 무한 끄기/켜기</button>
+    <button class="btn" data-dev="xp">경험치 +100</button>
+    <button class="btn" data-dev="lv1">레벨 +1</button>
+    <button class="btn" data-dev="lv5">레벨 +5</button>
+    <button class="btn" data-dev="box">재료 상자 +3</button>
+    <button class="btn" data-dev="orders">새 부탁으로 교체</button>
+    <button class="btn" data-dev="pets">주민 모두 이사</button>
+    <button class="btn" data-dev="decor">마을 꾸미기 다음 구역 완성</button>
+    <button class="btn" data-dev="story">이야기 조건 채우기</button>
+    <button class="btn" data-dev="day">퀘스트 하루 넘기기</button>
+  </div>
+  <p class="have">주소 끝에 <b>?test</b>를 붙여 열면 이 버튼이 보여요. 테스트 기록은 일반 기록과 같은 저장소를 써요.</p>
+</section>
 <section class="sheet" id="snd" role="dialog" aria-label="소리 설정" hidden>
   <header><h2>소리·보드 설정</h2><button class="x" data-close>닫기</button></header>
   <div class="setrow"><b style="font-weight:400">배경음악</b><button class="sw" id="swBgm" role="switch" aria-checked="true" aria-label="배경음악"></button></div>
@@ -2548,6 +2571,7 @@ document.addEventListener('pointerdown',()=>{
 /* ---------- boot ---------- */
 function tick(){
   if(!st)return;
+  if(devInf&&st.e<maxE()){st.e=maxE();renderEnergy();}
   tk++;
   if(!document.hidden)st.playMs+=1000;
   if(tickEnergy())save();
@@ -2589,6 +2613,33 @@ $('#startGo').addEventListener('click',()=>{
   $('#startScr').hidden=true;
   if(!st.intro)setTimeout(showIntro,400);
 });
+
+/* ---------- test mode (?test) ---------- */
+let devInf=false;
+(function(){try{
+  if(!/[?&]test\b/.test(location.search))return;
+  try{devInf=localStorage.getItem('hv-dev-inf')==='1';}catch(e){}
+  const b=document.createElement('button');b.id='devBtn';b.type='button';b.textContent='🛠';b.setAttribute('aria-label','테스트 모드');
+  document.body.appendChild(b);
+  const info=()=>{$('#devInfo').textContent='Lv.'+st.lv+' · 경험치 '+st.xp+'/'+need(st.lv)+' · 코인 '+st.coins+' · 에너지 '+st.e+'/'+maxE()+(devInf?' · 에너지 무한 ON':'');};
+  b.addEventListener('click',()=>{info();openSheet('dev');});
+  $('#dev').addEventListener('click',e=>{
+    const t=e.target.closest('[data-dev]');if(!t)return;const a=t.dataset.dev;
+    if(a==='coin')st.coins+=1000;
+    else if(a==='energy'){st.e=maxE();st.eAt=Date.now();}
+    else if(a==='inf'){devInf=!devInf;try{localStorage.setItem('hv-dev-inf',devInf?'1':'0');}catch(e2){}st.e=maxE();}
+    else if(a==='xp'){closeSheet('dev');gainXp(100);}
+    else if(a==='lv1'||a==='lv5'){closeSheet('dev');let x=0;const L=st.lv+(a==='lv1'?1:5);let lv=st.lv,xp=st.xp;while(lv<L){x+=need(lv)-xp;xp=0;lv++;}gainXp(x);}
+    else if(a==='box'){for(let k=0;k<3;k++)spawnBox();}
+    else if(a==='orders'){st.orders=[];st.oNext=null;ordFill0();}
+    else if(a==='pets'){for(let p=1;p<CUST.length;p++)if(st.unlocked.indexOf(p)<0)st.unlocked.push(p);}
+    else if(a==='decor'){const z=curZone();if(z<DZ.length){SPOTS.filter(x=>x.zone===z&&!owned(x.id)).forEach(x=>{st.dec[x.id]=0;});closeSheet('dev');grantZone(z);}}
+    else if(a==='story'){st.unlocked.forEach(p=>{st.fed[p]=Math.max(st.fed[p]||0,7);});SPOTS.forEach(x=>{if(!owned(x.id))st.dec[x.id]=0;});}
+    else if(a==='day'){try{const d=new Date(st.q.start+'T00:00:00');d.setDate(d.getDate()-1);st.q.start=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}catch(e2){}questSync();}
+    save();refresh();renderBoard();renderOrders('all');renderQ();if(!$('#dev').hidden)info();
+    toast('테스트: '+t.textContent);
+  });
+}catch(e){}})();
 setInterval(tick,1000);
 })();
 </script>
