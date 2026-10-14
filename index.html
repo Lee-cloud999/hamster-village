@@ -798,6 +798,8 @@ body{padding-inline:8px}
   .app>section:last-of-type{grid-column:2;grid-row:1/6;align-items:center;justify-content:center;height:100%;min-height:0}
   .orwrap .orders{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+.board::after{-webkit-border-image:var(--img-wood) 62/16px stretch;transform:translateZ(0);-webkit-transform:translateZ(0);will-change:transform;backface-visibility:hidden}
+.bwrap{transform:translateZ(0)}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -1230,7 +1232,12 @@ function fitBoard(){
     w.style.setProperty('--bw',W+'px');fitLast=W;
   }catch(e){}
 }
-function fitSoon(){if(fitRaf)return;fitRaf=requestAnimationFrame(()=>{fitRaf=0;fitBoard();});}
+let fitKey='';
+function fitSoon(){if(fitRaf)return;fitRaf=requestAnimationFrame(()=>{fitRaf=0;
+  try{const ap=document.querySelector('.app');let k=innerWidth+'x'+innerHeight+'|'+ap.clientWidth+'x'+ap.clientHeight;
+    [...ap.children].forEach(c=>{const sec=document.querySelector('.bwrap');if(sec&&c===sec.parentNode)return;k+='|'+c.offsetHeight;});
+    if(k===fitKey)return;fitKey=k;}catch(e){}
+  fitBoard();});}
 try{
   setVh();
   addEventListener('resize',()=>{setVh();fitSoon();});
