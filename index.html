@@ -918,9 +918,9 @@ body{padding-inline:8px}
 
 /* decor sheet: side-by-side on landscape */
 @media (min-aspect-ratio:1/1) and (min-width:700px){
-  #decor.sheet:not([hidden]){max-width:min(980px,calc(100vw - 32px))!important;width:min(980px,calc(100vw - 32px));max-height:calc(100% - 24px)!important;display:grid!important;grid-template-columns:auto minmax(280px,1fr);grid-template-rows:auto auto 1fr;column-gap:18px;align-content:start;overflow:hidden}
+  #decor.sheet:not([hidden]){max-width:min(980px,calc(100vw - 32px))!important;width:min(980px,calc(100vw - 32px));max-height:calc(100% - 24px)!important;box-sizing:border-box;display:grid!important;grid-template-columns:auto minmax(280px,1fr);grid-template-rows:auto auto 1fr;column-gap:18px;align-content:start;overflow:hidden}
   #decor header{grid-column:1/3}
-  #decor #dscene{grid-column:1;grid-row:2/4;height:calc(100vh - 120px);width:auto;max-height:860px;aspect-ratio:380/612}
+  #decor #dscene{grid-column:1;grid-row:2/4;height:calc(100vh - 130px);height:calc(100dvh - 130px);width:auto;max-height:860px;aspect-ratio:380/612}
   #decor #zones{grid-column:2;grid-row:2;align-self:start}
   #decor #dPanel{grid-column:2;grid-row:3;align-self:start;overflow-y:auto;max-height:calc(100vh - 200px)}
 }
