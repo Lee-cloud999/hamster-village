@@ -965,6 +965,8 @@ body{padding-inline:8px}
 .flyx{width:24px;height:24px;margin:-12px 0 0 -12px;object-fit:contain}
 .stat .xp.xpglow .bar{animation:xpglow .6s ease-out}
 @keyframes xpglow{0%{box-shadow:0 0 0 0 rgba(255,190,90,.9)}100%{box-shadow:0 0 0 10px rgba(255,190,90,0)}}
+
+.toast.light{background:#fff;color:#222;border:1.5px solid rgba(0,0,0,.12);box-shadow:0 4px 14px rgba(0,0,0,.18)}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -1610,8 +1612,8 @@ function bgmStop(){
 function bgmRestart(){bgmStop();if(bgmWanted)bgmStart();}
 
 /* ---------- small effects ---------- */
-function toast(msg){
-  const t=$('#toast');t.textContent=msg;t.classList.add('show');
+function toast(msg,light){
+  const t=$('#toast');t.textContent=msg;t.classList.toggle('light',!!light);t.classList.add('show');
   clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2300);
 }
 function runFx(el,txt,gold){
@@ -2219,10 +2221,20 @@ function sellItem(i){
 
 /* ---------- generators ---------- */
 function genRoll(c){if(st&&st.tut&&st.tut<=3)return 1;const t=GU[guLv(c)],r=Math.random();return r<t.p3?3:r<t.p3+t.p2?2:1;}
+/* 처음 에너지가 부족할 때 한 번만: 에너지 +60 무료 충전 */
+function freeEnergyOffer(){
+  if(st.freeEnergyClaimed)return;
+  sfx('done');
+  showReward('에너지가 부족해요!','<div class="bigrw">'+bi(BOLT,'에너지 +60','무료 충전')+'</div>','처음 한 번, 에너지 60을 무료로 충전해 드릴게요.',()=>{
+    if(st.freeEnergyClaimed)return;
+    st.freeEnergyClaimed=1;tickEnergy();st.e+=60;
+    renderEnergy();refresh();save();sfx('coin');toast('에너지 +60 충전!');
+  },'받기');
+}
 function generate(c){
   if(!genOpen(c)){toast(GEN_NAME[c]+'는 레벨 '+GEN_LV[c]+'에 열려요');sfx('err');return;}
   tickEnergy();
-  if(st.e<1){renderEnergy();toast('에너지가 부족해요. 잠시 쉬거나 충전해 보세요');sfx('err');return;}
+  if(st.e<1){renderEnergy();if(!st.freeEnergyClaimed){freeEnergyOffer();return;}toast('에너지가 부족해요. 잠시 쉬거나 충전해 보세요',true);sfx('err');return;}
   const empty=emptyCells();
   if(!empty.length){toast('보드가 가득 찼어요. 재료를 합치거나 전해 주거나 팔아 보세요');sfx('err');return;}
   const t=GU[guLv(c)];
