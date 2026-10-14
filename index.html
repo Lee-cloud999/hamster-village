@@ -768,6 +768,18 @@ body{padding-inline:8px}
 @media (min-aspect-ratio:1/1){.startscr::before{background:url(bg/wide.webp) center/cover no-repeat!important}
  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .startscr::before{background:linear-gradient(rgba(28,20,40,.62),rgba(28,20,40,.62)),url(bg/wide.webp) center/cover no-repeat!important}}}
 .startscr .go:disabled{opacity:.75;animation:none}
+
+#rwBody .bigrw{display:flex;flex-wrap:wrap;justify-content:center;gap:12px 18px;padding:6px 0}
+#rwBody .bi{display:grid;justify-items:center;gap:2px;min-width:84px}
+#rwBody .bi .bimg{width:72px;height:72px;display:grid;place-items:center}
+#rwBody .bi .bimg img,#rwBody .bi .bimg svg,#rwBody .bi .bimg .fc,#rwBody .bi .bimg .rim{width:72px!important;height:72px!important;object-fit:contain}
+#rwBody .bi b{font-size:17px;font-weight:800}
+#rwBody .bi small{font-size:12px;color:var(--muted)}
+#rwBody .bigrw.gen .bi .bimg{width:150px;height:150px}
+#rwBody .bigrw.gen .bi .bimg img,#rwBody .bigrw.gen .bi .bimg .im{width:150px!important;height:150px!important}
+#rwBody .bigrw.gen .bi b{font-size:20px}
+#rwBody .bilv{text-align:center;font-weight:800;color:var(--accent-ink);font-size:14px;margin-top:4px}
+@media (prefers-reduced-motion: no-preference){#rwBody .bi .bimg{animation:popc .35s ease-out}}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -1666,13 +1678,27 @@ function renderPass(){
   $('#claimAll').hidden=claimable().length<2;
   $('#passInfo').textContent='레벨 '+st.lv+' · 다음 레벨까지 경험치 '+(need(st.lv)-st.xp)+' 남았어요';
 }
+function bigChips(L){
+  const r=rewardOf(L);
+  let h='<div class="bi"><span class="bimg">'+COIN+'</span><b>'+r.coins+'</b><small>코인</small></div>';
+  if(r.box)h+='<div class="bi"><span class="bimg">'+BOXI+'</span><b>재료 상자</b><small>재료 3개</small></div>';
+  if(r.pet!=null)h+='<div class="bi"><span class="bimg">'+face(r.pet)+'</span><b>'+escH(petName(r.pet))+'</b><small>새 이웃</small></div>';
+  if(r.energy)h+='<div class="bi"><span class="bimg">'+BOLT+'</span><b>+10</b><small>최대 에너지</small></div>';
+  return h;
+}
 function openLevelUp(levels){
   sfx('level');
   const top=levels[levels.length-1];
-  let body=levels.map(L=>'<div class="lvrow"><span class="plv">Lv.'+L+'</span><div class="rcs">'+chips(L)+'</div></div>').join('');
+  const body=levels.map(L=>(levels.length>1?'<div class="bilv">Lv.'+L+'</div>':'')+'<div class="bigrw">'+bigChips(L)+'</div>').join('');
   const gens=KEYS.filter(c=>GEN_LV[c]>1&&levels.indexOf(GEN_LV[c])>=0);
-  if(gens.length)body+='<div class="lvrow"><span class="plv">NEW</span><div class="rcs">'+gens.map(c=>'<span class="rc"><em>'+gem(c)+'</em><b>'+GEN_NAME[c]+'</b><small>생성기 열림</small></span>').join('')+'</div></div>';
-  showReward('레벨 '+top+' 달성!',body,gens.length?'보드 윗줄에서 새 생성기를 눌러 재료를 꺼내 보세요.':'확인을 누르면 보상을 받아요.',()=>claimMany(levels));
+  showReward('레벨 '+top+' 달성!',body,'확인을 누르면 보상을 받아요.',()=>{
+    claimMany(levels);
+    if(gens.length)setTimeout(()=>{
+      sfx('done');
+      const gb='<div class="bigrw gen">'+gens.map(c=>'<div class="bi"><span class="bimg">'+gem(c)+'</span><b>'+GEN_NAME[c]+'</b></div>').join('')+'</div>';
+      showReward('새 생성기 발견!',gb,'보드 윗줄에서 새 생성기를 눌러 재료를 꺼내 보세요.',null);
+    },350);
+  });
 }
 function gainXp(n){
   st.xp+=n;const ups=[];
