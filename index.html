@@ -2159,7 +2159,7 @@ function renderScene(){
     h+='</button>';
   });
   const guests=st.unlocked.filter(p=>!st.petHide[p]);
-  const GP={0:[58,348],1:[150,512]},SURF=[[82,98],[304,134],[28,512],[88,512],[14,330],[196,340]];let si=0;
+  const GP={0:[58,348],1:[150,512]},SURF=[[82,98],[304,134],[14,512],[60,512],[104,512],[196,340]];let si=0;
   h+='<span class="rlbl" style="left:133px;top:226px">보리네 방</span><span class="rlbl" style="left:127px;top:402px">'+(st.unlocked.indexOf(1)>=0?escH(petName(1))+'네 방':'이웃 방 (이웃집을 지으면 이사 와요)')+'</span>';
   h+=guests.map((p,k)=>{const pos=GP[p]||SURF[(si++)%SURF.length];return '<button class="pg" type="button" data-pet="'+p+'" style="left:'+(pos[0]/3.8)+'%;top:'+(pos[1]/6)+'%;animation-delay:'+(-k*.45)+'s" aria-label="'+escH(petName(p))+'">'+face(p)+'</button>';}).join('');
   $('#dscene').innerHTML=h;
