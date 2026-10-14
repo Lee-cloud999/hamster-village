@@ -1172,7 +1172,7 @@ const SHOP_E20=50, SHOP_BOX=40, SHOP_RAND=35, SHOP_SORT=10;
 const CH_REQ=[{f:0,d:0},{f:3,d:3},{f:7,d:6}];
 const STORY=[
  [{t:'이사 온 날',l:['볼주머니에 이삿짐을 가득 넣고 왔어요.','작은 베개 하나, 낡은 양말 한 짝, 그리고 할머니가 주신 오래된 지도 한 장이요.','사실 혼자 사는 건 처음이에요. 그래서 조금 떨려요.']},
-  {t:'조용한 첫날 밤',l:['침대에 누웠는데 너무 조용해서 잠이 오지 않아요.','아까 만난 친절한 분이 주신 간식을 꺼내 와작와작 먹었더니 조금 괜찮아졌어요.','그나저나 이 마을에는 정말 저랑 당신밖에 없는 건가요?']},
+  {t:'조용한 첫날 밤',l:['침대에 누웠는데 너무 조용해서 잠이 오지 않아요.','오늘 침대랑 간식 선반을 준비해 주셔서 정말 감사해요.','그나저나 이 마을에는 정말 저랑 당신밖에 없는 건가요?']},
   {t:'벽 너머 쳇바퀴 소리',l:['무슨 소리가 들려요!','처음엔 깜짝 놀랐어요. 유령인 줄 알았거든요.','그런데 자세히 들어 보니 쳇바퀴 소리 같아요.','내일 아침이 되자마자 이 소리가 나는 곳에 가 볼 거예요.','……같이 가 주실 거죠?']}],
  [{t:'새로 이사 왔어요',l:['안녕! 나는 콩이야. 달리는 걸 제일 좋아해.','밤에 쳇바퀴 소리가 시끄러우면 꼭 말해 줘. 아마 못 멈추겠지만!','이사 첫날인데 벌써 이 마을이 마음에 들어.']},
   {t:'제자리 달리기',l:['쳇바퀴를 천 바퀴 돌았는데 아직 제자리야.','그래도 기분은 하나도 안 나빠. 달린 만큼 마음이 가벼워지거든.','보리도 한번 같이 달려 볼래?']},
@@ -2549,12 +2549,24 @@ function chapterState(p,k){
   const rd=st.read[p]||0;
   if(k<rd)return 'read';
   if(k>rd)return 'lock';
-  const q=CH_REQ[k];
-  return ((st.fed[p]||0)>=q.f&&decoCount()>=q.d)?'ready':'lock';
+  return chReq(p,k).ok?'ready':'lock';
+}
+/* 주민별 이야기 여는 조건 (없으면 CH_REQ 기본값) */
+function zoneCnt(z){return SPOTS.filter(x=>x.zone===z&&owned(x.id)).length;}
+const CH_SPECIAL={
+  0:[null,
+     ()=>{const a=zoneCnt(0);return {ok:zoneDone(0),sub:'침대·간식 선반 마련 '+Math.min(2,a)+'/2'};},
+     ()=>{const a=zoneCnt(1);return {ok:a>=2,sub:'이웃 방 꾸미기 '+Math.min(2,a)+'/2'};}]
+};
+function chReq(p,k){
+  const sp=CH_SPECIAL[p]&&CH_SPECIAL[p][k];
+  if(sp)return sp();
+  const q=CH_REQ[k]||CH_REQ[CH_REQ.length-1],dc=decoCount();
+  return {ok:(st.fed[p]||0)>=q.f&&dc>=q.d,sub:'부탁 '+Math.min(q.f,st.fed[p]||0)+'/'+q.f+' · 마을 장식 '+Math.min(q.d,dc)+'/'+q.d};
 }
 function storyReady(){
   let n=0;
-  st.unlocked.forEach(p=>{const rd=st.read[p]||0;if(rd<3&&chapterState(p,rd)==='ready')n++;});
+  st.unlocked.forEach(p=>{const rd=st.read[p]||0;if(rd<STORY[p].length&&chapterState(p,rd)==='ready')n++;});
   return n;
 }
 function goalCard(){
@@ -2621,8 +2633,8 @@ function renderDex(){
   const open=st.unlocked.length;
   $('#dexInfo').textContent=open+' / '+CUST.length+'명의 이웃을 만났어요. 이웃을 누르면 이야기를 읽을 수 있어요.';
   $('#dexGrid').innerHTML=CUST.map((x,p)=>{
-    const u=st.unlocked.indexOf(p)>=0,out=u&&st.petHide[p],rd=st.read[p]||0,nw=u&&rd<3&&chapterState(p,rd)==='ready';
-    return '<div class="dcell'+(u?'':' lock')+(dexSel===p?' sel':'')+'"'+(u?' data-p="'+p+'" role="button" tabindex="0"':'')+'><span class="de">'+(u?face(p):'❔')+'</span><b>'+(u?escH(petName(p)):'???')+'</b>'+(u?(nw?'<small>새 이야기</small>':out?'<small>마을 밖</small>':'<small>'+rd+'/3편</small>'):'<small>'+x[2]+'</small>')+'</div>';
+    const u=st.unlocked.indexOf(p)>=0,out=u&&st.petHide[p],rd=st.read[p]||0,nw=u&&rd<STORY[p].length&&chapterState(p,rd)==='ready';
+    return '<div class="dcell'+(u?'':' lock')+(dexSel===p?' sel':'')+'"'+(u?' data-p="'+p+'" role="button" tabindex="0"':'')+'><span class="de">'+(u?face(p):'❔')+'</span><b>'+(u?escH(petName(p)):'???')+'</b>'+(u?(nw?'<small>새 이야기</small>':out?'<small>마을 밖</small>':'<small>'+rd+'/'+STORY[p].length+'편</small>'):'<small>'+x[2]+'</small>')+'</div>';
   }).join('');
   const M=$('#dexMgr');
   if(dexSel==null||st.unlocked.indexOf(dexSel)<0){
@@ -2633,11 +2645,11 @@ function renderDex(){
   }
   const p=dexSel,hide=!!st.petHide[p],dc=decoCount();
   const rows=STORY[p].map((c,k)=>{
-    const s=chapterState(p,k),q=CH_REQ[k];
-    const sub=s==='lock'?('부탁 '+Math.min(q.f,st.fed[p]||0)+'/'+q.f+' · 마을 장식 '+Math.min(q.d,dc)+'/'+q.d):s==='ready'?'읽으면 코인 30개':'다시 읽을 수 있어요';
+    const s=chapterState(p,k);
+    const sub=s==='lock'?(k>(st.read[p]||0)?'앞 이야기를 먼저 읽어 주세요':chReq(p,k).sub):s==='ready'?'읽으면 코인 30개':'다시 읽을 수 있어요';
     return '<div class="prow'+(s==='read'?' got':'')+'"><div class="sico">'+(s==='read'?'📖':s==='ready'?'✉️':'🔒')+'</div><div class="prw"><b>'+(s==='lock'?'???':escH(c.t))+'</b><span>'+sub+'</span></div><button class="btn'+(s==='ready'?' main':'')+'" type="button" data-a="story" data-p="'+p+'" data-k="'+k+'"'+(s==='lock'?' disabled':'')+'>'+(s==='read'?'다시 읽기':s==='ready'?'읽기':'잠김')+'</button></div>';
   }).join('');
-  M.innerHTML='<div class="dp-t"><b>'+escH(petName(p))+'의 이야기</b><small>읽은 이야기 '+Math.min(3,st.read[p]||0)+'/3</small></div>'+rows+
+  M.innerHTML='<div class="dp-t"><b>'+escH(petName(p))+'의 이야기</b><small>읽은 이야기 '+Math.min(STORY[p].length,st.read[p]||0)+'/'+STORY[p].length+'</small></div>'+rows+
     '<div class="dm-row"><input id="pmInp" type="text" maxlength="8" value="'+escH(petName(p))+'" aria-label="이름"><button class="btn main" type="button" data-a="save" data-p="'+p+'">이름 저장</button></div>'+
     '<small class="have">'+(st.petName[p]?'기본 이름: '+CUST[p][0]:'이름을 지어 줄 수 있어요 (최대 8글자)')+'</small>'+
     '<button class="btn" type="button" data-a="toggle" data-p="'+p+'">'+(hide?'마을에 두기':'마을에서 빼기')+'</button>';
