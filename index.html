@@ -2074,7 +2074,6 @@ function act(i,j){
     st.nMerge++;if(combo>st.maxCombo)st.maxCombo=combo;
     track('merge');if(nl>=3)track('merge3');
     let bonus=0;if(combo>=3){bonus=combo-1;st.coins+=bonus;}
-    gainXp(1);
     let bj=null;
     renderBoard();pop(j);fxAt(j,nl,combo);refresh();sfx('merge',nl,combo);juiceMerge(j,nl);
     if(combo>=2)showCombo(combo);
@@ -2095,11 +2094,10 @@ function collectXp(i){
 function dropXp(total,anchor){
   if(total<=0)return;
   const pieces=[];let left=total;
-  for(let t=XPMAX;t>=1;t--){if(left>=XPV[t]){pieces.push(t);left-=XPV[t];break;}}
+  {let bt=1;for(let t=1;t<=XPMAX;t++){if(Math.abs(XPV[t]-total)<Math.abs(XPV[bt]-total))bt=t;}pieces.push(bt);left=0;}
   let placed=0;
   let queued=0;pieces.forEach(t=>{const em2=emptyCells();if(em2.length){const j=em2[rnd(em2.length)];st.cells[j]={c:'xp',l:t};placed++;setTimeout(()=>pop(j),60);}else{qGive('xp',t);queued++;}});
   if(queued)setTimeout(()=>toast('보드가 가득 차서 황금 도토리 '+queued+'개가 임시 칸으로 갔어요'),700);
-  if(left>0)gainXp(left);
   if((placed||queued)&&!st.xpTip){st.xpTip=1;setTimeout(()=>toast('황금 도토리가 나왔어요! 두 번 누르면 경험치, 합치면 더 커져요'),900);}
 }
 function tap(i){
