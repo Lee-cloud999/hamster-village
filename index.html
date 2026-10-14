@@ -967,6 +967,10 @@ body{padding-inline:8px}
 @keyframes xpglow{0%{box-shadow:0 0 0 0 rgba(255,190,90,.9)}100%{box-shadow:0 0 0 10px rgba(255,190,90,0)}}
 
 .toast.light{background:#fff;color:#222;border:1.5px solid rgba(0,0,0,.12);box-shadow:0 4px 14px rgba(0,0,0,.18)}
+
+.gencell .gneed{position:absolute;right:1px;bottom:1px;width:42%;aspect-ratio:1;display:grid;place-items:center;background:rgba(255,255,255,.85);border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.gencell .gneed .im{width:100%;height:100%;object-fit:contain}
+
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -1426,7 +1430,24 @@ const need=lv=>lv<5?[0,30,50,70,100][lv]:30*lv;
 const ordCap=()=>Math.min(3,(st.unlocked||[0]).length+1);
 const maxE=()=>Math.min(120,40+Math.floor((st.lv-1)/2)*10)+(st.bonusE||0)*10;
 const refillCost=()=>maxE()*2;
-const genOpen=c=>st.lv>=GEN_LV[c];
+const GEN_PREV={sw:'br',dr:'sw',fr:'dr',ml:'fr',ic:'ml'};
+const genOpen=c=>c==='br'||!!(st.gOpen&&st.gOpen[c]);
+const genNeed=c=>{const pv=GEN_PREV[c];return pv?CH[pv].n[MAXLV]:'';};
+const josa=(w,a,b)=>{const ch=w.charCodeAt(w.length-1)-44032;return (ch>=0&&ch<11172&&ch%28)?a:b;};
+const genLockMsg=c=>{const w=genNeed(c);return GEN_NAME[c]+josa(GEN_NAME[c],'은','는')+' '+w+josa(w,'을','를')+' 만들면 열려요';};
+let genQ=[];
+function checkGenUnlock(){
+  if(!st||!st.gOpen)return;
+  KEYS.forEach(c=>{const pv=GEN_PREV[c];if(pv&&!st.gOpen[c]&&(st.fmax[pv]||0)>=MAXLV){st.gOpen[c]=1;genQ.push(c);}});
+  if(genQ.length)setTimeout(showGenQ,500);
+}
+function showGenQ(){
+  if(!genQ.length)return;
+  if(!$('#reward').hidden||document.querySelector('.sheet:not([hidden])')){setTimeout(showGenQ,800);return;}
+  const gens=genQ.splice(0);save();renderBoard();sfx('done');
+  const gb='<div class="bigrw gen">'+gens.map(c=>'<div class="bi"><span class="bimg">'+gem(c)+'</span><b>'+GEN_NAME[c]+'</b></div>').join('')+'</div>';
+  showReward('새 생성기 발견!',gb,'보드 윗줄에서 새 생성기를 눌러 재료를 꺼내 보세요.');
+}
 const openChains=()=>KEYS.filter(genOpen);
 const isLocked=i=>st.locks.indexOf(i)>=0;
 const isGen=i=>GENS[i]!=null;
@@ -1458,6 +1479,7 @@ function fill(o){
   if(!Array.isArray(o.unlocked))o.unlocked=[0];o.read=o.read||{};
   if(!Array.isArray(o.claimed)){o.claimed=[];for(let L=2;L<=Math.min(PASS_LAST,o.lv);L++)o.claimed.push(L);}
   o.tq=o.tq||[];o.dec=o.dec||{};o.own=o.own||{};o.zoneDone=o.zoneDone||[];
+  if(!o.gOpen){o.gOpen={};const OLD={sw:2,dr:4,fr:8,ml:10,ic:12};if((o.lv||1)>1)KEYS.forEach(c=>{if(OLD[c]&&o.lv>=OLD[c])o.gOpen[c]=1;});}
   o.fmax=o.fmax||{};o.badges=o.badges||{};o.petName=o.petName||{};o.petHide=o.petHide||{};o.fed=o.fed||{};
   o.nMerge=o.nMerge||0;o.nDeliv=o.nDeliv||0;o.maxCombo=o.maxCombo||0;o.playMs=o.playMs||0;o.nGift=o.nGift||0;
   if(!o.q||!o.q.start)o.q={cycle:0,start:todayKey(),days:{}};
@@ -1915,7 +1937,7 @@ function openLevelUp(levels,passMode,after){
   sfx('level');
   const top=levels[levels.length-1];
   const body=levels.map(L=>(levels.length>1?'<div class="bilv">Lv.'+L+'</div>':'')+'<div class="bigrw">'+bigChips(L)+'</div>').join('');
-  const gens=passMode?[]:KEYS.filter(c=>GEN_LV[c]>1&&levels.indexOf(GEN_LV[c])>=0);
+  const gens=[];
   const pets=levels.map(L=>rewardOf(L).pet).filter(x=>x!=null);
   const showGens=()=>{if(!gens.length){if(after)after();return;}setTimeout(()=>{
       sfx('done');
@@ -2162,6 +2184,7 @@ function flyCoins(from,n){
 function noteFound(){
   KEYS.forEach(c=>{if(!st.fmax[c])st.fmax[c]=1;});
   st.cells.forEach(it=>{if(it&&(st.fmax[it.c]||0)<it.l)st.fmax[it.c]=it.l;});
+  checkGenUnlock();
 }
 function renderBoard(){
   noteFound();
@@ -2174,7 +2197,7 @@ function renderBoard(){
     if(isGen(i)){
       const c=GENS[i];
       if(!genOpen(c)){
-        h+='<div class="cell gencell glock c-'+c+'" data-i="'+i+'" aria-label="'+GEN_NAME[c]+' (레벨 '+GEN_LV[c]+'에 열려요)"><div class="item">'+gem(c)+'</div><span class="gtag">Lv.'+GEN_LV[c]+'</span></div>';
+        h+='<div class="cell gencell glock c-'+c+'" data-i="'+i+'" aria-label="'+genLockMsg(c)+'"><div class="item">'+gem(c)+'</div><span class="gneed">'+em(GEN_PREV[c],MAXLV)+'</span></div>';
       }else{
         h+='<div class="cell gencell c-'+c+'" data-i="'+i+'" role="button" aria-label="'+GEN_NAME[c]+' (에너지 1)"><div class="item">'+gem(c)+'</div><span class="gtag">'+BOLT+'1</span>'+(guLv(c)?'<span class="gust">'+'★'.repeat(guLv(c))+'</span>':'')+'</div>';
       }
@@ -2232,7 +2255,7 @@ function freeEnergyOffer(){
   },'받기');
 }
 function generate(c){
-  if(!genOpen(c)){toast(GEN_NAME[c]+'는 레벨 '+GEN_LV[c]+'에 열려요');sfx('err');return;}
+  if(!genOpen(c)){toast(genLockMsg(c),true);sfx('err');return;}
   tickEnergy();
   if(st.e<1){renderEnergy();if(!st.freeEnergyClaimed){freeEnergyOffer();return;}toast('에너지가 부족해요. 잠시 쉬거나 충전해 보세요',true);sfx('err');return;}
   const empty=emptyCells();
@@ -2324,7 +2347,7 @@ $('#board').addEventListener('pointerdown',e=>{
   if(isLocked(i)){askUnlock(i);e.preventDefault();return;}
   if(isGen(i)){
     sel=null;
-    if(!genOpen(GENS[i])){toast(GEN_NAME[GENS[i]]+'는 레벨 '+GEN_LV[GENS[i]]+'에 열려요');sfx('err');}
+    if(!genOpen(GENS[i])){toast(genLockMsg(GENS[i]),true);sfx('err');}
     else generate(GENS[i]);
     e.preventDefault();return;
   }
