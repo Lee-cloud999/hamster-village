@@ -909,6 +909,12 @@ body{padding-inline:8px}
 @media (min-aspect-ratio:1/1) and (min-width:700px){.app>.orwrap{margin-top:-108px!important;position:relative;z-index:1;pointer-events:none}.app>.orwrap>*{pointer-events:auto}.app>.stat{position:relative;z-index:2}}
 .app>.nav #navDex .ni{transform:scale(1.27)}
 .app>.nav #navDex:active .ni{transform:scale(1.17)}
+#dex .mrow{gap:2px;padding:5px 7px}
+#dex .mrow h3{font-size:13px;line-height:1.2}
+#dex .mcells{gap:2px}
+#dex .mc .mi{border-radius:8px}
+#dex .mc .mi img{width:92%;height:92%}
+#dex .mc span{font-size:9px;line-height:1.1;min-height:0}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -2556,7 +2562,7 @@ function renderMatDex(){
     return '<div class="mrow"><h3>'+escH(CH[c].t)+'<small>'+mx+' / 6</small></h3><div class="mcells">'+cells+'</div></div>';
   }).join('');
   $('#dexMatInfo').textContent='재료 '+got+' / '+(KEYS.length*6)+'종을 발견했어요. 합쳐서 더 높은 단계를 만들어 보세요.';
-  $('#dexMat').innerHTML='<div style="display:grid;gap:8px">'+rows+'</div>';
+  $('#dexMat').innerHTML='<div style="display:grid;gap:4px">'+rows+'</div>';
 }
 function renderDexTabs(){
   document.querySelectorAll('.dtab').forEach(b=>{const on=b.dataset.dtab===dexTab;b.classList.toggle('on',on);b.setAttribute('aria-selected',on?'true':'false');});
