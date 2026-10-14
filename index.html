@@ -2061,7 +2061,7 @@ function act(i,j){
     if(combo>=2)showCombo(combo);
     if(bonus)floatAt(cellEl(j),'+'+bonus+' 코인');
     if(nl>=4&&a.c!=='xp')bigText(nm(a.c,nl)+' 완성!',nl===MAXLV);
-    if(nl>=4&&a.c!=='xp'&&Math.random()<.25)setTimeout(()=>{const e2=emptyCells();if(e2.length){const j2=e2[rnd(e2.length)];st.cells[j2]={c:'xp',l:1};renderBoard();pop(j2);save();}},300);
+    if(nl>=4&&a.c!=='xp'&&Math.random()<.25)setTimeout(()=>{const e2=emptyCells();if(e2.length){const j2=e2[rnd(e2.length)];st.cells[j2]={c:'xp',l:1};renderBoard();pop(j2);}else qGive('xp',1);save();},300);
     if(bj!=null){pop(bj);toast('합치기 보너스! 재료가 하나 더 나왔어요');}
     return;
   }
@@ -2078,9 +2078,10 @@ function dropXp(total,anchor){
   const pieces=[];let left=total;
   for(let t=XPMAX;t>=1&&pieces.length<3;t--){while(left>=XPV[t]&&pieces.length<3){pieces.push(t);left-=XPV[t];}}
   let placed=0;
-  pieces.forEach(t=>{const em2=emptyCells();if(em2.length){const j=em2[rnd(em2.length)];st.cells[j]={c:'xp',l:t};placed++;setTimeout(()=>pop(j),60);}else left+=XPV[t];});
+  let queued=0;pieces.forEach(t=>{const em2=emptyCells();if(em2.length){const j=em2[rnd(em2.length)];st.cells[j]={c:'xp',l:t};placed++;setTimeout(()=>pop(j),60);}else{qGive('xp',t);queued++;}});
+  if(queued)setTimeout(()=>toast('보드가 가득 차서 황금 도토리 '+queued+'개가 임시 칸으로 갔어요'),700);
   if(left>0)gainXp(left);
-  if(placed&&!st.xpTip){st.xpTip=1;setTimeout(()=>toast('황금 도토리가 나왔어요! 두 번 누르면 경험치, 합치면 더 커져요'),900);}
+  if((placed||queued)&&!st.xpTip){st.xpTip=1;setTimeout(()=>toast('황금 도토리가 나왔어요! 두 번 누르면 경험치, 합치면 더 커져요'),900);}
 }
 function tap(i){
   sfx('tap');
