@@ -888,6 +888,7 @@ body{padding-inline:8px}
   .stat .hb{width:42px!important;height:42px!important;font-size:21px!important}
   .app>.stat .xp{flex:1 1 calc(100% - 80px)!important}
 }
+@media (prefers-reduced-motion: no-preference){#rwOk.nudge{animation:nudge .4s}@keyframes nudge{25%{transform:scale(1.05)}50%{transform:scale(.97)}75%{transform:scale(1.03)}}}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -1612,7 +1613,7 @@ function topSheet(){
 function dismissTop(){
   const id=topSheet();if(!id)return;
   if(id==='confirm')closeConfirm();
-  else if(id==='reward')rwClose();
+  else if(id==='reward'){const b=$('#rwOk');if(b){b.classList.remove('nudge');void b.offsetWidth;b.classList.add('nudge');}return;}
   else closeSheet(id);
 }
 function askConfirm(t,ok,fn){$('#cText').textContent=t;$('#cOk').textContent=ok;cfn=fn;openSheet('confirm');}
