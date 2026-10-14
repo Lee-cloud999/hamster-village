@@ -781,6 +781,8 @@ body{padding-inline:8px}
 #rwBody .bilv{text-align:center;font-weight:800;color:var(--accent-ink);font-size:14px;margin-top:4px}
 @media (prefers-reduced-motion: no-preference){#rwBody .bi .bimg{animation:popc .35s ease-out}}
 @media (prefers-reduced-motion: no-preference){#rwBody .gift .bimg{animation:wob 1.2s ease-in-out infinite}@keyframes wob{0%,100%{transform:rotate(0)}15%{transform:rotate(-7deg)}30%{transform:rotate(7deg)}45%{transform:rotate(-4deg)}60%{transform:rotate(0)}}}
+.rc .qm{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#e9d9f2;color:#7a5a96;font-style:normal;font-weight:800;font-size:14px}
+.rc.mys b{color:#7a5a96}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -943,7 +945,7 @@ body{padding-inline:8px}
 <script>
 (function(){
 'use strict';
-const ROWS=7,COLS=6,N=ROWS*COLS,MAXLV=6,REGEN=30000,KEY='hamster-village-v1',SND_KEY='hamster-village-sndset',PASS_LAST=14,STAR_NEED=60;
+const ROWS=7,COLS=6,N=ROWS*COLS,MAXLV=6,REGEN=30000,KEY='hamster-village-v1',SND_KEY='hamster-village-sndset',PASS_LAST=30,STAR_NEED=60;
 const VAL=[0,2,5,12,28,60,130], SELLP=[0,1,2,4,9,20,45];
 const KEYS=['br','sw','dr','fr','ml','ic'];
 const CH={
@@ -966,8 +968,8 @@ const GU=[
   {p2:.50,p3:.20,dbl:.35,sv:.20,cost:8000}
 ];
 /* residents: [name, accessory, how they arrive] */
-const CUST=[['보리','🧳','시작부터'],['콩이','🎀','이웃 방을 꾸미면'],['밤톨','🧢','Lv.3 보상'],['호두','📚','Lv.5 보상'],['솜 할머니','👓','Lv.7 보상'],['참깨 할배','🌿','Lv.9 보상'],['별이','⭐','Lv.11 보상'],['두부','🔨','Lv.13 보상']];
-const REWARD_PET={3:2,5:3,7:4,9:5,11:6,13:7};
+const CUST=[['보리','🧳','시작부터'],['콩이','🎀','이웃 방을 꾸미면'],['밤톨','🧢','Lv.5 보상'],['호두','📚','Lv.10 보상'],['솜 할머니','👓','Lv.15 보상'],['참깨 할배','🌿','Lv.20 보상'],['별이','⭐','Lv.25 보상'],['두부','🔨','Lv.30 보상']];
+const REWARD_PET={5:2,10:3,15:4,20:5,25:6,30:7};
 const SAY=['고마워요! 볼이 빵빵해요','딱 필요했던 거예요','덕분에 한숨 돌렸어요','마을이 더 따뜻해졌어요','또 부탁해도 될까요?'];
 const PET_LINES=['볼주머니가 빵빵해요!','오늘도 마을이 포근해요','같이 간식 먹을래요?','쳇바퀴 한 바퀴 돌고 올게요','이 마을, 좋아요','도토리 하나만 맡아 줄래요?'];
 const SUF=[' 구해 주세요!',' 필요해요!',' 부탁해요!',' 있을까요?',' 가져다줄래요?'];
@@ -1646,14 +1648,14 @@ function questTick(){
 function rewardOf(L){
   const r={coins:L*20};
   if(REWARD_PET[L]!=null)r.pet=REWARD_PET[L];
-  if(L<=PASS_LAST){if(L%2===0)r.box=true;if(L>=3&&L%2===1)r.energy=1;}
+  if(L<=PASS_LAST){if(L%2===0)r.box=true;if(L%5===3)r.energy=1;}
   else if(L%5===0)r.box=true;
   return r;
 }
 function chips(L){
   const r=rewardOf(L);
   let h='<span class="rc">'+COIN+'<b>'+r.coins+'</b></span>';
-  if(r.pet!=null)h+='<span class="rc"><em>'+face(r.pet)+'</em><b>'+escH(petName(r.pet))+'</b><small>새 이웃</small></span>';
+  if(r.pet!=null)h+=st.unlocked.indexOf(r.pet)>=0?'<span class="rc"><em>'+face(r.pet)+'</em><b>'+escH(petName(r.pet))+'</b><small>새 이웃</small></span>':'<span class="rc mys"><em class="qm">?</em><b>새 이웃</b></span>';
   if(r.box)h+='<span class="rc"><em>'+BOXI+'</em><b>재료 상자</b></span>';
   if(r.energy)h+='<span class="rc">'+BOLT+'<b>최대 에너지 +10</b></span>';
   return h;
