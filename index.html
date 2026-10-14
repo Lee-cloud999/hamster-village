@@ -1347,7 +1347,6 @@ function mkOrder(cu,needs,tier){
 }
 function seed(){
   const cells=new Array(N).fill(null);
-  [[6,'br',1],[7,'br',1],[8,'br',1],[12,'br',2],[13,'br',2],[14,'br',3]].forEach(a=>{cells[a[0]]={c:a[1],l:a[2]};});
   return fill({cells:cells,coins:30,xp:0,lv:1,e:40,eAt:Date.now(),locks:[36,37,38,39,40,41],unlockN:0,gu:{},bonusE:0,oNext:null,
     unlocked:[0],claimed:[],
     orders:[mkOrder(0,[['br',2]],'easy'),mkOrder(0,[['br',1],['br',2]],'mid')]});
@@ -2102,7 +2101,7 @@ function sellItem(i){
 }
 
 /* ---------- generators ---------- */
-function genRoll(c){const t=GU[guLv(c)],r=Math.random();return r<t.p3?3:r<t.p3+t.p2?2:1;}
+function genRoll(c){if(st&&st.tut&&st.tut<=3)return 1;const t=GU[guLv(c)],r=Math.random();return r<t.p3?3:r<t.p3+t.p2?2:1;}
 function generate(c){
   if(!genOpen(c)){toast(GEN_NAME[c]+'는 레벨 '+GEN_LV[c]+'에 열려요');sfx('err');return;}
   tickEnergy();
@@ -2612,7 +2611,7 @@ function storyStep(){
   stQ.cur=p;stQ.full=full;let i=0;
   const red=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
   if(red){p.textContent=full;p.classList.remove('typing');}
-  else stQ.typing=setInterval(()=>{i+=1;p.textContent=full.slice(0,i);if(i>=full.length){clearInterval(stQ.typing);stQ.typing=null;p.classList.remove('typing');}},35);
+  else{const ws=full.split(/(\s+)/);stQ.typing=setInterval(()=>{i+=2;p.textContent=ws.slice(0,i).join('');if(i>=ws.length){clearInterval(stQ.typing);stQ.typing=null;p.classList.remove('typing');}},140);}
   if(!stQ.list.length){$('#rwOk').textContent=stQ.ok;$('#rwNote').hidden=false;}
   return true;
 }
