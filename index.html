@@ -2,7 +2,17 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta id="vpm" name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<script>
+/* 핸드폰 가로: 화면을 넓게 잡아 태블릿 가로 배치를 축소해서 보여 줌 */
+(function(){var P='width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover';
+function isLand(){try{var t=screen.orientation&&screen.orientation.type;if(t)return t.indexOf('landscape')===0;}catch(e){}return Math.abs(window.orientation||0)===90;}
+function fix(){var m=document.getElementById('vpm');if(!m)return;var a=screen.width,b=screen.height,lo=Math.max(a,b),sh=Math.min(a,b),c=P;
+if(isLand()&&sh<600){var w=Math.round(lo*760/sh),k=(lo/w).toFixed(4);c='width='+w+',initial-scale='+k+',minimum-scale='+k+',maximum-scale='+k+',user-scalable=no,viewport-fit=cover';}
+if(m.getAttribute('content')!==c)m.setAttribute('content',c);}
+fix();addEventListener('orientationchange',function(){setTimeout(fix,50);setTimeout(fix,400);});
+try{screen.orientation&&screen.orientation.addEventListener('change',fix);}catch(e){}addEventListener('resize',fix);})();
+</script>
 <title>햄스터 마을</title>
 <meta name="description" content="재료를 합쳐 햄스터 주민들의 부탁을 들어주고 마을을 꾸미는 머지 게임">
 <meta name="theme-color" content="#fdf1ec" media="(prefers-color-scheme: light)">
