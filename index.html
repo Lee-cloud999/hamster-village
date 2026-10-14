@@ -12,6 +12,11 @@ if(isLand()&&sh<600){var w=Math.round(lo*760/sh),k=(lo/w).toFixed(4);c='width='+
 if(m.getAttribute('content')!==c)m.setAttribute('content',c);}
 fix();addEventListener('orientationchange',function(){setTimeout(fix,50);setTimeout(fix,400);});
 try{screen.orientation&&screen.orientation.addEventListener('change',fix);}catch(e){}addEventListener('resize',fix);})();
+/* 핸드폰 가로: 터치하면 전체 화면으로 (주소창 숨김, 안드로이드 크롬 등 지원 브라우저) */
+(function(){function phoneLand(){var a=screen.width,b=screen.height;if(Math.min(a,b)>=600)return false;try{var t=screen.orientation&&screen.orientation.type;if(t)return t.indexOf('landscape')===0;}catch(e){}return Math.abs(window.orientation||0)===90;}
+function standalone(){try{return matchMedia('(display-mode: fullscreen),(display-mode: standalone)').matches||navigator.standalone;}catch(e){return false;}}
+function go(){var d=document.documentElement,rq=d.requestFullscreen||d.webkitRequestFullscreen;if(!rq||document.fullscreenElement||document.webkitFullscreenElement||standalone()||!phoneLand())return;try{var r=rq.call(d,{navigationUI:'hide'});if(r&&r.catch)r.catch(function(){});}catch(e){}}
+addEventListener('pointerup',go,true);addEventListener('touchend',go,true);})();
 </script>
 <title>햄스터 마을</title>
 <meta name="description" content="재료를 합쳐 햄스터 주민들의 부탁을 들어주고 마을을 꾸미는 머지 게임">
