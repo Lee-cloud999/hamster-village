@@ -889,6 +889,14 @@ body{padding-inline:8px}
   .app>.stat .xp{flex:1 1 calc(100% - 80px)!important}
 }
 @media (prefers-reduced-motion: no-preference){#rwOk.nudge{animation:nudge .4s}@keyframes nudge{25%{transform:scale(1.05)}50%{transform:scale(.97)}75%{transform:scale(1.03)}}}
+
+/* menu: icons only, white sticker outline */
+.app>.nav{background:transparent!important;border:0!important;box-shadow:none!important;backdrop-filter:none!important}
+.app>.nav .nl{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.app>.nav .ni{filter:drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff) drop-shadow(0 3px 4px rgba(60,40,20,.35))}
+.app>.nav .btn:active .ni{transform:scale(.92)}
+.app>.nav .ni{width:54px!important;height:54px!important}
+@media (min-aspect-ratio:1/1) and (min-width:700px){.app>.nav .ni{width:76px!important;height:76px!important}}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
