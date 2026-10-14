@@ -1212,7 +1212,7 @@ let st=null, sel=null, drag=null, combo=0, lastMergeAt=0, lastKey='', cfn=null, 
 let viewDay=1, dSel=null, dPick=0, dJust=null, dexSel=null, tk=0;
 
 /* ---------- derived values ---------- */
-const need=lv=>lv<5?[0,20,35,55,80][lv]:48+40*(lv-1);
+const need=lv=>lv<5?[0,20,35,55,80][lv]:30*lv;
 const ordCap=()=>Math.min(3,(st.unlocked||[0]).length+1);
 const maxE=()=>Math.min(120,40+Math.floor((st.lv-1)/2)*10)+(st.bonusE||0)*10;
 const refillCost=()=>maxE()*2;
