@@ -913,7 +913,6 @@ body{padding-inline:8px}
     <div class="brandrow">
       <button class="ttl" id="ttlchip" type="button">이사 온 햄스터</button>
       <button class="hb" id="navProf" type="button" aria-label="프로필">🐹</button>
-      <button class="hb" id="navStar" type="button" aria-label="햄찌별">🌠</button>
     </div>
   </div>
 
@@ -1011,10 +1010,6 @@ body{padding-inline:8px}
   <div class="bgrid" id="bgrid"></div>
 </section>
 
-<section class="sheet" id="star" role="dialog" aria-label="햄찌별" hidden>
-  <header><h2>햄찌별</h2><button class="x" data-close>닫기</button></header>
-  <div class="starbox" id="starBody"></div>
-</section>
 
 <section class="sheet" id="dev" role="dialog" aria-label="테스트 모드" hidden>
   <header><h2>🛠 테스트 모드</h2><button class="x" data-close>닫기</button></header>
@@ -2496,7 +2491,6 @@ function goalCard(){
   if(!zoneDone(0)){t='침대와 간식 선반 마련하기';a=cnt(0);b=tot(0);}
   else if(!zoneDone(1)){lab='마을 목표';t='이웃 방을 꾸며 새 친구 맞이하기';a=cnt(1);b=tot(1);}
   else if(!zoneDone(2)){lab='마을 목표';t='마을 광장 꾸미기';a=cnt(2);b=tot(2);}
-  else if(heartsOf()<STAR_NEED){lab='마을 목표';t='마음을 모아 햄찌별 열기';a=heartsOf();b=STAR_NEED;}
   else{lab='마을 목표';t='주민들의 이야기를 모두 읽어 보세요';a=b=1;}
   const sr=storyReady();
   return '<div class="qgf">'+face(who)+'</div><div class="qgb"><small>'+lab+'</small><b>'+t+'</b>'+
@@ -2511,7 +2505,7 @@ function goalText(){
   if(!zoneDone(0))return g('침대·간식 선반',cnt(0),tot(0));
   if(!zoneDone(1))return g('이웃 방 꾸미기',cnt(1),tot(1));
   if(!zoneDone(2))return g('마을 광장 꾸미기',cnt(2),tot(2));
-  return heartsOf()<STAR_NEED?g('햄찌별 마음',heartsOf(),STAR_NEED):'<span class="gt">주민 이야기 모두 읽기</span>'+tail;
+  return '<span class="gt">주민 이야기 모두 읽기</span>'+tail;
 }
 function showIntro(){
   if(st.intro)return;
@@ -2525,15 +2519,9 @@ function openStory(p,k){
   if(chapterState(p,k)==='lock')return;
   const c=STORY[p][k],first=(st.read[p]||0)===k;
   const body='<div class="story"><div class="who2">'+face(p)+'<b>'+escH(petName(p))+'</b></div>'+c.l.map(x=>'<p>'+escH(x)+'</p>').join('')+'</div>';
-  showReward(c.t,body,first?'이야기를 읽으면 마음 +3, 코인 30개를 받아요.':'',first?()=>{
-    st.read[p]=k+1;st.coins+=30;refresh();renderDex();sfx('badge');toast('마음 +3 · 코인 30개');
+  showReward(c.t,body,first?'이야기를 읽으면 코인 30개를 받아요.':'',first?()=>{
+    st.read[p]=k+1;st.coins+=30;refresh();renderDex();sfx('badge');toast('코인 30개를 받았어요');
   }:null);
-}
-function renderStar(){
-  const h=heartsOf(),open=h>=STAR_NEED;
-  $('#starBody').innerHTML=open
-    ?'<div class="big">⭐</div><p><b>햄찌별이 떠올랐어요.</b></p><p class="have">이곳이 어떤 의미와 분위기의 공간이 될지는 아직 정하는 중이에요. 지금은 조용히 반짝이고 있어요.</p>'
-    :'<div class="big">🌌</div><p>밤하늘 한쪽이 비어 있어요. 마을에 마음이 충분히 쌓이면 이곳에 별이 떠올라요.</p><div class="bar"><i style="width:'+Math.min(100,h/STAR_NEED*100)+'%"></i></div><p class="have">마음 '+h+' / '+STAR_NEED+' · 부탁을 들어주고 이야기를 읽으면 쌓여요</p>';
 }
 let dexTab='mat';
 function renderMatDex(){
@@ -2572,7 +2560,7 @@ function renderDex(){
   const p=dexSel,hide=!!st.petHide[p],dc=decoCount();
   const rows=STORY[p].map((c,k)=>{
     const s=chapterState(p,k),q=CH_REQ[k];
-    const sub=s==='lock'?('부탁 '+Math.min(q.f,st.fed[p]||0)+'/'+q.f+' · 마을 장식 '+Math.min(q.d,dc)+'/'+q.d):s==='ready'?'읽으면 마음 +3, 코인 30개':'다시 읽을 수 있어요';
+    const sub=s==='lock'?('부탁 '+Math.min(q.f,st.fed[p]||0)+'/'+q.f+' · 마을 장식 '+Math.min(q.d,dc)+'/'+q.d):s==='ready'?'읽으면 코인 30개':'다시 읽을 수 있어요';
     return '<div class="prow'+(s==='read'?' got':'')+'"><div class="sico">'+(s==='read'?'📖':s==='ready'?'✉️':'🔒')+'</div><div class="prw"><b>'+(s==='lock'?'???':escH(c.t))+'</b><span>'+sub+'</span></div><button class="btn'+(s==='ready'?' main':'')+'" type="button" data-a="story" data-p="'+p+'" data-k="'+k+'"'+(s==='lock'?' disabled':'')+'>'+(s==='read'?'다시 읽기':s==='ready'?'읽기':'잠김')+'</button></div>';
   }).join('');
   M.innerHTML='<div class="dp-t"><b>'+escH(petName(p))+'의 이야기</b><small>읽은 이야기 '+Math.min(3,st.read[p]||0)+'/3</small></div>'+rows+
@@ -2665,7 +2653,7 @@ document.querySelector('.dtabs').addEventListener('click',e=>{const b=e.target.c
 $('#navProf').addEventListener('click',()=>{renderProf();openSheet('prof');});
 $('#ttlchip').addEventListener('click',()=>{renderProf();openSheet('prof');});
 $('#navSnd').addEventListener('click',()=>{renderSnd();openSheet('snd');});
-$('#navStar').addEventListener('click',()=>{renderStar();openSheet('star');});
+
 $('#scrim').addEventListener('click',dismissTop);
 document.addEventListener('keydown',e=>{if(e.key==='Escape')dismissTop();});
 document.addEventListener('click',e=>{
