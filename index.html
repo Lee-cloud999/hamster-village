@@ -1745,16 +1745,17 @@ function bigChips(L){
   if(r.energy)h+='<div class="bi"><span class="bimg">'+BOLT+'</span><b>+10</b><small>최대 에너지</small></div>';
   return h;
 }
-function openLevelUp(levels,passMode){
+function openLevelUp(levels,passMode,after){
+  if(!passMode&&levels.length>1){const rest=levels.slice(1);openLevelUp([levels[0]],false,()=>setTimeout(()=>openLevelUp(rest,false,after),300));return;}
   sfx('level');
   const top=levels[levels.length-1];
   const body=levels.map(L=>(levels.length>1?'<div class="bilv">Lv.'+L+'</div>':'')+'<div class="bigrw">'+bigChips(L)+'</div>').join('');
   const gens=passMode?[]:KEYS.filter(c=>GEN_LV[c]>1&&levels.indexOf(GEN_LV[c])>=0);
   const pets=levels.map(L=>rewardOf(L).pet).filter(x=>x!=null);
-  const showGens=()=>{if(gens.length)setTimeout(()=>{
+  const showGens=()=>{if(!gens.length){if(after)after();return;}setTimeout(()=>{
       sfx('done');
       const gb='<div class="bigrw gen">'+gens.map(c=>'<div class="bi"><span class="bimg">'+gem(c)+'</span><b>'+GEN_NAME[c]+'</b></div>').join('')+'</div>';
-      showReward('새 생성기 발견!',gb,'보드 윗줄에서 새 생성기를 눌러 재료를 꺼내 보세요.',null);
+      showReward('새 생성기 발견!',gb,'보드 윗줄에서 새 생성기를 눌러 재료를 꺼내 보세요.',after||null);
     },350);};
   showReward(passMode?(levels.length>1?'레벨 보상 '+levels.length+'개':'레벨 '+top+' 보상'):'레벨 '+top+' 달성!',body,'확인을 누르면 보상을 받아요.',()=>{
     claimMany(levels);
