@@ -780,6 +780,7 @@ body{padding-inline:8px}
 #rwBody .bigrw.gen .bi b{font-size:20px}
 #rwBody .bilv{text-align:center;font-weight:800;color:var(--accent-ink);font-size:14px;margin-top:4px}
 @media (prefers-reduced-motion: no-preference){#rwBody .bi .bimg{animation:popc .35s ease-out}}
+@media (prefers-reduced-motion: no-preference){#rwBody .gift .bimg{animation:wob 1.2s ease-in-out infinite}@keyframes wob{0%,100%{transform:rotate(0)}15%{transform:rotate(-7deg)}30%{transform:rotate(7deg)}45%{transform:rotate(-4deg)}60%{transform:rotate(0)}}}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -1481,7 +1482,8 @@ function dismissTop(){
 }
 function askConfirm(t,ok,fn){$('#cText').textContent=t;$('#cOk').textContent=ok;cfn=fn;openSheet('confirm');}
 function closeConfirm(){cfn=null;closeSheet('confirm');}
-function showReward(title,body,note,cb){
+function showReward(title,body,note,cb,okText){
+  try{$('#rwOk').textContent=okText||'확인';}catch(e){}
   $('#rwT').textContent=title;$('#rwBody').innerHTML=body;$('#rwNote').textContent=note||'';
   try{$('#reward').classList.toggle('ctr',String(body).indexOf('class="story"')<0);}catch(e){}
   rwCb=cb||null;
@@ -1629,9 +1631,11 @@ function claimGift(d){
   for(let k=0;k<boxes;k++)spawnBox();
   st.coins+=gc;
   refresh();renderQuests();sfx('done');
-  showReward('선물 상자',
-    '<div class="rcs"><span class="rc">'+COIN+'<b>코인 '+gc+'개</b></span><span class="rc"><em>'+BOXI+'</em><b>재료 상자 '+boxes+'개</b></span></div>',
-    '재료 상자 1개당 재료 3개가 임시 공간에 도착해요. 임시 공간을 누를 때마다 보드에 하나씩 놓여요.');
+  showReward('선물 상자가 도착했어요!','<div class="bigrw gen gift">'+bi(BOXI,d===7?'특별 선물 상자':'오늘의 선물 상자')+'</div>','무엇이 들어 있을까요?',()=>{
+    setTimeout(()=>{sfx('level');
+      showReward('선물 상자 열기!','<div class="bigrw">'+bi(COIN,gc,'코인')+bi(BOXI,'재료 상자'+(boxes>1?' ×'+boxes:''),'재료 '+(3*boxes)+'개')+'</div>','재료 상자 1개당 재료 3개가 임시 공간에 도착해요. 임시 공간을 누를 때마다 보드에 하나씩 놓여요.');
+    },300);
+  },'열어 보기');
 }
 function questTick(){
   if(questSync()){renderTop();viewDay=1;if(!$('#quest').hidden)renderQuests();toast('새로운 일일 퀘스트가 시작됐어요');return;}
@@ -1678,6 +1682,15 @@ function renderPass(){
   $('#claimAll').hidden=claimable().length<2;
   $('#passInfo').textContent='레벨 '+st.lv+' · 다음 레벨까지 경험치 '+(need(st.lv)-st.xp)+' 남았어요';
 }
+function bi(img,name,sub){return '<div class="bi"><span class="bimg">'+img+'</span><b>'+name+'</b>'+(sub?'<small>'+sub+'</small>':'')+'</div>';}
+function petPopup(pets,next){
+  if(!pets.length){if(next)next();return;}
+  setTimeout(()=>{
+    sfx('done');
+    const pb='<div class="bigrw gen">'+pets.map(pt=>bi(face(pt),escH(petName(pt)))).join('')+'</div>';
+    showReward('새 이웃 등장!',pb,pets.length>1?'새 이웃들이 마을에 이사 왔어요! 도감에서 이야기를 읽어 보세요.':escH(petName(pets[0]))+'이(가) 마을에 이사 왔어요! 도감에서 이야기를 읽어 보세요.',next||null);
+  },350);
+}
 function bigChips(L){
   const r=rewardOf(L);
   let h='<div class="bi"><span class="bimg">'+COIN+'</span><b>'+r.coins+'</b><small>코인</small></div>';
@@ -1685,25 +1698,20 @@ function bigChips(L){
   if(r.energy)h+='<div class="bi"><span class="bimg">'+BOLT+'</span><b>+10</b><small>최대 에너지</small></div>';
   return h;
 }
-function openLevelUp(levels){
+function openLevelUp(levels,passMode){
   sfx('level');
   const top=levels[levels.length-1];
   const body=levels.map(L=>(levels.length>1?'<div class="bilv">Lv.'+L+'</div>':'')+'<div class="bigrw">'+bigChips(L)+'</div>').join('');
-  const gens=KEYS.filter(c=>GEN_LV[c]>1&&levels.indexOf(GEN_LV[c])>=0);
+  const gens=passMode?[]:KEYS.filter(c=>GEN_LV[c]>1&&levels.indexOf(GEN_LV[c])>=0);
   const pets=levels.map(L=>rewardOf(L).pet).filter(x=>x!=null);
   const showGens=()=>{if(gens.length)setTimeout(()=>{
       sfx('done');
       const gb='<div class="bigrw gen">'+gens.map(c=>'<div class="bi"><span class="bimg">'+gem(c)+'</span><b>'+GEN_NAME[c]+'</b></div>').join('')+'</div>';
       showReward('새 생성기 발견!',gb,'보드 윗줄에서 새 생성기를 눌러 재료를 꺼내 보세요.',null);
     },350);};
-  showReward('레벨 '+top+' 달성!',body,'확인을 누르면 보상을 받아요.',()=>{
+  showReward(passMode?(levels.length>1?'레벨 보상 '+levels.length+'개':'레벨 '+top+' 보상'):'레벨 '+top+' 달성!',body,'확인을 누르면 보상을 받아요.',()=>{
     claimMany(levels);
-    if(pets.length)setTimeout(()=>{
-      sfx('done');
-      const pb='<div class="bigrw gen">'+pets.map(pt=>'<div class="bi"><span class="bimg">'+face(pt)+'</span><b>'+escH(petName(pt))+'</b></div>').join('')+'</div>';
-      showReward('새 이웃 등장!',pb,pets.length>1?'새 이웃들이 마을에 이사 왔어요! 도감에서 이야기를 읽어 보세요.':escH(petName(pets[0]))+'이(가) 마을에 이사 왔어요! 도감에서 이야기를 읽어 보세요.',showGens);
-    },350);
-    else showGens();
+    petPopup(pets,showGens);
   });
 }
 function gainXp(n){
@@ -2271,7 +2279,11 @@ function grantZone(z){
   refresh();
   setTimeout(()=>{
     bigText(DZ[z].n+' 완성!',true);sfx('level');
-    showReward(DZ[z].n+' 완성!','<div class="rcs">'+rwChips(z)+'</div>',r.pet!=null?petName(r.pet)+'이(가) 이사 왔어요! 주민 도감에서 이야기를 읽어 보세요.':(r.box?'재료 상자 1개당 재료 3개가 임시 공간에 도착해요.':''));
+    let zb='<div class="bigrw">'+bi(COIN,r.coins,'코인');
+    if(r.box)zb+=bi(BOXI,'재료 상자'+(r.box>1?' ×'+r.box:''),'재료 '+(3*r.box)+'개');
+    if(r.energy)zb+=bi(BOLT,'+'+(r.energy*10),'최대 에너지');
+    zb+='</div>';
+    showReward(DZ[z].n+' 완성!',zb,r.box?'재료 상자 1개당 재료 3개가 임시 공간에 도착해요.':'',()=>petPopup(r.pet!=null?[r.pet]:[],null));
     renderDecor();
   },750);
 }
@@ -2476,8 +2488,8 @@ document.addEventListener('click',e=>{
   if(x){const sh=x.closest('.sheet');if(sh)closeSheet(sh.id);}
 });
 $('#shop').addEventListener('click',e=>{const b=e.target.closest('button[data-id]');if(b&&!b.disabled)shopBuy(b.dataset.id);});
-$('#passList').addEventListener('click',e=>{const b=e.target.closest('button[data-l]');if(b)claimMany([+b.dataset.l]);});
-$('#claimAll').addEventListener('click',()=>claimMany(claimable()));
+$('#passList').addEventListener('click',e=>{const b=e.target.closest('button[data-l]');if(b)openLevelUp([+b.dataset.l],true);});
+$('#claimAll').addEventListener('click',()=>{const c=claimable();if(c.length)openLevelUp(c,true);});
 $('#qTabs').addEventListener('click',e=>{const b=e.target.closest('button[data-d]');if(b&&!b.disabled){viewDay=+b.dataset.d;renderQuests();}});
 $('#qList').addEventListener('click',e=>{const b=e.target.closest('button[data-t]');if(b)claimTask(viewDay,b.dataset.t);});
 $('#qGift').addEventListener('click',()=>claimGift(viewDay));
