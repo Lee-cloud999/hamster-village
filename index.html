@@ -897,6 +897,15 @@ body{padding-inline:8px}
 .app>.nav .btn:active .ni{transform:scale(.92)}
 .app>.nav .ni{width:54px!important;height:54px!important}
 @media (min-aspect-ratio:1/1) and (min-width:700px){.app>.nav .ni{width:76px!important;height:76px!important}}
+
+@media (min-aspect-ratio:1/1) and (min-width:700px){
+  .app>.stat{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto auto;grid-template-areas:"lv xp xp xp" ". . en en" ". . hb co";gap:8px 8px!important}
+  .app>.stat .lvchip{grid-area:lv}
+  .app>.stat .xp{grid-area:xp}
+  .app>.stat .erow{grid-area:en;justify-self:end;margin:0!important}
+  .app>.stat .pill{grid-area:co;justify-self:end}
+  .app>.stat .brandrow{grid-area:hb;justify-self:end;align-self:center;margin:0!important}
+}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
