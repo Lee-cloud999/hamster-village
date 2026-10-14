@@ -938,6 +938,8 @@ body{padding-inline:8px}
 #rotMsg{display:none}
 @media (orientation:landscape) and (max-height:539px){#rotMsg{display:flex;position:fixed;inset:0;z-index:99999;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#fdf1ec;color:#6b4a3a;font-size:20px;font-weight:700;text-align:center}#rotMsg .ph{font-size:56px;animation:rotPh 1.6s ease-in-out infinite}}
 @keyframes rotPh{0%,30%{transform:rotate(-90deg)}60%,100%{transform:rotate(0)}}
+
+#rwNote{white-space:pre-line}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -2562,8 +2564,10 @@ function showIntro(){
     '<p>볼주머니에 이삿짐을 가득 넣고 도착한 햄스터가 있어요.</p>'+
     '<p>"안녕하세요… 저는 보리예요. 마을이 생각보다 조용하네요… 다들 어디 갔을까요?"</p>'+
     '<p>"급히 이사 오느라 밥을 못 먹어서 배고파요."</p>'+
-    '<p>첫 부탁은 잠잘 <b>침대</b>와 <b>간식 선반</b>을 마련하는 거예요. 재료를 합쳐 부탁을 들어주면 코인이 모이고, 그 코인으로 마을 꾸미기에서 집을 채울 수 있어요.</p></div>';
-  showReward('햄스터 마을에 어서 오세요',body,'다음 목표는 이웃 방을 꾸며 새 친구를 맞이하는 거예요.',()=>{st.intro=1;if(st.tut==null&&!st.nDeliv)st.tut=1;save();tutDraw();});
+    '<p>"저를 위해서 먹을 것을 좀 주실 수 있나요?"</p>'+
+    '<p>"…… 초면에 정말 죄송합니다. 하지만 너무 배가 고파요."</p>'+
+    '<p>"부탁드려요."</p></div>';
+  showReward('햄스터 마을에 어서 오세요',body,'너무 귀여운 햄스터다!\n부탁을 안 들어줄 수는 없지.\n우선 해바라기씨를 만들어 주자.\n\n재료를 합쳐 햄스터들의 부탁을 들어주고,\n코인을 모아서 가구를 마련해 주자.',()=>{st.intro=1;if(st.tut==null&&!st.nDeliv)st.tut=1;save();tutDraw();});
 }
 function openStory(p,k){
   if(chapterState(p,k)==='lock')return;
