@@ -776,7 +776,7 @@ body{padding-inline:8px}
 #rwBody .bi b{font-size:17px;font-weight:800}
 #rwBody .bi small{font-size:12px;color:var(--muted)}
 #rwBody .bigrw.gen .bi .bimg{width:150px;height:150px}
-#rwBody .bigrw.gen .bi .bimg img,#rwBody .bigrw.gen .bi .bimg .im{width:150px!important;height:150px!important}
+#rwBody .bigrw.gen .bi .bimg img,#rwBody .bigrw.gen .bi .bimg .im,#rwBody .bigrw.gen .bi .bimg .fc,#rwBody .bigrw.gen .bi .bimg .rim{width:150px!important;height:150px!important}
 #rwBody .bigrw.gen .bi b{font-size:20px}
 #rwBody .bilv{text-align:center;font-weight:800;color:var(--accent-ink);font-size:14px;margin-top:4px}
 @media (prefers-reduced-motion: no-preference){#rwBody .bi .bimg{animation:popc .35s ease-out}}
@@ -1666,7 +1666,7 @@ function claimMany(levels){
   });
   if(!got)return;
   refresh();renderQ();if(!$('#pass').hidden)renderPass();
-  toast(arr.length?arr.map(p=>petName(p)).join(', ')+'이(가) 이사 왔어요! 주민 도감에서 이야기를 읽어 보세요':'보상을 받았어요');sfx('done');
+  if(!arr.length){toast('보상을 받았어요');sfx('done');}
 }
 function renderPass(){
   let h='';
@@ -1682,7 +1682,6 @@ function bigChips(L){
   const r=rewardOf(L);
   let h='<div class="bi"><span class="bimg">'+COIN+'</span><b>'+r.coins+'</b><small>코인</small></div>';
   if(r.box)h+='<div class="bi"><span class="bimg">'+BOXI+'</span><b>재료 상자</b><small>재료 3개</small></div>';
-  if(r.pet!=null)h+='<div class="bi"><span class="bimg">'+face(r.pet)+'</span><b>'+escH(petName(r.pet))+'</b><small>새 이웃</small></div>';
   if(r.energy)h+='<div class="bi"><span class="bimg">'+BOLT+'</span><b>+10</b><small>최대 에너지</small></div>';
   return h;
 }
@@ -1691,13 +1690,20 @@ function openLevelUp(levels){
   const top=levels[levels.length-1];
   const body=levels.map(L=>(levels.length>1?'<div class="bilv">Lv.'+L+'</div>':'')+'<div class="bigrw">'+bigChips(L)+'</div>').join('');
   const gens=KEYS.filter(c=>GEN_LV[c]>1&&levels.indexOf(GEN_LV[c])>=0);
-  showReward('레벨 '+top+' 달성!',body,'확인을 누르면 보상을 받아요.',()=>{
-    claimMany(levels);
-    if(gens.length)setTimeout(()=>{
+  const pets=levels.map(L=>rewardOf(L).pet).filter(x=>x!=null);
+  const showGens=()=>{if(gens.length)setTimeout(()=>{
       sfx('done');
       const gb='<div class="bigrw gen">'+gens.map(c=>'<div class="bi"><span class="bimg">'+gem(c)+'</span><b>'+GEN_NAME[c]+'</b></div>').join('')+'</div>';
       showReward('새 생성기 발견!',gb,'보드 윗줄에서 새 생성기를 눌러 재료를 꺼내 보세요.',null);
+    },350);};
+  showReward('레벨 '+top+' 달성!',body,'확인을 누르면 보상을 받아요.',()=>{
+    claimMany(levels);
+    if(pets.length)setTimeout(()=>{
+      sfx('done');
+      const pb='<div class="bigrw gen">'+pets.map(pt=>'<div class="bi"><span class="bimg">'+face(pt)+'</span><b>'+escH(petName(pt))+'</b></div>').join('')+'</div>';
+      showReward('새 이웃 등장!',pb,pets.length>1?'새 이웃들이 마을에 이사 왔어요! 도감에서 이야기를 읽어 보세요.':escH(petName(pets[0]))+'이(가) 마을에 이사 왔어요! 도감에서 이야기를 읽어 보세요.',showGens);
     },350);
+    else showGens();
   });
 }
 function gainXp(n){
