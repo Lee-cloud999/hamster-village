@@ -2576,7 +2576,7 @@ function showIntro(){
     '<p>"저를 위해서 먹을 것을 좀 주실 수 있나요?"</p>'+
     '<p>"…… 초면에 정말 죄송합니다. 하지만 너무 배가 고파요."</p>'+
     '<p>"부탁드려요."</p></div>';
-  showReward('햄스터 마을에 어서 오세요',body,'너무 귀여운 햄스터다!\n부탁을 안 들어줄 수는 없지.\n우선 해바라기씨를 만들어 주자.\n\n재료를 합쳐 햄스터들의 부탁을 들어주고,\n코인을 모아서 가구를 마련해 주자.',()=>{st.intro=1;if(st.tut==null&&!st.nDeliv)st.tut=1;save();tutDraw();});
+  showReward('햄스터 마을에 어서 오세요',body,'너무 귀여운 햄스터다!\n재료를 합쳐 햄스터들의 부탁을 들어주고,\n코인을 모아서 가구를 마련해 주자.\n우선 해바라기씨부터 만들어 줄까?',()=>{st.intro=1;if(st.tut==null&&!st.nDeliv)st.tut=1;save();tutDraw();});
 }
 function openStory(p,k){
   if(chapterState(p,k)==='lock')return;
