@@ -1,6 +1,6 @@
 // 햄스터 마을 service worker: network-first so new versions show up right away; cache is the offline fallback.
-const CACHE='hamster-village-v1';
-const CORE=['./','./index.html','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png','./icons/apple-touch-icon.png'];
+const CACHE='hamster-village-v2';
+const CORE=['./','./index.html','./manifest.webmanifest','./bg/day.webp','./bg/wide.webp','./icons/bori.png','./icons/icon-192.png','./icons/icon-512.png','./icons/apple-touch-icon.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
 self.addEventListener('fetch',e=>{

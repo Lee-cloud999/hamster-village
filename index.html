@@ -761,7 +761,20 @@ body{padding-inline:8px}
 #dscene .s-run{left:35%;top:76%;width:17%;height:15.5%!important}
 #dscene .s-bowl{left:52.5%;top:84%;width:9.5%;height:7.5%!important}
 #dscene .slot>.dimg{object-position:center bottom}
+
+/* start screen loads instantly from files */
+.startscr::before{background:url(bg/day.webp) center/cover no-repeat!important;opacity:1!important}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .startscr::before{background:linear-gradient(rgba(28,20,40,.62),rgba(28,20,40,.62)),url(bg/day.webp) center/cover no-repeat!important}}
+@media (min-aspect-ratio:1/1){.startscr::before{background:url(bg/wide.webp) center/cover no-repeat!important}
+ @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .startscr::before{background:linear-gradient(rgba(28,20,40,.62),rgba(28,20,40,.62)),url(bg/wide.webp) center/cover no-repeat!important}}}
+.startscr .go:disabled{opacity:.75;animation:none}
 </style>
+<div class="startscr" id="startScr">
+  <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
+  <h2>햄스터 마을</h2>
+  <p>🔊 소리를 켜고 즐겨보세요</p>
+  <button class="go" id="startGo" type="button" disabled>불러오는 중…</button>
+</div>
 
 <main class="app">
   <div class="stat">
@@ -813,12 +826,7 @@ body{padding-inline:8px}
   </nav>
 </main>
 
-<div class="startscr" id="startScr">
-  <div class="sface" id="sFace">🐹</div>
-  <h2>햄스터 마을</h2>
-  <p>🔊 소리를 켜고 즐겨보세요</p>
-  <button class="go" id="startGo" type="button">시작하기</button>
-</div>
+
 
 <div class="scrim" id="scrim" hidden></div>
 
@@ -2526,7 +2534,8 @@ $('#resetBtn').addEventListener('click',()=>{
   });
 });
 $('#qGoal').addEventListener('click',e=>{if(e.target.closest('[data-goto]')){closeSheet('quest');setTimeout(()=>$('#navDecor').click(),60);}});
-try{if(RESU[0])$('#sFace').innerHTML='<img src="'+RESU[0]+'" alt="" draggable="false">';}catch(e){}
+
+try{const g=$('#startGo');g.disabled=false;g.textContent='시작하기';}catch(e){}
 $('#startGo').addEventListener('click',()=>{
   bgmWanted=true;initAudio();
   try{if(sndS.bgm)bgmStart();}catch(e){}
