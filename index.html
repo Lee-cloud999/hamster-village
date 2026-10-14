@@ -940,6 +940,15 @@ body{padding-inline:8px}
 @keyframes rotPh{0%,30%{transform:rotate(-90deg)}60%,100%{transform:rotate(0)}}
 
 #rwNote{white-space:pre-line}
+
+/* 세로 화면 하단 메뉴: 아이콘 실제 폭 기준으로 간격 일정하게 */
+@media (max-aspect-ratio:1/1),(max-width:699px),(max-height:539px){
+  .app>.nav{display:flex!important;justify-content:space-between;align-items:flex-end;padding-inline:4px!important}
+  .app>.nav .btn{flex:0 0 auto;padding-inline:0!important}
+  .app>.nav .ni{width:auto!important;height:auto!important;max-width:54px;max-height:54px}
+  .app>.nav #navDex .ni{transform:none;max-width:60px;max-height:60px}
+  .app>.nav .btn:active .ni{transform:scale(.92)}
+}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
