@@ -949,6 +949,18 @@ body{padding-inline:8px}
   .app>.nav #navDex .ni{transform:none;max-width:60px;max-height:60px}
   .app>.nav .btn:active .ni{transform:scale(.92)}
 }
+
+/* 재료 도감: 스크롤 없이 한 화면에 */
+#dex .mc .mi{width:min(100%,calc((100vh - 450px)/6));width:min(100%,calc((100dvh - 450px)/6));min-width:30px}
+#dex #dexMatP{gap:6px}
+#dex #dexMatInfo{margin:0}
+#dex .dtab{padding:6px}
+
+@media (min-aspect-ratio:1/1) and (min-width:700px) and (min-height:540px){
+  #dex.sheet:not([hidden]){max-width:min(900px,calc(100vw - 32px))!important;width:min(900px,calc(100vw - 32px))}
+  #dex #dexMat>div{grid-template-columns:1fr 1fr;gap:8px!important}
+  #dex .mc .mi{width:min(100%,calc((100vh - 330px)/3 - 34px));width:min(100%,calc((100dvh - 330px)/3 - 34px))}
+}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -2598,7 +2610,7 @@ function renderMatDex(){
     }
     return '<div class="mrow"><h3>'+escH(CH[c].t)+'<small>'+mx+' / 6</small></h3><div class="mcells">'+cells+'</div></div>';
   }).join('');
-  $('#dexMatInfo').textContent='재료 '+got+' / '+(KEYS.length*6)+'종을 발견했어요. 합쳐서 더 높은 단계를 만들어 보세요.';
+  $('#dexMatInfo').textContent='재료 '+got+' / '+(KEYS.length*6)+'종 발견';
   $('#dexMat').innerHTML='<div style="display:grid;gap:4px">'+rows+'</div>';
 }
 function renderDexTabs(){
