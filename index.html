@@ -734,6 +734,7 @@ body{font-size:16px}
 body{padding-inline:8px}
 .bdeco{display:none!important}
 .bwrap{margin-top:0!important}
+.orwrap{min-height:102px}
 </style>
 
 <main class="app">
@@ -1116,8 +1117,11 @@ function initDeco(){
 
 let fitRaf=0,fitLast=0;
 function setVh(){try{document.documentElement.style.setProperty('--vh',innerHeight+'px');}catch(e){}}
+let orwMax=0;
 function fitBoard(){
   try{
+    const ow=document.querySelector('.orwrap');
+    if(ow){const h=Math.ceil(ow.getBoundingClientRect().height);if(h>orwMax){orwMax=h;ow.style.minHeight=h+'px';}}
     const w=document.querySelector('.bwrap'),b=document.getElementById('board');if(!w||!b)return;
     const sec=w.parentNode,app=sec.parentNode,cs=getComputedStyle(app);
     const gap=parseFloat(cs.rowGap)||0;
