@@ -832,6 +832,18 @@ body{padding-inline:8px}
   .app>.nav .nl{font-size:15px!important}
   .app>.nav .nb{right:calc(50% - 40px)!important}
 }
+
+#tut{position:fixed;inset:0;pointer-events:none;z-index:150}
+#tut[hidden]{display:none}
+#tut .tut-f{position:fixed;font-size:46px;line-height:1;transform:translate(-20%,-10%);filter:drop-shadow(0 3px 4px rgba(0,0,0,.35))}
+#tut .tut-b{position:fixed;transform:translate(-50%,-100%);max-width:260px;padding:9px 14px;border-radius:14px;background:#5b4038;color:#fff;font-size:15px;font-weight:800;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.25);white-space:normal}
+#tut .tut-b.below{transform:translate(-50%,0)}
+@media (prefers-reduced-motion: no-preference){
+  #tut .tut-f{animation:tutTap 1s ease-in-out infinite}
+  @keyframes tutTap{0%,100%{transform:translate(-20%,-10%) scale(1)}50%{transform:translate(-20%,-10%) scale(.82)}}
+  #tut .tut-f.drag{animation:tutDrag 1.6s ease-in-out infinite}
+  @keyframes tutDrag{0%{transform:translate(-20%,-10%);opacity:0}15%{opacity:1}70%{transform:translate(calc(-20% + var(--dx)),calc(-10% + var(--dy)));opacity:1}100%{transform:translate(calc(-20% + var(--dx)),calc(-10% + var(--dy)));opacity:0}}
+}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -1937,6 +1949,7 @@ function deliver(i,k){
   o.needs[idx].done=true;st.cells[i]=null;
   if(it.l>=4)track('hi');
   if(o.needs.every(n=>n.done)){
+    if(st.tut===4)st.tut=5;
     o.state='done';o.doneAt=Date.now();st.coins+=o.coins;st.nDeliv++;st.fed[o.cu]=(st.fed[o.cu]||0)+1;
     track('deliver');track('coin',o.coins);
     dropXp(o.xp);
@@ -2082,6 +2095,7 @@ function generate(c){
   st.cells[j]={c:c,l:l};
   if(!saved)st.e-=1;
   track('gen');
+  if(st.tut===1)st.tut=2;else if(st.tut===2)st.tut=3;
   let j2=null;
   if(t.dbl>0&&Math.random()<t.dbl){
     const em2=emptyCells();
@@ -2104,7 +2118,7 @@ function act(i,j){
     const nl=a.l+1,now=Date.now();
     combo=(now-lastMergeAt<2200)?combo+1:1;lastMergeAt=now;
     st.cells[i]=null;st.cells[j]={c:a.c,l:nl};sel=null;
-    st.nMerge++;if(combo>st.maxCombo)st.maxCombo=combo;
+    st.nMerge++;if(st.tut===3)st.tut=4;if(combo>st.maxCombo)st.maxCombo=combo;
     track('merge');if(nl>=3)track('merge3');
     let bonus=0;if(combo>=3){bonus=combo-1;st.coins+=bonus;}
     let bj=null;
@@ -2120,6 +2134,7 @@ function act(i,j){
 }
 function collectXp(i){
   const it=st.cells[i];if(!it||it.c!=='xp')return;
+  if(st.tut===6){st.tut=7;setTimeout(()=>{if(st.tut===7){st.tut=8;save();tutDraw();}},3200);}
   const v=XPV[it.l];st.cells[i]=null;sel=null;
   const el=cellEl(i);if(el)floatAt(el,'+'+v+' 경험치');
   sfx('coin');renderBoard();gainXp(v);refresh();
@@ -2131,6 +2146,7 @@ function dropXp(total,anchor){
   let placed=0;
   let queued=0;pieces.forEach(t=>{const em2=emptyCells();if(em2.length){const j=em2[rnd(em2.length)];st.cells[j]={c:'xp',l:t};placed++;setTimeout(()=>pop(j),60);}else{qGive('xp',t);queued++;}});
   if(queued)setTimeout(()=>toast('보드가 가득 차서 황금 도토리 '+queued+'개가 임시 칸으로 갔어요'),700);
+  if(st.tut===5){st.tut=placed?6:8;st.xpTip=1;}
   if((placed||queued)&&!st.xpTip){st.xpTip=1;setTimeout(()=>toast('황금 도토리가 나왔어요! 두 번 누르면 경험치, 합치면 더 커져요'),900);}
 }
 function tap(i){
@@ -2455,7 +2471,7 @@ function showIntro(){
     '<p>볼주머니에 이삿짐을 가득 넣고 도착한 햄스터가 있어요.</p>'+
     '<p>"안녕하세요… 저는 보리예요. 사실 혼자 사는 건 처음이에요."</p>'+
     '<p>첫 부탁은 잠잘 <b>침대</b>와 <b>간식 선반</b>을 마련하는 거예요. 재료를 합쳐 부탁을 들어주면 코인이 모이고, 그 코인으로 마을 꾸미기에서 집을 채울 수 있어요.</p></div>';
-  showReward('햄스터 마을에 어서 오세요',body,'다음 목표는 이웃 방을 꾸며 새 친구를 맞이하는 거예요.',()=>{st.intro=1;save();});
+  showReward('햄스터 마을에 어서 오세요',body,'다음 목표는 이웃 방을 꾸며 새 친구를 맞이하는 거예요.',()=>{st.intro=1;if(st.tut==null&&!st.nDeliv)st.tut=1;save();tutDraw();});
 }
 function openStory(p,k){
   if(chapterState(p,k)==='lock')return;
@@ -2684,6 +2700,49 @@ $('#startGo').addEventListener('click',()=>{
   $('#startScr').hidden=true;
   if(!st.intro)setTimeout(showIntro,400);
 });
+
+
+/* ---------- finger tutorial ---------- */
+function tutTarget(){
+  const t=st&&st.tut;if(!t||t>=8)return null;
+  const B=$('#board');
+  if(t===1||t===2){const g=document.querySelector('.gencell:not(.glock)');return {el:g,txt:t===1?'생성기를 눌러 보세요':'한 번 더 눌러 보세요'};}
+  if(t===3){
+    let a=-1,b=-1;
+    for(let i=0;i<N&&a<0;i++){const x=st.cells[i];if(!x||x.c==='xp'||isLocked(i)||isGen(i))continue;for(let j=i+1;j<N;j++){if(canMerge(i,j)&&!isLocked(j)&&!isGen(j)){a=i;b=j;break;}}}
+    if(a<0)return {el:null,txt:'같은 재료 두 개를 합쳐 보세요'};
+    return {el:cellEl(a),to:cellEl(b),txt:'같은 재료 두 개를 끌어서 합쳐 보세요'};
+  }
+  if(t===4){const r=document.querySelector('.subbtn.ready')||document.querySelector('.subbtn');return {el:r,txt:document.querySelector('.subbtn.ready')?'햄스터에게 전해 주세요 (‘전하기’)':'재료를 모아 햄스터에게 전해 주세요'};}
+  if(t===5)return null;
+  if(t===6){const it=B.querySelector('.item.c-xp');return {el:it?it.closest('.cell'):null,txt:'황금 도토리를 두 번 터치해 보세요'};}
+  if(t===7)return {el:document.querySelector('.stat .xp'),txt:'경험치가 올라요! 레벨이 오르면 선물을 받아요',up:true};
+  return null;
+}
+function tutDraw(){
+  try{
+    let o=document.getElementById('tut');
+    if(!o){o=document.createElement('div');o.id='tut';o.innerHTML='<div class="tut-b"></div><div class="tut-f">👆</div>';document.body.appendChild(o);}
+    const T=tutTarget();
+    const blocked=!$('#startScr').hidden||document.querySelector('.sheet:not([hidden])');
+    if(!T||blocked){o.hidden=true;return;}
+    o.hidden=false;
+    const b=o.querySelector('.tut-b'),f=o.querySelector('.tut-f');
+    b.textContent=T.txt;
+    f.classList.toggle('drag',!!T.to);
+    if(!T.el){f.style.display='none';b.style.left='50%';b.style.top='40%';return;}
+    f.style.display='';
+    const r=T.el.getBoundingClientRect();
+    const cx=r.left+r.width/2,cy=r.top+r.height/2;
+    f.style.left=cx+'px';f.style.top=(T.up?r.bottom:cy)+'px';
+    if(T.to){const r2=T.to.getBoundingClientRect();f.style.setProperty('--dx',(r2.left+r2.width/2-cx)+'px');f.style.setProperty('--dy',(r2.top+r2.height/2-cy)+'px');}
+    const bw=Math.min(260,innerWidth-24);
+    let bx=Math.min(Math.max(cx,bw/2+12),innerWidth-bw/2-12);
+    let by=r.top-14;if(by<70||T.up)by=r.bottom+70;
+    b.style.left=bx+'px';b.style.top=by+'px';b.classList.toggle('below',by>r.top);
+  }catch(e){}
+}
+setInterval(tutDraw,250);
 
 /* ---------- test mode (?test) ---------- */
 let devInf=false;
