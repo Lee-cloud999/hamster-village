@@ -979,6 +979,11 @@ body{padding-inline:8px}
 .startscr .ldbar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#ffc79a,#ff9f86);transition:width .2s ease-out}
 .startscr .ldtxt{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:#6b4a3a;font-weight:700;text-shadow:0 1px 0 rgba(255,255,255,.8)}
 .startscr .go[hidden]{display:none}
+
+.say.big{white-space:normal;width:max-content;max-width:min(220px,70vw);padding:7px 11px;font-size:13px;line-height:1.35;background:#fff;color:#222;border:1.5px solid rgba(0,0,0,.12);box-shadow:0 3px 10px rgba(0,0,0,.18);text-align:center}
+@media (prefers-reduced-motion: no-preference){.say.big{animation:saybig 3s ease-out forwards}@keyframes saybig{0%{opacity:0;transform:translate(-50%,-90%) scale(.8)}8%{opacity:1;transform:translate(-50%,-100%) scale(1)}85%{opacity:1}100%{opacity:0}}}
+
+@media (prefers-reduced-motion: no-preference){#dscene .slot.hint{animation:slotHint 1.2s ease-in-out infinite}@keyframes slotHint{0%,100%{box-shadow:0 0 0 0 rgba(255,150,120,.0)}50%{box-shadow:0 0 0 6px rgba(255,150,120,.75)}}}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -1779,12 +1784,12 @@ function pop(j){
   const el=cellEl(j);if(!el)return;
   el.classList.add('pop');setTimeout(()=>el.classList.remove('pop'),450);
 }
-function sayFix(el,text){
+function sayFix(el,text,ms){
   document.querySelectorAll('.say.fix').forEach(e=>e.remove());
   const r=el.getBoundingClientRect(),e=document.createElement('div');
-  e.className='say fix';e.textContent=text;
+  e.className='say fix'+(ms?' big':'');e.textContent=text;
   e.style.left=Math.min(Math.max(r.left+r.width/2,90),innerWidth-90)+'px';e.style.top=(r.top-4)+'px';
-  document.body.appendChild(e);setTimeout(()=>e.remove(),1800);
+  document.body.appendChild(e);setTimeout(()=>e.remove(),ms||1800);
 }
 function hearts(el){
   if(reduce)return;
@@ -2181,11 +2186,11 @@ function orderLabel(o){
   const cs=[];o.needs.forEach(n=>{if(cs.indexOf(n.c)<0)cs.push(n.c);});
   return (cs.length===1?CH[cs[0]].t:'세트')+SUF[o.lb];
 }
-function sayAt(k){
+function sayAt(k,text){
   const card=$('#orders').children[k];if(!card)return;
   const old=card.querySelector('.say');if(old)old.remove();
-  const e=document.createElement('div');e.className='say';e.textContent=SAY[rnd(SAY.length)];
-  card.appendChild(e);setTimeout(()=>e.remove(),1300);
+  const e=document.createElement('div');e.className='say'+(text?' big':'');e.textContent=text||SAY[rnd(SAY.length)];
+  card.appendChild(e);setTimeout(()=>e.remove(),text?3000:1300);
 }
 function renderOrders(fresh){
   $('#orders').innerHTML=st.orders.map((o,k)=>{
@@ -2216,9 +2221,9 @@ function deliver(i,k){
     flyCoins($('#orders').children[k],o.coins);
     flyXp($('#orders').children[k],o.xp);
     setTimeout(()=>{gainXp(o.xp);refresh();save();},560);
-    if(tutXp){st.tut=7;setTimeout(()=>{tutDraw();},600);setTimeout(()=>{if(st.tut===7){st.tut=8;save();tutDraw();}},3800);}
+    if(tutXp){st.tut=5;setTimeout(()=>{if(st.tut===5){st.tut=7;save();tutDraw();}},3000);setTimeout(()=>{if(st.tut===7){st.tut=8;save();tutDraw();}},6200);}
     refresh();
-    sayAt(k);sfx('done');
+    if(st.nDeliv===1&&o.cu===0){const cd=$('#orders').children[k];if(cd)sayFix(cd.querySelector('.cface,.face,img')||cd,'와작와작… 살 것 같아요! 정말 고마워요!',3000);}else sayAt(k);sfx('done');
     setTimeout(()=>orderLeave(o),700);
   }else{
     refresh();
@@ -2338,7 +2343,10 @@ function renderSell(){
   el.innerHTML=it&&it.c==='xp'?'<span>한 번 더 누르면 경험치 +'+XPV[it.l]+'</span>':'<img class="si" src="'+NAVU[5]+'" alt="">'+(it?'<b>팔기</b>'+COIN+'<b>+'+SELLP[it.l]+'</b>':'<span>팔기</span>');
   if(el.setAttribute)el.setAttribute('aria-label',it?nm(it.c,it.l)+' 팔기, 코인 '+SELLP[it.l]:'장터에 팔기 (끌어다 놓기)');
 }
-function refresh(){save();renderTop();renderOrders();checkBadges(false);}
+function refresh(){
+  if(st&&!st.guideDecor&&(!st.tut||st.tut>=8)&&st.coins>=40&&!SPOTS.some(x=>owned(x.id)))st.guideDecor=1;
+  save();renderTop();renderOrders();checkBadges(false);
+}
 function askUnlock(i){
   const c=unlockCost();
   if(st.coins<c){toast('코인 '+c+'개가 있으면 이 칸을 열 수 있어요');sfx('err');return;}
@@ -2632,6 +2640,7 @@ function rwChips(z){
 }
 function renderDecor(){
   renderScene();
+  try{const bs=document.querySelector('#dscene .slot.s-bed');if(bs)bs.classList.toggle('hint',!SPOTS.some(x=>owned(x.id))&&dSel==null);}catch(e){}
   const cz=curZone();
   $('#zones').innerHTML=DZ.map((z,k)=>{
     const sp=SPOTS.filter(x=>x.zone===k),n=sp.filter(x=>owned(x.id)).length;
@@ -2684,7 +2693,7 @@ function grantZone(z){
     if(r.box)zb+=bi(BOXI,'재료 상자'+(r.box>1?' ×'+r.box:''),'재료 '+(3*r.box)+'개');
     if(r.energy)zb+=bi(BOLT,'+'+(r.energy*10),'최대 에너지');
     zb+='</div>';
-    showReward(DZ[z].n+' 완성!',zb,r.box?'재료 상자 1개당 재료 3개가 임시 공간에 도착해요.':'',()=>petPopup(r.pet!=null?[r.pet]:[],()=>setTimeout(()=>releasePets(null),400)));
+    showReward(DZ[z].n+' 완성!',zb,(z===0?'📖 보리의 새 이야기 「조용한 첫날 밤」이 열렸어요. 도감에서 읽어 보세요.\n':'')+(r.box?'재료 상자 1개당 재료 3개가 임시 공간에 도착해요.':''),()=>petPopup(r.pet!=null?[r.pet]:[],()=>setTimeout(()=>releasePets(null),400)));
     renderDecor();
   },750);
 }
@@ -2699,7 +2708,9 @@ function buyDecor(){
   refresh();renderDecor();sfx('done');
   const g=Array.prototype.slice.call(document.querySelectorAll('.pg'));
   g.forEach((b,k)=>setTimeout(()=>{b.classList.remove('jump');void b.offsetWidth;b.classList.add('jump');},200+k*60));
-  if(g.length)setTimeout(()=>sayFix(g[rnd(g.length)],'새 '+sp.n+' 멋져요!'),450);
+  const firstBuy=SPOTS.filter(x=>owned(x.id)).length===1,bori=document.querySelector('.pg[data-pet="0"]');
+  if(firstBuy&&bori)setTimeout(()=>{sayFix(bori,sp.id==='bed'?'제 침대예요?! 폭신폭신해요!':'이거 저 주시는 거예요?!',3000);hearts(bori);},450);
+  else if(g.length)setTimeout(()=>sayFix(g[rnd(g.length)],'새 '+sp.n+' 멋져요!'),450);
   toast(sp.n+' 설치 완료!');
   grantZone(sp.zone);
 }
@@ -2905,7 +2916,7 @@ $('#rwBody').addEventListener('click',()=>{if(stQ)storyStep();});
 $('#navShop').addEventListener('click',()=>{renderShop();openSheet('shop');});
 $('#navPass').addEventListener('click',()=>{renderPass();openSheet('pass');});
 $('#navQuest').addEventListener('click',()=>{questSync();viewDay=Math.min(7,curDay());renderQuests();openSheet('quest');});
-$('#navDecor').addEventListener('click',()=>{dSel=null;renderDecor();openSheet('decor');});
+$('#navDecor').addEventListener('click',()=>{if(st.guideDecor===1){st.guideDecor=2;save();}dSel=null;renderDecor();openSheet('decor');});
 $('#navDex').addEventListener('click',()=>{dexSel=null;renderDex();openSheet('dex');});
 document.querySelector('.dtabs').addEventListener('click',e=>{const b=e.target.closest('.dtab');if(!b)return;dexTab=b.dataset.dtab;sfx('tap');renderDex();});
 $('#navProf').addEventListener('click',()=>{renderProf();openSheet('prof');});
@@ -3046,7 +3057,8 @@ $('#startGo').addEventListener('click',()=>{
 
 /* ---------- finger tutorial ---------- */
 function tutTarget(){
-  const t=st&&st.tut;if(!t||t>=8)return null;
+  const t=st&&st.tut;
+  if(!t||t>=8){if(st&&st.guideDecor===1){const n=$('#navDecor');return n?{el:n,txt:'코인이 모였어요! 보리에게 침대를 마련해 줄까요?'}:null;}return null;}
   const B=$('#board');
   if(t===1||t===2){const g=document.querySelector('.gencell:not(.glock)');return {el:g,txt:t===1?'생성기를 눌러 보세요':'한 번 더 눌러 보세요'};}
   if(t===3){
