@@ -1780,7 +1780,7 @@ function openLevelUp(levels,passMode,after){
 }
 function gainXp(n){
   st.xp+=n;const ups=[];
-  if(st.xp>=need(st.lv)){st.xp-=need(st.lv);st.lv++;ups.push(st.lv);st.xp=Math.min(st.xp,need(st.lv)-1);}
+  if(st.xp>=need(st.lv)){st.xp-=need(st.lv);st.lv++;ups.push(st.lv);}
   if(!ups.length)return;
   tickEnergy();
   ups.filter(L=>L>PASS_LAST).forEach(L=>{const r=rewardOf(L);st.coins+=r.coins;st.claimed.push(L);if(r.box)spawnBox();});
@@ -2111,7 +2111,7 @@ function collectXp(i){
 function dropXp(total,anchor){
   if(total<=0)return;
   const pieces=[];let left=total;
-  {let bt=1;for(let t=1;t<=XPMAX;t++){if(Math.abs(XPV[t]-total)<Math.abs(XPV[bt]-total))bt=t;}pieces.push(bt);left=0;}
+  {const tgt=Math.max(1,Math.round(total/2));let bt=1;for(let t=1;t<=XPMAX;t++){if(XPV[t]<=tgt)bt=t;}pieces.push(bt);left=0;}
   let placed=0;
   let queued=0;pieces.forEach(t=>{const em2=emptyCells();if(em2.length){const j=em2[rnd(em2.length)];st.cells[j]={c:'xp',l:t};placed++;setTimeout(()=>pop(j),60);}else{qGive('xp',t);queued++;}});
   if(queued)setTimeout(()=>toast('보드가 가득 차서 황금 도토리 '+queued+'개가 임시 칸으로 갔어요'),700);
