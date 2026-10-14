@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<script>(function(){try{var t=localStorage.getItem('hamster-village-theme')||'light';if(t!=='auto')document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','light');}})();</script>
 <title>햄스터 마을</title>
 <meta name="description" content="재료를 합쳐 햄스터 주민들의 부탁을 들어주고 마을을 꾸미는 머지 게임">
 <meta name="theme-color" content="#fdf1ec" media="(prefers-color-scheme: light)">
@@ -1113,12 +1114,14 @@ body{padding-inline:8px}
   <p class="have">주소 끝에 <b>?test</b>를 붙여 열면 이 버튼이 보여요. 테스트 기록은 일반 기록과 같은 저장소를 써요.</p>
 </section>
 <section class="sheet" id="snd" role="dialog" aria-label="소리 설정" hidden>
-  <header><h2>소리·보드 설정</h2><button class="x" data-close>닫기</button></header>
+  <header><h2>설정</h2><button class="x" data-close>닫기</button></header>
   <div class="setrow"><b style="font-weight:400">배경음악</b><button class="sw" id="swBgm" role="switch" aria-checked="true" aria-label="배경음악"></button></div>
   <div class="setrow col"><label for="rgBgm" class="have">배경음악 크기 <span id="vBgm"></span></label><input type="range" id="rgBgm" min="0" max="100" step="5"></div>
   <div class="setrow col"><span class="have">배경음악 고르기</span><div class="trk" id="trk"></div></div>
   <div class="setrow"><b style="font-weight:400">효과음</b><button class="sw" id="swSfx" role="switch" aria-checked="true" aria-label="효과음"></button></div>
   <div class="setrow col"><label for="rgSfx" class="have">효과음 크기 <span id="vSfx"></span></label><input type="range" id="rgSfx" min="0" max="100" step="5"></div>
+  <div class="setrow col"><span class="have">화면 모드</span><div class="trk" id="thm"><button class="btn" type="button" data-thm="light">라이트</button><button class="btn" type="button" data-thm="auto">기기 설정 따라가기</button><button class="btn" type="button" data-thm="dark">다크</button></div></div>
+  <div class="setrow"><b style="font-weight:400">게임 중 화면 켜 두기</b><button class="sw" id="swWake" role="switch" aria-checked="true" aria-label="게임 중 화면 켜 두기"></button></div>
   <div class="setrow col"><span class="have">게임 데이터</span><button class="btn rstbtn" id="resetBtn" type="button">처음부터 다시 하기</button></div>
 </section>
 
@@ -1480,6 +1483,7 @@ function fill(o){
   if(!Array.isArray(o.claimed)){o.claimed=[];for(let L=2;L<=Math.min(PASS_LAST,o.lv);L++)o.claimed.push(L);}
   o.tq=o.tq||[];o.dec=o.dec||{};o.own=o.own||{};o.zoneDone=o.zoneDone||[];
   if(!o.gOpen){o.gOpen={};const OLD={sw:2,dr:4,fr:8,ml:10,ic:12};if((o.lv||1)>1)KEYS.forEach(c=>{if(OLD[c]&&o.lv>=OLD[c])o.gOpen[c]=1;});}
+  o.petWait=o.petWait||[];
   o.fmax=o.fmax||{};o.badges=o.badges||{};o.petName=o.petName||{};o.petHide=o.petHide||{};o.fed=o.fed||{};
   o.nMerge=o.nMerge||0;o.nDeliv=o.nDeliv||0;o.maxCombo=o.maxCombo||0;o.playMs=o.playMs||0;o.nGift=o.nGift||0;
   if(!o.q||!o.q.start)o.q={cycle:0,start:todayKey(),days:{}};
@@ -1894,17 +1898,25 @@ function chips(L){
 }
 function claimable(){const r=[];for(let L=2;L<=PASS_LAST;L++)if(L<=st.lv&&st.claimed.indexOf(L)<0)r.push(L);return r;}
 function claimMany(levels){
-  let got=0;const arr=[];
+  let got=0;const arr=[];let waitNote=0;
   levels.forEach(L=>{
     if(L>st.lv||st.claimed.indexOf(L)>=0)return;
     const r=rewardOf(L);st.claimed.push(L);st.coins+=r.coins;got++;
-    if(r.pet!=null&&st.unlocked.indexOf(r.pet)<0){st.unlocked.push(r.pet);arr.push(r.pet);}
+    if(r.pet!=null&&st.unlocked.indexOf(r.pet)<0){if(petReady(r.pet)){st.unlocked.push(r.pet);arr.push(r.pet);}else if(st.petWait.indexOf(r.pet)<0){st.petWait.push(r.pet);waitNote=1;}}
     if(r.box)spawnBox();
     if(r.energy)st.bonusE=(st.bonusE||0)+1;
   });
   if(!got)return;
   refresh();renderQ();if(!$('#pass').hidden)renderPass();
-  if(!arr.length){toast('보상을 받았어요');sfx('done');}
+  if(waitNote)setTimeout(()=>toast('새 이웃이 이사 준비 중이에요. 먼저 온 이웃과 친해지면 찾아올 거예요',true),arr.length?0:600);
+  else if(!arr.length){toast('보상을 받았어요');sfx('done');}
+}
+/* 이웃은 순서대로: 앞 번호 이웃이 먼저 와 있어야 다음 이웃이 와요 */
+function petReady(p){return p<=1||st.unlocked.indexOf(p-1)>=0;}
+function releasePets(next){
+  const out=[];let moved=true;
+  while(moved){moved=false;for(let k=0;k<st.petWait.length;k++){const p=st.petWait[k];if(petReady(p)&&st.unlocked.indexOf(p)<0){st.unlocked.push(p);out.push(p);st.petWait.splice(k,1);moved=true;break;}}}
+  if(out.length){save();refresh();petPopup(out,next);}else if(next)next();
 }
 function renderPass(){
   let h='';
@@ -1946,7 +1958,7 @@ function openLevelUp(levels,passMode,after){
     },350);};
   showReward(passMode?(levels.length>1?'레벨 보상 '+levels.length+'개':'레벨 '+top+' 보상'):'레벨 '+top+' 달성!',body,'확인을 누르면 보상을 받아요.',()=>{
     claimMany(levels);
-    petPopup(pets,showGens);
+    petPopup(pets.filter(x=>st.unlocked.indexOf(x)>=0),showGens);
   });
 }
 function gainXp(n){
@@ -2566,7 +2578,7 @@ function grantZone(z){
     if(r.box)zb+=bi(BOXI,'재료 상자'+(r.box>1?' ×'+r.box:''),'재료 '+(3*r.box)+'개');
     if(r.energy)zb+=bi(BOLT,'+'+(r.energy*10),'최대 에너지');
     zb+='</div>';
-    showReward(DZ[z].n+' 완성!',zb,r.box?'재료 상자 1개당 재료 3개가 임시 공간에 도착해요.':'',()=>petPopup(r.pet!=null?[r.pet]:[],null));
+    showReward(DZ[z].n+' 완성!',zb,r.box?'재료 상자 1개당 재료 3개가 임시 공간에 도착해요.':'',()=>petPopup(r.pet!=null?[r.pet]:[],()=>setTimeout(()=>releasePets(null),400)));
     renderDecor();
   },750);
 }
@@ -2844,6 +2856,27 @@ $('#swBgm').addEventListener('click',()=>{
   if(sndS.bgm){bgmWanted=true;initAudio();bgmStart();}else bgmStop();
   sfx('tap');
 });
+/* 화면 모드 */
+const THM_KEY='hamster-village-theme';
+function thmGet(){try{return localStorage.getItem(THM_KEY)||'light';}catch(e){return 'light';}}
+function thmApply(t){const r=document.documentElement;if(t==='auto')r.removeAttribute('data-theme');else r.setAttribute('data-theme',t);
+  try{const ms=document.querySelectorAll('meta[name=theme-color]');if(ms.length>1){ms[0].setAttribute('content',t==='dark'?'#2b2430':'#fdf1ec');ms[1].setAttribute('content',t==='light'?'#fdf1ec':'#2b2430');}}catch(e){}
+  document.querySelectorAll('#thm [data-thm]').forEach(b=>b.classList.toggle('on',b.dataset.thm===t));}
+$('#thm').addEventListener('click',e=>{const b=e.target.closest('[data-thm]');if(!b)return;try{localStorage.setItem(THM_KEY,b.dataset.thm);}catch(_){}thmApply(b.dataset.thm);sfx('tap');});
+thmApply(thmGet());
+/* 게임 중 화면 꺼짐 방지 (Wake Lock) */
+const WAKE_KEY='hamster-village-wake';let wakeLock=null;
+function wakeOn(){try{return localStorage.getItem(WAKE_KEY)!=='0';}catch(e){return true;}}
+async function wakeReq(){
+  if(!wakeOn()||document.visibilityState!=='visible'||wakeLock||!('wakeLock' in navigator))return;
+  try{wakeLock=await navigator.wakeLock.request('screen');wakeLock.addEventListener('release',()=>{wakeLock=null;});}catch(e){wakeLock=null;}
+}
+function wakeRel(){try{if(wakeLock)wakeLock.release();}catch(e){}wakeLock=null;}
+function renderWake(){const b=$('#swWake');if(b){b.setAttribute('aria-checked',wakeOn()?'true':'false');b.classList.toggle('on',wakeOn());}}
+$('#swWake').addEventListener('click',()=>{const on=!wakeOn();try{localStorage.setItem(WAKE_KEY,on?'1':'0');}catch(e){}renderWake();if(on)wakeReq();else wakeRel();sfx('tap');});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')wakeReq();});
+addEventListener('pointerdown',()=>{if(!wakeLock)wakeReq();},true);
+renderWake();
 $('#swSfx').addEventListener('click',()=>{sndS.sfx=!sndS.sfx;sndSave();renderSnd();if(sndS.sfx){initAudio();sfx('tap');}});
 $('#rgBgm').addEventListener('input',e=>{sndS.bgmV=+e.target.value;$('#vBgm').textContent=sndS.bgmV;bgmApplyVol();sndSave();});
 $('#rgSfx').addEventListener('input',e=>{sndS.sfxV=+e.target.value;$('#vSfx').textContent=sndS.sfxV;sndSave();});
@@ -2902,6 +2935,8 @@ $('#startGo').addEventListener('click',()=>{
   try{sfx('tap');}catch(e){}
   $('#startScr').hidden=true;
   if(!st.intro)setTimeout(showIntro,400);
+  else setTimeout(()=>{if($('#reward').hidden)releasePets(null);},1200);
+  wakeReq();
 });
 
 
