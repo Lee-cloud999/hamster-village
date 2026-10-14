@@ -1648,8 +1648,8 @@ function questTick(){
 function rewardOf(L){
   const r={coins:L*20};
   if(REWARD_PET[L]!=null)r.pet=REWARD_PET[L];
-  if(L<=PASS_LAST){if(L%2===0)r.box=true;if(L%5===3)r.energy=1;}
-  else if(L%5===0)r.box=true;
+  r.box=true;
+  if(L<=PASS_LAST&&L%5===3)r.energy=1;
   return r;
 }
 function chips(L){
