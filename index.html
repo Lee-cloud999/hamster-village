@@ -1607,7 +1607,7 @@ function hearts(el){
 }
 
 /* ---------- sheets ---------- */
-const MAIN_SHEETS=['shop','pass','quest','decor','dex','prof','snd','star'];
+const MAIN_SHEETS=['shop','pass','quest','decor','dex','prof','snd','dev'].filter(id=>document.getElementById(id));
 const TOP_SHEETS=['confirm','reward','chain'];
 function syncScrim(){$('#scrim').hidden=!Array.prototype.some.call(document.querySelectorAll('.sheet'),s=>!s.hidden);}
 function openSheet(id){
