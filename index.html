@@ -1094,6 +1094,38 @@ body,.sheet,#tut .tut-b,.say,.toast,.float,#rwBody,#rwNote{word-break:keep-all;o
   #decor #dscene.scene{height:min(calc(100dvh - 400px),calc((100vw - 72px)*612/380));width:auto;margin:0 auto;max-width:100%}
   #decor .stys{grid-auto-rows:auto}
 }
+
+/* 보리의 산책길 */
+#pass .walkwrap{position:relative;height:min(62dvh,560px);overflow-y:auto;overflow-x:hidden;border-radius:18px;
+  background:var(--img-walk,linear-gradient(180deg,#e3f2d6 0%,#eef6dd 40%,#f7efd9 100%));box-shadow:inset 0 0 0 2px rgba(150,190,120,.35)}
+#pass .walk{position:relative;width:100%}
+#pass .wpath{position:absolute;left:0;top:0;width:100%;pointer-events:none}
+#pass .wp1{fill:none;stroke:#d9b98c;stroke-width:30;stroke-linecap:round;vector-effect:non-scaling-stroke}
+#pass .wp2{fill:none;stroke:#f1dfbf;stroke-width:20;stroke-linecap:round;stroke-dasharray:2 14;vector-effect:non-scaling-stroke}
+#pass .stone{position:absolute;transform:translate(-50%,-50%);width:78px;height:78px;border-radius:50%;padding:0;border:3px solid #fff;
+  background:radial-gradient(circle at 40% 35%,#fffaf2,#f1e2cc);box-shadow:0 4px 0 #cdb18a,0 6px 12px rgba(90,60,30,.25);display:grid;place-items:center;font:inherit;color:#5b4038}
+#pass .stone.big{width:104px;height:104px;border-color:#ffe08a;background:radial-gradient(circle at 40% 35%,#fffbe8,#ffe7b0);box-shadow:0 5px 0 #d8b060,0 0 0 6px rgba(255,220,120,.35),0 8px 16px rgba(120,80,20,.3)}
+#pass .stone .sim{width:56%;height:56%;display:grid;place-items:center}
+#pass .stone .sim img,#pass .stone .sim svg,#pass .stone .sim .im{width:100%!important;height:100%!important;object-fit:contain}
+#pass .stone .sq{font-size:30px;font-weight:800;color:#b79c7c;font-family:var(--f-display)}
+#pass .stone .slv{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#7a5642;color:#fff;font-size:11px;font-weight:800;border-radius:10px;padding:1px 7px;white-space:nowrap}
+#pass .stone .scn{position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:2px;background:#fff;border-radius:10px;padding:0 6px 0 3px;font-size:11px;font-weight:800;box-shadow:0 1px 3px rgba(0,0,0,.18);white-space:nowrap}
+#pass .stone .scn img,#pass .stone .scn svg{width:14px!important;height:14px!important}
+#pass .stone .wx{position:absolute;right:-8px;top:8px;width:30px;height:30px;border-radius:50%;background:#fff;display:grid;place-items:center;box-shadow:0 1px 3px rgba(0,0,0,.2);font-style:normal}
+#pass .stone .wx img,#pass .stone .wx svg{width:22px!important;height:22px!important}
+#pass .stone .wxe{top:auto;bottom:10px;right:-14px;width:auto;height:22px;border-radius:11px;padding:0 5px 0 2px;display:flex;gap:1px;font-size:10px}
+#pass .stone .wxe img,#pass .stone .wxe svg{width:14px!important;height:14px!important}
+#pass .stone.got{filter:saturate(.45);opacity:.75}
+#pass .stone .spaw{position:absolute;inset:0;display:grid;place-items:center;transform:rotate(-14deg)}
+#pass .stone.far{background:radial-gradient(circle at 40% 35%,#f4efe8,#e2d8ca);box-shadow:0 4px 0 #c4b7a5}
+#pass .stone.can{border-color:#ff9f86}
+@media (prefers-reduced-motion: no-preference){#pass .stone.can{animation:stoneBob 1.1s ease-in-out infinite}
+  @keyframes stoneBob{0%,100%{transform:translate(-50%,-50%)}50%{transform:translate(-50%,-58%)}}
+  #pass .walker{animation:walkerBob 1.6s ease-in-out infinite}@keyframes walkerBob{50%{transform:translateY(-5px)}}}
+#pass .stone.can::after{content:'';position:absolute;inset:-8px;border-radius:50%;box-shadow:0 0 0 4px rgba(255,159,134,.55),0 0 18px rgba(255,180,120,.9);pointer-events:none}
+#pass .walker{position:absolute;width:52px;height:52px;pointer-events:none;z-index:2}
+#pass .walker .fc,#pass .walker img{width:52px!important;height:52px!important}
+#pass #claimAll{margin-top:2px}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -1164,10 +1196,10 @@ body,.sheet,#tut .tut-b,.say,.toast,.float,#rwBody,#rwNote{word-break:keep-all;o
 </section>
 
 <section class="sheet" id="pass" role="dialog" aria-label="레벨 보상" hidden>
-  <header><h2>레벨 보상</h2><button class="x" data-close aria-label="닫기">✕</button></header>
+  <header><h2 id="passH">보리의 산책길</h2><button class="x" data-close aria-label="닫기">✕</button></header>
   <p class="have" id="passInfo"></p>
+  <div class="walkwrap" id="walkWrap"><div class="walk" id="passList"></div></div>
   <button class="btn main" id="claimAll" type="button" hidden>모두 받기</button>
-  <div id="passList" style="display:grid;gap:8px"></div>
 </section>
 
 <section class="sheet" id="event" role="dialog" aria-label="이벤트" hidden>
@@ -2387,15 +2419,44 @@ function releasePets(next){
   while(moved){moved=false;for(let k=0;k<st.petWait.length;k++){const p=st.petWait[k];if(petReady(p)&&st.unlocked.indexOf(p)<0){st.unlocked.push(p);out.push(p);st.petWait.splice(k,1);moved=true;break;}}}
   if(out.length){save();refresh();petPopup(out,next);}else if(next)next();
 }
+/* ---------- 보리의 산책길 (레벨 보상) ---------- */
+const WALK_ROW=104,WALK_X=[50,74,58,30,44,70,52,26];
+function walkMain(L){
+  const r=rewardOf(L);
+  if(r.box&&r.boxG)return {img:boxImg(r.boxG),name:BOXN[r.boxG]};
+  if(r.item)return {img:em(r.item.c,r.item.l),name:nm(r.item.c,r.item.l)};
+  if(r.box)return {img:BOXI,name:'나무 상자'};
+  return {img:COIN,name:'코인'};
+}
 function renderPass(){
+  const Ls=[];for(let L=PASS_LAST;L>=2;L--)Ls.push(L);
+  const H=Ls.length*WALK_ROW+60,pts=[];
   let h='';
-  for(let L=2;L<=PASS_LAST;L++){
-    const got=st.claimed.indexOf(L)>=0,can=!got&&L<=st.lv;
-    h+='<div class="prow'+(got?' got':'')+(L===st.lv?' now':'')+'"><div class="plv">Lv.'+L+'</div><div class="rcs">'+chips(L)+'</div>'+(can?'<button class="btn main" type="button" data-l="'+L+'">받기</button>':'<span class="st">'+(got?'받음':'잠김')+'</span>')+'</div>';
-  }
-  $('#passList').innerHTML=h;
-  $('#claimAll').hidden=claimable().length<2;
+  Ls.forEach((L,k)=>{
+    const x=WALK_X[L%WALK_X.length],y=40+k*WALK_ROW+WALK_ROW/2;pts.push([x,y]);
+    const r=rewardOf(L),got=st.claimed.indexOf(L)>=0,can=!got&&L<=st.lv,far=!got&&!can&&L>st.lv+3,big=L%5===0;
+    const m=walkMain(L);
+    let extra='';
+    if(r.item&&r.box&&!r.boxG)extra+='<i class="wx">'+BOXI+'</i>';
+    if(r.energy)extra+='<i class="wx wxe">'+BOLT+'<b>+10</b></i>';
+    h+='<button type="button" class="stone'+(big?' big':'')+(got?' got':'')+(can?' can':'')+(far?' far':'')+(L===st.lv?' now':'')+'" data-l="'+L+'" style="left:'+x+'%;top:'+y+'px" aria-label="Lv.'+L+' '+m.name+'">'+
+      '<span class="slv">Lv.'+L+'</span>'+
+      '<span class="sim">'+(far?'<span class="sq">?</span>':m.img)+'</span>'+
+      (far?'':'<span class="scn">'+COIN+'<b>'+r.coins+'</b></span>')+
+      (far?'':extra)+
+      (got?'<span class="spaw">'+evI('paw',34)+'</span>':'')+
+    '</button>';
+    if(L===st.lv)h+='<span class="walker" style="left:calc('+x+'% '+(x>50?'- 86px':'+ 52px')+');top:'+(y-34)+'px">'+faceE(0,claimable().length?3:1)+'</span>';
+  });
+  let d='M'+pts[0][0]+' '+(pts[0][1]-60);
+  pts.forEach((p,k)=>{const q=k?pts[k-1]:[p[0],p[1]-60];const my=(q[1]+p[1])/2;d+=' C'+q[0]+' '+my+','+p[0]+' '+my+','+p[0]+' '+p[1];});
+  d+=' L'+pts[pts.length-1][0]+' '+(H);
+  const svg='<svg class="wpath" viewBox="0 0 100 '+H+'" preserveAspectRatio="none" style="height:'+H+'px"><path d="'+d+'" class="wp1"/><path d="'+d+'" class="wp2"/></svg>';
+  const el=$('#passList');el.style.height=H+'px';el.innerHTML=svg+h;
+  const c=claimable().length;
+  $('#claimAll').hidden=c<2;$('#claimAll').textContent='보상 '+c+'개 모두 받기';
   $('#passInfo').textContent='레벨 '+st.lv+' · 다음 레벨까지 경험치 '+(need(st.lv)-st.xp)+' 남았어요';
+  requestAnimationFrame(()=>{try{const w=$('#walkWrap'),now=el.querySelector('.stone.now')||el.querySelector('.stone.can');if(w&&now)w.scrollTop=now.offsetTop-w.clientHeight/2;}catch(e){}});
 }
 function bi(img,name,sub){return '<div class="bi"><span class="bimg">'+img+'</span><b>'+name+'</b>'+(sub?'<small>'+sub+'</small>':'')+'</div>';}
 const PET_HELLO_EMO={1:6,2:7,3:6,5:2,6:3,4:6,7:3};
@@ -3361,7 +3422,7 @@ document.addEventListener('click',e=>{
   if(x){const sh=x.closest('.sheet');if(sh)closeSheet(sh.id);}
 });
 $('#shop').addEventListener('click',e=>{const b=e.target.closest('button[data-id]');if(b&&!b.disabled)shopBuy(b.dataset.id);});
-$('#passList').addEventListener('click',e=>{const b=e.target.closest('button[data-l]');if(b)openLevelUp([+b.dataset.l],true);});
+$('#passList').addEventListener('click',e=>{const b=e.target.closest('.stone');if(!b)return;const L=+b.dataset.l;if(b.classList.contains('can'))openLevelUp([L],true);else{const r=rewardOf(L),m=walkMain(L);toast(b.classList.contains('got')?'Lv.'+L+' 보상은 이미 받았어요':b.classList.contains('far')?'Lv.'+L+'에 무엇이 있을까요?':'Lv.'+L+' · '+m.name+' + 코인 '+r.coins,true);sfx('tap');}});
 $('#claimAll').addEventListener('click',()=>{const c=claimable();if(c.length)openLevelUp(c,true);});
 $('#qTabs').addEventListener('click',e=>{const b=e.target.closest('button[data-d]');if(b&&!b.disabled){viewDay=+b.dataset.d;renderQuests();}});
 $('#qList').addEventListener('click',e=>{const b=e.target.closest('button[data-t]');if(b)claimTask(viewDay,b.dataset.t);});
