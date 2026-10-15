@@ -1124,7 +1124,7 @@ body{padding-inline:8px}
 
 <section class="sheet" id="dex" role="dialog" aria-label="도감" hidden>
   <header><h2>도감</h2><button class="x" data-close aria-label="닫기">✕</button></header>
-  <div class="dtabs" role="tablist"><button type="button" class="dtab on" role="tab" data-dtab="mat">재료 도감</button><button type="button" class="dtab" role="tab" data-dtab="res">주민 도감</button></div>
+  <div class="dtabs" role="tablist"><button type="button" class="dtab on" role="tab" data-dtab="res">주민 도감</button><button type="button" class="dtab" role="tab" data-dtab="mat">재료 도감</button></div>
   <div id="dexMatP" class="dpanel">
     <p class="have" id="dexMatInfo"></p>
     <div id="dexMat"></div>
@@ -2947,7 +2947,7 @@ function openStory(p,k){
     save();
   }:null);
 }
-let dexTab='mat';
+let dexTab='res';
 function renderMatDex(){
   let got=0;
   const rows=KEYS.map(c=>{
