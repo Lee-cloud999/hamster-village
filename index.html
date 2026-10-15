@@ -2451,6 +2451,7 @@ function orderLabel(o){
 }
 function sayAt(k,text,rw){
   const card=$('#orders').children[k];if(!card)return;
+  document.querySelectorAll('.say.ord').forEach(x=>x.remove());
   const r=card.getBoundingClientRect();
   const e=document.createElement('div');e.className='say fix ord'+(text?' big':'')+(rw?' rw':'');
   e.innerHTML=escH(rn(text||SAY[rnd(SAY.length)]))+(rw?'<small>'+escH(rw)+'</small>':'');
