@@ -1259,6 +1259,7 @@ const ROWS=7,COLS=6,N=ROWS*COLS,MAXLV=6,REGEN=120000,KEY='hamster-village-v1',SN
 const VAL=[0,2,5,12,28,60,130], SELLP=[0,1,2,4,9,20,45];
 const KEYS=['br','sw','dr','fr','ml','ic'];
 const CH={
+  en:{t:'에너지',n:['','에너지 한 방울','에너지 두 방울','에너지 병','에너지 꾸러미','왕 에너지'],e:['','💧','💛','🧃','🔋','⚡']},
   br:{t:'해바라기',n:['','해바라기씨','씨앗 한줌','새싹','풀잎','꽃봉오리','해바라기'],e:['','🫘','🥜','🌱','🌿','🌷','🌻']},
   sw:{t:'도토리',n:['','도토리','도토리 한줌','도토리싹','어린나무','큰나무','도토리숲'],e:['','🌰','🍂','☘️','🪴','🌳','🌲']},
   dr:{t:'잠자리',n:['','목화씨','목화 한줌','목화솜','털실','담요','폭신침대'],e:['','🤍','🫧','☁️','🧶','🧣','🛏️']},
@@ -1620,7 +1621,17 @@ function rn(str){
   return str;
 }
 function emptyCells(){const r=[];st.cells.forEach((x,i)=>{if(!x&&!isLocked(i)&&!isGen(i))r.push(i);});return r;}
-function canMerge(a,b){const x=st.cells[a],y=st.cells[b];return a!==b&&!!x&&!!y&&x.c===y.c&&x.l===y.l&&x.l<(x.c==='xp'?XPMAX:MAXLV);}
+const ENV=[0,5,12,25,50,100],ENMAX=5;
+const isSpecial=c=>c==='xp'||c==='en';
+function canMerge(a,b){const x=st.cells[a],y=st.cells[b];return a!==b&&!!x&&!!y&&x.c===y.c&&x.l===y.l&&x.l<(x.c==='xp'?XPMAX:x.c==='en'?ENMAX:MAXLV);}
+function giveEn(n){for(let k=0;k<(n||1);k++){const e2=emptyCells();if(e2.length){const j=e2[rnd(e2.length)];st.cells[j]={c:'en',l:1};renderBoard();pop(j);}else qGive('en',1);}
+  if(!st.enTip){st.enTip=1;setTimeout(()=>toast('⚡ 에너지 방울이 나왔어요! 합치면 커지고, 두 번 누르면 에너지가 차요'),700);}save();}
+function collectEn(i){
+  const it=st.cells[i];if(!it||it.c!=='en')return;
+  const v=ENV[it.l];st.cells[i]=null;sel=null;tickEnergy();st.e+=v;
+  const el=cellEl(i);if(el)floatAt(el,'⚡ 에너지 +'+v);
+  sfx('coin');renderBoard();renderEnergy();refresh();save();
+}
 
 /* ---------- state ---------- */
 function todayKey(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
@@ -2111,7 +2122,7 @@ function renderTop(){
 function qGive(c,l){st.tq.push({c:c,l:l});renderQ();}
 function spawnBox(){
   const keys=openChains();
-  for(let k=0;k<3;k++)qGive(keys[rnd(keys.length)],Math.random()<.7?2:3);
+  for(let k=0;k<3;k++){if(k===2&&Math.random()<.3){qGive('en',Math.random()<.75?1:2);continue;}qGive(keys[rnd(keys.length)],Math.random()<.7?2:3);}
 }
 let qPrev=-1;
 function renderQ(){
@@ -2598,7 +2609,7 @@ function renderBoard(){
 function renderSell(){
   const el=$('#sell'),it=sel!=null?st.cells[sel]:null;
   el.classList.toggle('on',!!it);
-  el.innerHTML=it&&it.c==='xp'?'<span>한 번 더 누르면 경험치 +'+XPV[it.l]+'</span>':'<img class="si" src="'+NAVU[5]+'" alt="">'+(it?'<b>팔기</b>'+COIN+'<b>+'+SELLP[it.l]+'</b>':'<span>팔기</span>');
+  el.innerHTML=it&&it.c==='en'?'<span>한 번 더 누르면 에너지 +'+ENV[it.l]+'</span>':it&&it.c==='xp'?'<span>한 번 더 누르면 경험치 +'+XPV[it.l]+'</span>':'<img class="si" src="'+NAVU[5]+'" alt="">'+(it?'<b>팔기</b>'+COIN+'<b>+'+SELLP[it.l]+'</b>':'<span>팔기</span>');
   if(el.setAttribute)el.setAttribute('aria-label',it?nm(it.c,it.l)+' 팔기, 코인 '+SELLP[it.l]:'장터에 팔기 (끌어다 놓기)');
 }
 function refresh(){
@@ -2616,8 +2627,9 @@ function askUnlock(i){
 }
 function sellItem(i){
   const it=st.cells[i];if(!it)return;
-  if(it.c!=='xp')tipDone('full');
+  if(!isSpecial(it.c))tipDone('full');
   if(it.c==='xp'){toast('황금 도토리는 팔 수 없어요. 두 번 눌러 경험치를 받으세요');sfx('err');return;}
+  if(it.c==='en'){toast('에너지는 팔 수 없어요. 두 번 눌러 에너지를 채우세요');sfx('err');return;}
   const p=SELLP[it.l];
   const go=()=>{
     if(!st.cells[i])return;
@@ -2682,8 +2694,9 @@ function act(i,j){
     renderBoard();pop(j);fxAt(j,nl,combo);refresh();sfx('merge',nl,combo);juiceMerge(j,nl);
     if(combo>=2)showCombo(combo);
     if(bonus)floatAt(cellEl(j),'+'+bonus+' 코인');
-    if(nl>=4&&a.c!=='xp')bigText(nm(a.c,nl)+' 완성!',nl===MAXLV);
-    if(nl===5&&a.c!=='xp'&&Math.random()<.25)setTimeout(()=>{const e2=emptyCells();if(e2.length){const j2=e2[rnd(e2.length)];st.cells[j2]={c:'xp',l:1};renderBoard();pop(j2);}else qGive('xp',1);if(!st.xpTip){st.xpTip=1;setTimeout(()=>toast('황금 도토리가 나왔어요! 두 번 누르면 경험치, 합치면 더 커져요'),500);}save();},300);
+    if(nl>=4&&!isSpecial(a.c))bigText(nm(a.c,nl)+' 완성!',nl===MAXLV);
+    if(nl>=4&&!isSpecial(a.c)&&Math.random()<.15)setTimeout(()=>giveEn(1),350);
+    if(nl===5&&!isSpecial(a.c)&&Math.random()<.25)setTimeout(()=>{const e2=emptyCells();if(e2.length){const j2=e2[rnd(e2.length)];st.cells[j2]={c:'xp',l:1};renderBoard();pop(j2);}else qGive('xp',1);if(!st.xpTip){st.xpTip=1;setTimeout(()=>toast('황금 도토리가 나왔어요! 두 번 누르면 경험치, 합치면 더 커져요'),500);}save();},300);
     if(bj!=null){pop(bj);toast('합치기 보너스! 재료가 하나 더 나왔어요');}
     return;
   }
@@ -2708,8 +2721,8 @@ function dropXp(total,anchor){
 }
 function tap(i){
   sfx('tap');
-  if(sel==null){if(st.cells[i]){sel=i;if(st.cells[i].c==='xp')toast('한 번 더 누르면 경험치 +'+XPV[st.cells[i].l]);}}
-  else if(sel===i){if(st.cells[i]&&st.cells[i].c==='xp'){collectXp(i);return;}sel=null;}
+  if(sel==null){if(st.cells[i]){sel=i;if(st.cells[i].c==='xp')toast('한 번 더 누르면 경험치 +'+XPV[st.cells[i].l]);if(st.cells[i].c==='en')toast('한 번 더 누르면 에너지 +'+ENV[st.cells[i].l]);}}
+  else if(sel===i){if(st.cells[i]&&st.cells[i].c==='xp'){collectXp(i);return;}if(st.cells[i]&&st.cells[i].c==='en'){collectEn(i);return;}sel=null;}
   else if(canMerge(sel,i)){const s=sel;sel=null;act(s,i);return;}
   else if(!st.cells[i]){const s=sel;sel=null;act(s,i);return;}
   else{sel=i;}
@@ -3368,7 +3381,7 @@ function tipTarget(){
   const T=st.tips||{};
   if(T.box===1){if(!st.tq.length){tipDone('box');}else return {el:$('#qslot'),txt:'임시 칸을 눌러 선물을 꺼내요',emo:3};}
   if(T.full===1){
-    let a=-1,lv=99;for(let i=0;i<N;i++){const x=st.cells[i];if(!x||x.c==='xp'||isLocked(i)||isGen(i))continue;if(x.l<lv){lv=x.l;a=i;}}
+    let a=-1,lv=99;for(let i=0;i<N;i++){const x=st.cells[i];if(!x||isSpecial(x.c)||isLocked(i)||isGen(i))continue;if(x.l<lv){lv=x.l;a=i;}}
     if(a>=0)return {el:cellEl(a),to:$('#sell'),txt:'안 쓰는 재료는 팔기로 끌어요',emo:5};
   }
   if(T.energy===1)return {el:$('#enbox'),txt:'에너지는 2분마다 1씩 차요',emo:7,up:true};
@@ -3420,7 +3433,7 @@ function tutTarget(){
   if(t===1||t===2){const g=document.querySelector('.gencell:not(.glock)');return {el:g,txt:t===1?'생성기를 눌러 보세요':'한 번 더 눌러 보세요'};}
   if(t===3){
     let a=-1,b=-1;
-    for(let i=0;i<N&&a<0;i++){const x=st.cells[i];if(!x||x.c==='xp'||isLocked(i)||isGen(i))continue;for(let j=i+1;j<N;j++){if(canMerge(i,j)&&!isLocked(j)&&!isGen(j)){a=i;b=j;break;}}}
+    for(let i=0;i<N&&a<0;i++){const x=st.cells[i];if(!x||isSpecial(x.c)||isLocked(i)||isGen(i))continue;for(let j=i+1;j<N;j++){if(canMerge(i,j)&&!isLocked(j)&&!isGen(j)){a=i;b=j;break;}}}
     if(a<0)return {el:null,txt:'같은 재료를 합쳐 보세요'};
     return {el:cellEl(a),to:cellEl(b),txt:'같은 재료를 끌어서 합쳐요'};
   }
