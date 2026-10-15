@@ -1022,6 +1022,8 @@ body{padding-inline:8px}
 .gencell.glock .item.gq{display:grid;place-items:center;font-size:30px;font-weight:800;color:#8a7a6a;font-family:var(--f-display)}
 
 @media (min-aspect-ratio:1/1) and (min-width:700px) and (min-height:540px){.app>.stat{pointer-events:none}.app>.stat>*{pointer-events:auto}}
+
+#devTime{position:fixed;right:10px;top:calc(104px + env(safe-area-inset-top,0px));z-index:200;padding:3px 8px;border-radius:10px;background:rgba(255,255,255,.92);color:#222;font-size:12px;font-weight:700;border:1px solid rgba(0,0,0,.12);box-shadow:0 2px 6px rgba(0,0,0,.15);pointer-events:none;font-variant-numeric:tabular-nums}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -1967,7 +1969,7 @@ function nextPet(){
 }
 function nextGoal(){
   const cnt=z=>SPOTS.filter(x=>x.zone===z&&owned(x.id)).length,tot=z=>SPOTS.filter(x=>x.zone===z).length;
-  if(st.tut&&st.tut<8)return {t:'배고픈 보리에게 해바라기씨 주기',act:'none',emo:6};
+  if(!st.intro||(st.tut&&st.tut<8))return {t:'배고픈 보리에게 해바라기씨 주기',act:'none',emo:6};
   if(storyReady()){let who=0;st.unlocked.some(p=>{const rd=st.read[p]||0;if(rd<STORY[p].length&&chapterState(p,rd)==='ready'){who=p;return true;}return false;});
     return {t:'📖 '+petName(who)+'의 새 이야기 읽기',act:'dex',who:who,emo:3};}
   if(!zoneDone(0))return {t:'보리 침대·간식 선반 마련',a:cnt(0),b:tot(0),act:'decor',emo:6};
@@ -3292,6 +3294,10 @@ let devInf=false;
 (function(){try{
   if(!/[?&]test\b/.test(location.search))return;
   try{devInf=localStorage.getItem('hv-dev-inf')==='1';}catch(e){}
+  const pt=document.createElement('div');pt.id='devTime';document.body.appendChild(pt);
+  const ptDraw=()=>{try{if(!st)return;const sec=Math.floor((st.playMs||0)/1000),h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s2=sec%60;
+    pt.textContent='⏱ '+(h?h+'시간 ':'')+m+'분 '+String(s2).padStart(2,'0')+'초';}catch(e){}};
+  ptDraw();setInterval(ptDraw,1000);
   const b=document.createElement('button');b.id='devBtn';b.type='button';b.textContent='🛠';b.setAttribute('aria-label','테스트 모드');
   document.body.appendChild(b);
   const info=()=>{$('#devInfo').textContent='Lv.'+st.lv+' · 경험치 '+st.xp+'/'+need(st.lv)+' · 코인 '+st.coins+' · 에너지 '+st.e+'/'+maxE()+(devInf?' · 에너지 무한 ON':'');};
