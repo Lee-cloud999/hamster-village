@@ -2951,13 +2951,14 @@ let dexTab='mat';
 function renderMatDex(){
   let got=0;
   const rows=KEYS.map(c=>{
-    const mx=Math.max(1,Math.min(6,st.fmax[c]||1));got+=mx;
+    const seen=genOpen(c)||(st.fmax[c]||0)>1||st.cells.some(x=>x&&x.c===c);
+    const mx=seen?Math.max(1,Math.min(6,st.fmax[c]||1)):0;got+=mx;
     let cells='';
     for(let l=1;l<=6;l++){
       const ok=l<=mx;
       cells+='<div class="mc'+(ok?'':' lock')+'"><div class="mi">'+(ok?em(c,l):'❔')+'</div><span>'+(ok?escH(CH[c].n[l]):'???')+'</span></div>';
     }
-    return '<div class="mrow"><h3>'+escH(CH[c].t)+'<small>'+mx+' / 6</small></h3><div class="mcells">'+cells+'</div></div>';
+    return '<div class="mrow'+(seen?'':' unseen')+'"><h3>'+(seen?escH(CH[c].t):'???')+'<small>'+mx+' / 6</small></h3><div class="mcells">'+cells+'</div></div>';
   }).join('');
   $('#dexMatInfo').textContent='재료 '+got+' / '+(KEYS.length*6)+'종 발견';
   $('#dexMat').innerHTML='<div style="display:grid;gap:4px">'+rows+'</div>';
