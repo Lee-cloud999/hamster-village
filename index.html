@@ -2119,7 +2119,7 @@ function attCheck(){
   const t=todayKey();if(st.att.last===t)return false;
   st.att.last=t;st.att.n=(st.att.n%7)+1;st.att.total=(st.att.total||0)+1;
   const r=ATT_RW[st.att.n-1];attGive(r);save();refresh();
-  setTimeout(()=>{sfx('done');showReward('출석 도장 '+st.att.n+'일차!','<div class="attrow pop">'+attStamps()+'</div><div class="bigrw">'+attRwHTML(r)+'</div>',st.att.n===7?'7일 개근! 내일부터 1일차 도장이 다시 시작돼요.':'내일 또 오면 '+(st.att.n+1)+'일차 선물을 받아요.',()=>{try{evCheckStart();}catch(e){}});},500);
+  setTimeout(()=>{sfx('done');showReward('출석 도장 '+st.att.n+'일차!','<div class="attrow pop">'+attStamps()+'</div><div class="bigrw">'+attRwHTML(r)+'</div>',(r.box?'상자 속 재료는 임시 칸에 도착했어요. ':'')+(st.att.n===7?'7일 개근! 내일부터 1일차 도장이 다시 시작돼요.':'내일 또 오면 '+(st.att.n+1)+'일차 선물을 받아요.'),()=>{try{evCheckStart();}catch(e){}});},500);
   return true;
 }
 function attStamps(){
@@ -3308,7 +3308,9 @@ $('#navDecor').addEventListener('click',()=>{if(st.tut===14){st.tut=15;st.guideD
 $('#navDex').addEventListener('click',()=>{dexSel=null;renderDex();openSheet('dex');});
 $('#evBtn').addEventListener('click',()=>{renderEvent();openSheet('event');sfx('tap');});
 $('#evList').addEventListener('click',e=>{const b=e.target.closest('[data-ev]');if(!b)return;const i=+b.dataset.ev,ev=evState(),g=EVENT.goals[i];if(!g||ev.got.indexOf(i)>=0||ev.pts<g.p)return;
-  ev.got.push(i);attGive(g.r);save();refresh();renderEvent();sfx('done');toast('축제 선물을 받았어요!');});
+  const q0=st.tq.length;ev.got.push(i);attGive(g.r);save();refresh();renderEvent();sfx('done');
+  const nq=st.tq.length-q0;
+  showReward('축제 선물!','<div class="bigrw">'+attRwHTML(g.r)+'</div>',nq?'상자에서 나온 재료 '+nq+'개가 왼쪽 위 임시 칸에 도착했어요. 임시 칸을 누르면 보드에 하나씩 놓여요.':'',()=>{if(nq){const q=$('#qslot');if(q){q.classList.remove('flash');void q.offsetWidth;q.classList.add('flash');}}},'좋아요');});
 $('#goalChip').addEventListener('click',()=>{
   const g=$('#goalChip')._g||nextGoal();sfx('tap');
   if(g.act==='decor')$('#navDecor').click();
