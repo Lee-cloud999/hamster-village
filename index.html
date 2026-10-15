@@ -1222,7 +1222,10 @@ body,.sheet,#tut .tut-b,.say,.toast,.float,#rwBody,#rwNote{word-break:keep-all;o
   background:#fff;border-radius:11px;box-shadow:0 2px 0 rgba(170,130,100,.28),0 3px 8px rgba(0,0,0,.10);z-index:2}
 .order .need{width:26px!important;height:26px!important}
 .order .tier{left:-5px!important;right:auto!important}
-.order.ready{background:#f2fbe9}
+.order,.order.ready,.order.done,.orwrap .order{background:transparent!important;border:0!important;box-shadow:none!important}
+.order .plate{border:2px solid #e9c9b2!important}
+.order.ready .plate{border-color:#7cc25a!important;box-shadow:0 0 0 3px rgba(124,194,90,.28),0 3px 8px rgba(0,0,0,.10)!important}
+.order .need{background:transparent!important;border:0!important;box-shadow:none!important}
 .order:active:not(.done){transform:scale(.97)}
 @container (max-width:100px){
   .order .orw i{font-size:9px;line-height:14px;padding:0 3px 0 1px;gap:0}
