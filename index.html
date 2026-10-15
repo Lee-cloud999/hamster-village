@@ -1040,6 +1040,9 @@ body,.sheet,#tut .tut-b,.say,.toast,.float,#rwBody,#rwNote{word-break:keep-all;o
 #tut .tut-b.wf{width:auto!important;max-width:min(330px,calc(100vw - 24px))!important}
 .say.big{max-width:min(280px,82vw)!important}
 .toast{max-width:min(94vw,440px)!important}
+
+#tut .tut-b,#tut .tut-b.wf{width:max-content!important}
+.say.fix{width:max-content}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -3292,16 +3295,16 @@ function tipCheck(){
 function tipTarget(){
   tipCheck();
   const T=st.tips||{};
-  if(T.box===1){if(!st.tq.length){tipDone('box');}else return {el:$('#qslot'),txt:'선물 상자가 왔어요! 임시 칸을 눌러 재료를 꺼내 보세요',emo:3};}
+  if(T.box===1){if(!st.tq.length){tipDone('box');}else return {el:$('#qslot'),txt:'임시 칸을 눌러 선물을 꺼내요',emo:3};}
   if(T.full===1){
     let a=-1,lv=99;for(let i=0;i<N;i++){const x=st.cells[i];if(!x||x.c==='xp'||isLocked(i)||isGen(i))continue;if(x.l<lv){lv=x.l;a=i;}}
-    if(a>=0)return {el:cellEl(a),to:$('#sell'),txt:'보드가 꽉 찼어요! 안 쓰는 재료는 팔기로 끌어다 놓으면 코인이 돼요',emo:5};
+    if(a>=0)return {el:cellEl(a),to:$('#sell'),txt:'안 쓰는 재료는 팔기로 끌어요',emo:5};
   }
-  if(T.energy===1)return {el:$('#enbox'),txt:'에너지는 2분마다 1씩 다시 차요. 잠깐 쉬어 가요~',emo:7,up:true};
+  if(T.energy===1)return {el:$('#enbox'),txt:'에너지는 2분마다 1씩 차요',emo:7,up:true};
   if(T.quest===1){
     if($('#quest').hidden&&T.qo){tipDone('quest');return null;}
-    if(!$('#quest').hidden){T.qo=1;const b=document.querySelector('#qList button[data-t]');if(!b){tipDone('quest');return null;}return {el:b,txt:'다 한 일은 여기서 보상을 받아요!',emo:3,sheet:'quest'};}
-    return {el:$('#navQuest'),txt:'매일 할 일을 하면 코인을 더 받을 수 있어요! 퀘스트를 열어 보세요',emo:2};
+    if(!$('#quest').hidden){T.qo=1;const b=document.querySelector('#qList button[data-t]');if(!b){tipDone('quest');return null;}return {el:b,txt:'여기서 보상을 받아요!',emo:3,sheet:'quest'};}
+    return {el:$('#navQuest'),txt:'퀘스트에서 코인을 더 받아요!',emo:2};
   }
   return null;
 }
@@ -3318,17 +3321,17 @@ function tutExt(t){
   const two=()=>{const k=st.orders.findIndex(o=>o.cu===0&&o.needs.length>1&&o.state!=='done');return k>=0?$('#orders').children[k]:null;};
   const gen=document.querySelector('.gencell:not(.glock)');
   const pair=()=>{for(let i=0;i<N;i++){const x=st.cells[i];if(!x||x.c!=='br'||x.l>=3||isLocked(i)||isGen(i))continue;for(let j=i+1;j<N;j++){if(canMerge(i,j)&&!isLocked(j)&&!isGen(j))return [i,j];}}return null;};
-  if(t===10)return {el:two(),txt:'이번엔 재료가 두 개 필요해요. 생성기를 눌러 하나씩 만들어 볼까요?',emo:6};
-  if(t===11){const pr=pair();if(pr)return {el:cellEl(pr[0]),to:cellEl(pr[1]),txt:'같은 재료를 계속 합쳐서 새싹(3단계)까지 키워 보세요'};return {el:gen,txt:'재료가 모자라요. 생성기를 눌러 더 꺼내요'};}
-  if(t===12){const c=two();const nd=c&&c.querySelector('.need[data-l="3"]:not(.done)');return {el:nd||c,txt:'주문 재료를 누르면 몇 단계인지 볼 수 있어요'};}
-  if(t===13){const c=two();const r=c&&c.querySelector('.subbtn.ready');if(r)return {el:r,txt:'두 재료를 다 모았어요! 전해 주세요'};const pr=pair();if(pr)return {el:cellEl(pr[0]),to:cellEl(pr[1]),txt:'남은 재료도 만들어 주세요'};return {el:gen,txt:'남은 재료도 만들어 주세요. 생성기를 눌러요'};}
-  if(t===14)return {el:$('#navDecor'),txt:'코인이 모였어요! 보리에게 침대를 마련해 줄까요?',emo:3};
+  if(t===10)return {el:two(),txt:'이번엔 재료가 두 개예요!',emo:6};
+  if(t===11){const pr=pair();if(pr)return {el:cellEl(pr[0]),to:cellEl(pr[1]),txt:'새싹까지 합쳐서 키워요'};return {el:gen,txt:'생성기로 재료를 더 꺼내요'};}
+  if(t===12){const c=two();const nd=c&&c.querySelector('.need[data-l="3"]:not(.done)');return {el:nd||c,txt:'재료를 누르면 단계가 보여요'};}
+  if(t===13){const c=two();const r=c&&c.querySelector('.subbtn.ready');if(r)return {el:r,txt:'다 모았어요! 전해 주세요'};const pr=pair();if(pr)return {el:cellEl(pr[0]),to:cellEl(pr[1]),txt:'남은 재료도 만들어 주세요'};return {el:gen,txt:'생성기로 남은 재료를 만들어요'};}
+  if(t===14)return {el:$('#navDecor'),txt:'보리에게 침대를 사 줄까요?',emo:3};
   if(t===15||t===16){
     if($('#decor').hidden)return {el:$('#navDecor'),txt:'꾸미기를 눌러 보세요'};
     if(dSel!=='bed'){st.tut=15;return {el:document.querySelector('#dscene .slot.s-bed'),txt:'침대 자리를 눌러 보세요',sheet:'decor'};}
-    st.tut=16;const b=document.querySelector('#dPanel [data-buy]');try{if(b&&!b._sc){b._sc=1;b.scrollIntoView({block:'center',behavior:'smooth'});}}catch(e){}return {el:b,txt:'마음에 드는 침대를 골라 설치해요',sheet:'decor',up:true};
+    st.tut=16;const b=document.querySelector('#dPanel [data-buy]');try{if(b&&!b._sc){b._sc=1;b.scrollIntoView({block:'center',behavior:'smooth'});}}catch(e){}return {el:b,txt:'침대를 골라 설치해요',sheet:'decor',up:true};
   }
-  if(t===17){if(!$('#decor').hidden)return {el:document.querySelector('#decor [data-close]'),txt:'창을 닫고 보리를 만나러 가요',sheet:'decor'};return {el:$('#navDex'),txt:'보리의 이야기가 있어요. 도감에서 읽어 볼까요?',emo:2};}
+  if(t===17){if(!$('#decor').hidden)return {el:document.querySelector('#decor [data-close]'),txt:'창을 닫아 주세요',sheet:'decor'};return {el:$('#navDex'),txt:'보리의 이야기를 읽어 봐요',emo:2};}
   if(t===18){
     if($('#dex').hidden)return {el:$('#navDex'),txt:'도감을 눌러 보세요'};
     if(dexTab!=='res')return {el:document.querySelector('[data-dtab=res]'),txt:'주민 도감을 눌러요',sheet:'dex'};
@@ -3341,19 +3344,19 @@ function tutTarget(){
   try{tutNorm();}catch(e){}
   const t=st&&st.tut;
   if(t>=10&&t<20)return tutExt(t);
-  if(!t||t>=8){const tp=tipTarget();if(tp)return tp;const n=$('#navDecor');if(st&&st.guideDecor===1)return n?{el:n,txt:'코인이 모였어요! 보리에게 침대를 마련해 줄까요?'}:null;if(st&&st.guideMsg)return n?{el:n,txt:st.guideMsg}:null;return null;}
+  if(!t||t>=8){const tp=tipTarget();if(tp)return tp;const n=$('#navDecor');if(st&&st.guideDecor===1)return n?{el:n,txt:'보리에게 침대를 사 줄까요?'}:null;if(st&&st.guideMsg)return n?{el:n,txt:st.guideMsg}:null;return null;}
   const B=$('#board');
   if(t===1||t===2){const g=document.querySelector('.gencell:not(.glock)');return {el:g,txt:t===1?'생성기를 눌러 보세요':'한 번 더 눌러 보세요'};}
   if(t===3){
     let a=-1,b=-1;
     for(let i=0;i<N&&a<0;i++){const x=st.cells[i];if(!x||x.c==='xp'||isLocked(i)||isGen(i))continue;for(let j=i+1;j<N;j++){if(canMerge(i,j)&&!isLocked(j)&&!isGen(j)){a=i;b=j;break;}}}
-    if(a<0)return {el:null,txt:'같은 재료 두 개를 합쳐 보세요'};
-    return {el:cellEl(a),to:cellEl(b),txt:'같은 재료 두 개를 끌어서 합쳐 보세요'};
+    if(a<0)return {el:null,txt:'같은 재료를 합쳐 보세요'};
+    return {el:cellEl(a),to:cellEl(b),txt:'같은 재료를 끌어서 합쳐요'};
   }
-  if(t===4){const r=document.querySelector('.subbtn.ready')||document.querySelector('.subbtn');return {el:r,txt:document.querySelector('.subbtn.ready')?'햄스터에게 전해 주세요':'재료를 모아 햄스터에게 전해 주세요'};}
+  if(t===4){const r=document.querySelector('.subbtn.ready')||document.querySelector('.subbtn');return {el:r,txt:document.querySelector('.subbtn.ready')?'햄스터에게 전해 주세요':'재료를 모아 전해 주세요'};}
   if(t===5)return null;
-  if(t===6){const it=B.querySelector('.item.c-xp');return {el:it?it.closest('.cell'):null,txt:'황금 도토리를 두 번 터치해 보세요'};}
-  if(t===7)return {el:document.querySelector('.stat .xp'),txt:'경험치가 올라요! 레벨이 오르면 선물을 받아요',up:true};
+  if(t===6){const it=B.querySelector('.item.c-xp');return {el:it?it.closest('.cell'):null,txt:'도토리를 두 번 눌러요'};}
+  if(t===7)return {el:document.querySelector('.stat .xp'),txt:'레벨이 오르면 선물이 와요!',up:true};
   return null;
 }
 function tutDraw(){
