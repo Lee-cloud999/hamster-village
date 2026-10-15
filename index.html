@@ -988,6 +988,9 @@ body{padding-inline:8px}
 @media (prefers-reduced-motion: no-preference){.app>.nav .btn.bounce .ni{animation:navBounce .9s ease-out 2}@keyframes navBounce{0%,100%{transform:none}30%{transform:translateY(-12px) scale(1.08)}55%{transform:translateY(0) scale(.96,1.04)}75%{transform:translateY(-4px)}}}
 
 #rwBody .story .who2 .fc .rim{width:76px!important;height:76px!important;transition:transform .15s}
+
+#tut .tut-b.wf{display:flex;align-items:center;gap:8px;text-align:left;width:min(270px,calc(100vw - 24px));max-width:none;box-sizing:border-box}
+#tut .tut-b .tut-face{width:46px;height:46px;flex:0 0 46px;object-fit:contain;margin:-6px 0 -6px -6px}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -1917,7 +1920,7 @@ function qPlace(){
   const e=st.tq[0],empty=emptyCells();
   if(!empty.length){toast('보드에 빈 칸이 없어요. 재료를 합치거나 팔아서 자리를 만들어 보세요');sfx('err');return;}
   const j=empty[rnd(empty.length)];
-  sel=null;st.cells[j]={c:e.c,l:e.l};st.tq.shift();
+  sel=null;st.cells[j]={c:e.c,l:e.l};st.tq.shift();tipDone('box');
   save();renderBoard();pop(j);fxAt(j,0,0,3);sfx('gen');refresh();
 }
 
@@ -1985,6 +1988,7 @@ function renderQuests(){
   $('#qNote').textContent=dd.g?'이 날의 선물 상자를 받았어요.':giftReady(viewDay)?'별 3개를 모았어요. 선물 상자를 열어 보세요!':'퀘스트 보상을 3개 받으면 선물 상자를 열 수 있어요.'+(viewDay===7?' 7일차 선물은 상자 2개와 코인 200개예요.':'');
 }
 function claimTask(d,id){
+  tipDone('quest');
   const dd=dayData(d),t=tasksFor(st.q.cycle,d).find(x=>x.id===id);
   if(!t||dd.c.indexOf(id)>=0||taskProg(d,t)<t.target)return;
   dd.c.push(id);st.coins+=taskReward(d);
@@ -2395,6 +2399,7 @@ function askUnlock(i){
 }
 function sellItem(i){
   const it=st.cells[i];if(!it)return;
+  if(it.c!=='xp')tipDone('full');
   if(it.c==='xp'){toast('황금 도토리는 팔 수 없어요. 두 번 눌러 경험치를 받으세요');sfx('err');return;}
   const p=SELLP[it.l];
   const go=()=>{
@@ -3103,9 +3108,38 @@ $('#startGo').addEventListener('click',()=>{
 
 
 /* ---------- finger tutorial ---------- */
+/* 보리의 친절한 도움말: 필요한 순간에 한 번씩 */
+let tipEnT=0;
+function tipDone(k){if(st&&st.tips&&st.tips[k]===1){st.tips[k]=2;save();}}
+function tipCheck(){
+  if(!st||(st.tut&&st.tut<8)||!$('#startScr').hidden)return;
+  const T=st.tips=st.tips||{};
+  if(!T.box&&st.tq.length&&st.lv>=2)T.box=1;
+  if(!T.full&&st.nDeliv>0&&emptyCells().length<=4)T.full=1;
+  if(T.full===1&&emptyCells().length>8)T.full=2;
+  if(!T.energy&&st.e<5&&st.e>0)T.energy=1;
+  if(T.energy===1&&!tipEnT){tipEnT=setTimeout(()=>tipDone('energy'),7000);}
+  if(!T.quest&&st.lv>=3&&$('#reward').hidden)T.quest=1;
+}
+function tipTarget(){
+  tipCheck();
+  const T=st.tips||{};
+  if(T.box===1){if(!st.tq.length){tipDone('box');}else return {el:$('#qslot'),txt:'선물 상자가 왔어요! 임시 칸을 눌러 재료를 꺼내 보세요',emo:3};}
+  if(T.full===1){
+    let a=-1,lv=99;for(let i=0;i<N;i++){const x=st.cells[i];if(!x||x.c==='xp'||isLocked(i)||isGen(i))continue;if(x.l<lv){lv=x.l;a=i;}}
+    if(a>=0)return {el:cellEl(a),to:$('#sell'),txt:'보드가 꽉 찼어요! 안 쓰는 재료는 팔기로 끌어다 놓으면 코인이 돼요',emo:5};
+  }
+  if(T.energy===1)return {el:$('#enbox'),txt:'에너지는 2분마다 1씩 다시 차요. 잠깐 쉬어 가요~',emo:7,up:true};
+  if(T.quest===1){
+    if($('#quest').hidden&&T.qo){tipDone('quest');return null;}
+    if(!$('#quest').hidden){T.qo=1;const b=document.querySelector('#qList button[data-t]');if(!b){tipDone('quest');return null;}return {el:b,txt:'다 한 일은 여기서 보상을 받아요!',emo:3,sheet:'quest'};}
+    return {el:$('#navQuest'),txt:'매일 할 일을 하면 코인을 더 받을 수 있어요! 퀘스트를 열어 보세요',emo:2};
+  }
+  return null;
+}
 function tutTarget(){
   const t=st&&st.tut;
-  if(!t||t>=8){const n=$('#navDecor');if(st&&st.guideDecor===1)return n?{el:n,txt:'코인이 모였어요! 보리에게 침대를 마련해 줄까요?'}:null;if(st&&st.guideMsg)return n?{el:n,txt:st.guideMsg}:null;return null;}
+  if(!t||t>=8){const tp=tipTarget();if(tp)return tp;const n=$('#navDecor');if(st&&st.guideDecor===1)return n?{el:n,txt:'코인이 모였어요! 보리에게 침대를 마련해 줄까요?'}:null;if(st&&st.guideMsg)return n?{el:n,txt:st.guideMsg}:null;return null;}
   const B=$('#board');
   if(t===1||t===2){const g=document.querySelector('.gencell:not(.glock)');return {el:g,txt:t===1?'생성기를 눌러 보세요':'한 번 더 눌러 보세요'};}
   if(t===3){
@@ -3125,11 +3159,12 @@ function tutDraw(){
     let o=document.getElementById('tut');
     if(!o){o=document.createElement('div');o.id='tut';o.innerHTML='<div class="tut-b"></div><div class="tut-f"><svg width="52" height="60" viewBox="0 0 52 60"><path d="M18 4c3 0 5 2 5 5v17l2-1c1-3 7-3 8 0 2-2 7-2 8 2 3-1 7 1 7 5v12c0 9-6 15-15 15h-6c-5 0-9-2-12-6L5 38c-2-3 0-6 3-6 2 0 4 1 5 3l0-26c0-3 2-5 5-5z" fill="#fff" stroke="#5b4038" stroke-width="3" stroke-linejoin="round"/><path d="M23 26v10M33 27v9M41 29v7" stroke="#5b4038" stroke-width="2.5" stroke-linecap="round" fill="none"/></svg></div>';document.body.appendChild(o);}
     const T=tutTarget();
-    const blocked=!$('#startScr').hidden||document.querySelector('.sheet:not([hidden])');
+    const opn=[...document.querySelectorAll('.sheet:not([hidden])')].map(e=>e.id);
+    const blocked=!$('#startScr').hidden||(opn.length&&!(T&&T.sheet&&opn.length===1&&opn[0]===T.sheet));
     if(!T||blocked){o.hidden=true;return;}
     o.hidden=false;
     const b=o.querySelector('.tut-b'),f=o.querySelector('.tut-f');
-    b.textContent=T.txt;
+    if(T.emo&&EXPRU[0]){b.innerHTML='<img class="tut-face" src="'+emoU(0,T.emo)+'" alt="">'+'<span>'+escH(T.txt)+'</span>';b.classList.add('wf');}else{b.textContent=T.txt;b.classList.remove('wf');}
     f.classList.toggle('drag',!!T.to);
     if(!T.el){f.style.display='none';b.style.left='50%';b.style.top='40%';return;}
     f.style.display='';
