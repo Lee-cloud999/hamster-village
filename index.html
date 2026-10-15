@@ -1210,43 +1210,38 @@ body,.sheet,#tut .tut-b,.say,.toast,.float,#rwBody,#rwNote{word-break:keep-all;o
 #pass .stone .slv{top:-14px}
 #pass .stone .scn{bottom:-6px}
 
-/* order card v2: hamster left, needs beside, tap card to deliver */
-.order{cursor:pointer;grid-template-columns:auto minmax(0,1fr)!important;padding:6px 6px 6px 4px!important;gap:2px 4px!important;align-items:center}
-.order .who{position:static!important;transform:none!important;grid-column:1;grid-row:1;align-self:end;pointer-events:none;margin:-14px 0 -6px -2px}
-.order .who .face{clip-path:none!important;font-size:50px}
-.order .who .face img,.order .who .face .im,.order .who .face .rim{width:60px!important;height:60px!important}
-.order .plate{grid-column:2!important;grid-row:1!important;justify-content:flex-start!important;flex-wrap:nowrap!important;min-height:30px}
-.order .subbtn{display:none!important}
-.orders{margin-top:24px}
-.order .orw{left:2px!important;right:auto!important;top:-21px!important;grid-auto-flow:column}
-.orders{grid-template-columns:none!important;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}
-.order{container-type:inline-size}
-.order .who .face img,.order .who .face .im,.order .who .face .rim{width:56px!important;height:56px!important}
-@container (max-width:118px){
-  .order .plate{display:grid!important;grid-auto-flow:column;grid-template-rows:repeat(2,auto);gap:2px!important;justify-content:start!important;align-content:center}
-  .order .who{margin:-12px -2px -6px -4px}
-  .order .who .face img,.order .who .face .im,.order .who .face .rim{width:50px!important;height:50px!important}
-}
-@container (max-width:118px){
+/* order card v3: 햄스터는 뒤에 크게, 보상은 오른쪽, 필요한 재료는 앞 선반 */
+.order{display:block!important;position:relative;height:104px;padding:0!important;container-type:inline-size;cursor:pointer;overflow:visible}
+.orders{margin-top:12px;grid-template-columns:none!important;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}
+.order .subbtn,.order .rew,.order .otxt{display:none!important}
+.order .who{position:absolute!important;left:40%!important;top:auto!important;bottom:22px;transform:translateX(-50%)!important;margin:0!important;z-index:1;pointer-events:none}
+.order .who .face{clip-path:none!important;display:block;line-height:0}
+.order .who .face img,.order .who .face .im,.order .who .face .rim{width:min(80px,74cqw)!important;height:min(80px,74cqw)!important}
+.order .orw{position:absolute!important;left:auto!important;right:3px!important;top:6px!important;display:flex!important;flex-direction:column;align-items:flex-end;gap:2px!important;z-index:3}
+.order .plate{position:absolute!important;left:5px;right:5px;bottom:5px;height:32px;min-height:0!important;display:flex!important;flex-wrap:nowrap!important;justify-content:center!important;align-items:center;gap:3px!important;padding:0 3px;margin:0!important;
+  background:#fff;border-radius:11px;box-shadow:0 2px 0 rgba(170,130,100,.28),0 3px 8px rgba(0,0,0,.10);z-index:2}
+.order .need{width:26px!important;height:26px!important}
+.order .tier{left:-5px!important;right:auto!important}
+.order.ready{background:#f2fbe9}
+.order:active:not(.done){transform:scale(.97)}
+@container (max-width:100px){
   .order .orw i{font-size:9px;line-height:14px;padding:0 3px 0 1px;gap:0}
   .order .orw i img,.order .orw i svg{width:10px!important;height:10px!important}
   .order .orw b{font-size:10px}
-  .order .orw{gap:1px!important}
+  .order .need{width:22px!important;height:22px!important}
+  .order .plate{gap:2px!important;padding:0 2px}
 }
-@container (max-width:96px){
-  .order .orw .ox{display:none}
-  .order .plate:has(.need:nth-child(3)){display:flex!important;grid-column:1/-1!important;grid-row:2!important;justify-content:center!important;margin-top:4px}
-  .order .need{width:24px!important;height:24px!important}
-}
-.order.ready{background:#f2fbe9}
-.order:active:not(.done){transform:scale(.97)}
 @media (min-aspect-ratio:1/1) and (min-width:700px) and (min-height:540px){
-  .orwrap .order{grid-template-columns:84px minmax(0,1fr)!important;padding:10px 12px!important}
-  .orwrap .order .who{grid-row:1/3;margin:0;align-self:center}
-  .orwrap .order .who .face img,.orwrap .order .who .face .im,.orwrap .order .who .face .rim{width:80px!important;height:80px!important}
-  .orwrap .order .plate{grid-column:2!important;grid-row:1/3!important;align-self:center}
-  .orwrap .order .orw{left:auto!important;right:8px!important;top:6px!important}
-  .orwrap .orders{grid-auto-flow:row!important}
+  .orwrap .orders{grid-template-columns:none!important;grid-auto-flow:column!important;grid-auto-columns:minmax(0,1fr)!important;gap:8px!important;margin-top:16px!important}
+  .orwrap .order{display:block!important;height:128px!important;min-height:0!important;padding:0!important;overflow:visible!important}
+  .orwrap .order .who{left:38%!important;bottom:26px!important;position:absolute!important;grid-row:auto!important}
+  .orwrap .order .who .face img,.orwrap .order .who .face .im,.orwrap .order .who .face .rim{width:min(96px,68cqw)!important;height:min(96px,68cqw)!important}
+  .orwrap .order .orw{left:auto!important;right:5px!important;top:8px!important;align-items:flex-end}
+  .orwrap .order .orw i{font-size:12px;line-height:18px;padding:0 6px 0 2px}
+  .orwrap .order .orw i img,.orwrap .order .orw i svg{width:14px!important;height:14px!important}
+  .orwrap .order .orw b{font-size:13px}
+  .orwrap .order .plate{left:6px!important;right:6px!important;bottom:6px!important;height:40px!important;min-height:0!important;gap:4px!important;justify-content:center!important;grid-column:auto!important;grid-row:auto!important}
+  .orwrap .order .need{width:32px!important;height:32px!important}
 }
 </style>
 <div class="startscr" id="startScr">
