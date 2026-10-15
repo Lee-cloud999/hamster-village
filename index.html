@@ -2639,7 +2639,7 @@ window.addEventListener('pointermove',e=>{
     cellEl(drag.i).classList.add('lift');
     renderOrders();
   }
-  drag.ghost.style.transform='translate('+(e.clientX-drag.size*.6)+'px,'+(e.clientY-drag.size*.95)+'px)';
+  drag.ghost.style.transform='translate('+(e.clientX-drag.size*.5)+'px,'+(e.clientY-drag.size*.5)+'px)';
   const el=document.elementFromPoint(e.clientX,e.clientY);
   const tgt=el&&(el.closest('.order')||el.closest('.sell')||el.closest('.cell'));
   setHover(tgt&&!(tgt.classList.contains('cell')&&(+tgt.dataset.i===drag.i||tgt.classList.contains('lock')||tgt.classList.contains('gencell')))?tgt:null);
