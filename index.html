@@ -1212,7 +1212,7 @@ body,.sheet,#tut .tut-b,.say,.toast,.float,#rwBody,#rwNote{word-break:keep-all;o
 
 /* order card v3: 햄스터는 뒤에 크게, 보상은 오른쪽, 필요한 재료는 앞 선반 */
 .order{display:block!important;position:relative;height:104px;padding:0!important;container-type:inline-size;cursor:pointer;overflow:visible}
-.orders{margin-top:12px;grid-template-columns:none!important;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}
+.orders{margin-top:12px;grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-auto-flow:row}
 .order .subbtn,.order .rew,.order .otxt{display:none!important}
 .order .who{position:absolute!important;left:40%!important;top:auto!important;bottom:22px;transform:translateX(-50%)!important;margin:0!important;z-index:1;pointer-events:none}
 .order .who .face{clip-path:none!important;display:block;line-height:0}
@@ -1235,7 +1235,7 @@ body,.sheet,#tut .tut-b,.say,.toast,.float,#rwBody,#rwNote{word-break:keep-all;o
   .order .plate{gap:2px!important;padding:0 2px}
 }
 @media (min-aspect-ratio:1/1) and (min-width:700px) and (min-height:540px){
-  .orwrap .orders{grid-template-columns:none!important;grid-auto-flow:column!important;grid-auto-columns:minmax(0,1fr)!important;gap:8px!important;margin-top:16px!important}
+  .orwrap .orders{grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-auto-flow:row!important;gap:8px!important;margin-top:16px!important}
   .orwrap .order{display:block!important;height:128px!important;min-height:0!important;padding:0!important;overflow:visible!important}
   .orwrap .order .who{left:38%!important;bottom:26px!important;position:absolute!important;grid-row:auto!important}
   .orwrap .order .who .face img,.orwrap .order .who .face .im,.orwrap .order .who .face .rim{width:min(96px,68cqw)!important;height:min(96px,68cqw)!important}
