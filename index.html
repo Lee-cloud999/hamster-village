@@ -1043,6 +1043,18 @@ body,.sheet,#tut .tut-b,.say,.toast,.float,#rwBody,#rwNote{word-break:keep-all;o
 
 #tut .tut-b,#tut .tut-b.wf{width:max-content!important}
 .say.fix{width:max-content}
+
+.botrow .evbtn{position:relative;flex:0 0 auto;width:44px;height:44px;border-radius:14px;border:2px solid #f5c98a;background:linear-gradient(135deg,#fff3d6,#ffe1c7);font-size:24px;line-height:1;display:grid;place-items:center;box-shadow:0 2px 0 rgba(200,140,80,.18);padding:0}
+.botrow .evbtn .nb{position:absolute;top:-6px;right:-6px}
+.attrow{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.attrow .stamp{display:grid;justify-items:center;gap:1px;padding:5px 0;border-radius:12px;background:var(--cell);border:2px solid transparent}
+.attrow .stamp b{font-size:11px;color:var(--muted)}.attrow .stamp i{font-style:normal;font-size:18px}
+.attrow .stamp.on{background:#ffe9dc}.attrow .stamp.now{border-color:#f0a58a}
+.attrow.pop{width:100%}
+.evbar{position:relative;height:22px;border-radius:12px;background:var(--cell);overflow:hidden}
+.evbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#f6c27a,#e99a5c);border-radius:12px}
+.evbar span{position:absolute;inset:0;display:grid;place-items:center;font-size:12px;font-weight:800;color:#5b3a28}
+#event .prow{grid-template-columns:auto 1fr auto}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -1085,6 +1097,7 @@ body,.sheet,#tut .tut-b,.say,.toast,.float,#rwBody,#rwNote{word-break:keep-all;o
   </section>
 
   <div class="botrow">
+  <button class="evbtn" id="evBtn" type="button" aria-label="이벤트">🍂<span class="nb" id="bEv" hidden></span></button>
   <button class="goalchip" id="goalChip" type="button"></button>
   <div class="sell" id="sell" role="button" tabindex="0">팔기</div>
 
@@ -1119,6 +1132,16 @@ body,.sheet,#tut .tut-b,.say,.toast,.float,#rwBody,#rwNote{word-break:keep-all;o
   <div id="passList" style="display:grid;gap:8px"></div>
 </section>
 
+<section class="sheet" id="event" role="dialog" aria-label="이벤트" hidden>
+  <header><h2>🎪 이벤트</h2><button class="x" data-close aria-label="닫기">✕</button></header>
+  <h3 class="qsec main">📅 출석 도장</h3>
+  <div class="attrow" id="attRow"></div>
+  <p class="have" id="attInfo"></p>
+  <h3 class="qsec" id="evTitle">🍂 가을 도토리 축제</h3>
+  <p class="have" id="evInfo"></p>
+  <div class="evbar"><i id="evFill"></i><span id="evPts"></span></div>
+  <div id="evList" style="display:grid;gap:6px"></div>
+</section>
 <section class="sheet" id="quest" role="dialog" aria-label="퀘스트" hidden>
   <header><h2>퀘스트</h2><button class="x" data-close aria-label="닫기">✕</button></header>
   <h3 class="qsec main">⭐ 메인 퀘스트</h3>
@@ -1921,7 +1944,7 @@ function hearts(el){
 }
 
 /* ---------- sheets ---------- */
-const MAIN_SHEETS=['shop','pass','quest','decor','dex','prof','snd','dev'].filter(id=>document.getElementById(id));
+const MAIN_SHEETS=['event','shop','pass','quest','decor','dex','prof','snd','dev'].filter(id=>document.getElementById(id));
 const TOP_SHEETS=['confirm','reward','chain'];
 function syncScrim(){$('#scrim').hidden=!Array.prototype.some.call(document.querySelectorAll('.sheet'),s=>!s.hidden);}
 /* 메뉴 창: 스크롤 없이 한눈에 보이도록 화면에 맞춰 살짝 줄여요 */
@@ -2018,7 +2041,51 @@ function nextGoal(){
   if(!zoneDone(2))return {t:'새 이웃을 만나 마을 광장 넓히기',a:cnt(2),b:tot(2),act:'none',emo:1};
   return {t:'주민 이야기 모두 읽기',act:'dex',emo:2};
 }
+/* ---------- 출석 도장 (7일 반복, 빠져도 이어져요) ---------- */
+const ATT_RW=[{coins:30},{energy:20},{box:1},{coins:60},{energy:30},{box:2},{coins:150,box:1}];
+function attRwHTML(r){let h='';if(r.coins)h+=bi(COIN,r.coins,'코인');if(r.energy)h+=bi(BOLT,'+'+r.energy,'에너지');if(r.box)h+=bi(BOXI,'재료 상자'+(r.box>1?' ×'+r.box:''),'');return h;}
+function attGive(r){if(r.coins)st.coins+=r.coins;if(r.energy){tickEnergy();st.e+=r.energy;}for(let i=0;i<(r.box||0);i++)spawnBox();}
+function attCheck(){
+  if(!st||!st.intro||inTut())return false;
+  st.att=st.att||{last:null,n:0,total:0};
+  const t=todayKey();if(st.att.last===t)return false;
+  st.att.last=t;st.att.n=(st.att.n%7)+1;st.att.total=(st.att.total||0)+1;
+  const r=ATT_RW[st.att.n-1];attGive(r);save();refresh();
+  setTimeout(()=>{sfx('done');showReward('출석 도장 '+st.att.n+'일차!','<div class="attrow pop">'+attStamps()+'</div><div class="bigrw">'+attRwHTML(r)+'</div>',st.att.n===7?'7일 개근! 내일부터 1일차 도장이 다시 시작돼요.':'내일 또 오면 '+(st.att.n+1)+'일차 선물을 받아요.',()=>{try{evCheckStart();}catch(e){}});},500);
+  return true;
+}
+function attStamps(){
+  const n=(st.att&&st.att.n)||0;let h='';
+  for(let d=1;d<=7;d++)h+='<div class="stamp'+(d<=n?' on':'')+(d===n?' now':'')+'"><b>'+d+'</b>'+(d<=n?'<i>🐾</i>':'<i>'+(ATT_RW[d-1].coins?'🪙':ATT_RW[d-1].energy?'⚡':'🎁')+'</i>')+'</div>';
+  return h;
+}
+/* ---------- 기간 이벤트: 가을 도토리 축제 ---------- */
+const EVENT={id:'acorn-2026',name:'가을 도토리 축제',start:'2026-10-15',end:'2026-11-15',
+  goals:[{p:5,r:{coins:80}},{p:15,r:{box:2}},{p:30,r:{energy:30,coins:100}},{p:50,r:{box:3}},{p:80,r:{coins:400}},{p:120,r:{coins:600,box:3}}]};
+const evOn=()=>{const t=todayKey();return t>=EVENT.start&&t<=EVENT.end;};
+function evState(){st.ev=st.ev&&st.ev.id===EVENT.id?st.ev:{id:EVENT.id,pts:0,got:[],seen:0};return st.ev;}
+function evAdd(o){if(!evOn())return 0;const e=evState();const n=o.needs.length+(o.tier==='hard'?1:0);e.pts+=n;return n;}
+function evClaimable(){if(!evOn()&&!(st.ev&&st.ev.pts))return 0;const e=evState();return EVENT.goals.filter((g,i)=>e.pts>=g.p&&e.got.indexOf(i)<0).length;}
+function evDaysLeft(){const a=new Date(EVENT.end+'T23:59:59'),b=new Date();return Math.max(0,Math.ceil((a-b)/86400000));}
+function evCheckStart(){
+  if(!evOn()||!st.intro||inTut())return;const e=evState();if(e.seen)return;e.seen=1;save();
+  setTimeout(()=>{sfx('level');showReward('🍂 '+EVENT.name+'!','<div class="bigrw">'+bi('<span style="font-size:64px">🌰</span>','축제 도토리','')+'</div>','부탁을 들어줄 때마다 축제 도토리를 받아요. 모으면 선물이 있어요! ('+EVENT.end.slice(5).replace('-','월 ')+'일까지)',null,'좋아요');},600);
+}
+function renderEvent(){
+  const n=(st.att&&st.att.n)||0;
+  $('#attRow').innerHTML=attStamps();
+  $('#attInfo').textContent=st.att&&st.att.total?'지금까지 '+st.att.total+'번 출석했어요. 하루에 한 번 게임을 열면 도장을 찍어요.':'하루에 한 번 게임을 열면 도장을 찍어요.';
+  const e=evState(),on=evOn(),mx=EVENT.goals[EVENT.goals.length-1].p;
+  $('#evTitle').textContent='🍂 '+EVENT.name;
+  $('#evInfo').textContent=on?'부탁을 들어주면 축제 도토리를 받아요 (재료 1개당 1개, 어려운 부탁은 +1). 남은 기간 '+evDaysLeft()+'일':'축제가 끝났어요. 받지 못한 선물은 지금 받을 수 있어요.';
+  $('#evFill').style.width=Math.min(100,e.pts/mx*100)+'%';$('#evPts').textContent='🌰 '+e.pts+' / '+mx;
+  $('#evList').innerHTML=EVENT.goals.map((g,i)=>{const got=e.got.indexOf(i)>=0,can=!got&&e.pts>=g.p;
+    const r=g.r,txt=[r.coins?'🪙 '+r.coins:'',r.energy?'⚡ +'+r.energy:'',r.box?'🎁 재료 상자'+(r.box>1?' ×'+r.box:''):''].filter(Boolean).join(' · ');
+    return '<div class="prow'+(got?' got':'')+'"><div class="plv">🌰 '+g.p+'</div><div class="rcs"><span>'+txt+'</span></div>'+(can?'<button class="btn main" type="button" data-ev="'+i+'">받기</button>':'<span class="st">'+(got?'받음':'잠김')+'</span>')+'</div>';}).join('');
+}
+function renderEvBtn(){const b=$('#evBtn');if(!b)return;const show=evOn()||evClaimable()>0||true;b.hidden=!show;setBadge('#bEv',evClaimable()+((st.att&&st.att.last!==todayKey())?1:0));}
 function renderGoalChip(){
+  try{renderEvBtn();}catch(e){}
   const el=$('#goalChip');if(!el)return;const g=nextGoal();g.t=rn(g.t);el._g=g;
   el.innerHTML='<img class="gcf" src="'+emoU(g.who||0,g.emo)+'" alt=""><span class="gct"><small>다음 할 일</small><b>'+escH(g.t)+'</b></span>'+(g.b?'<em class="gcn">'+g.a+'/'+g.b+'</em>':'')+'<i class="gca">›</i>';
 }
@@ -2404,7 +2471,8 @@ function deliver(i,k){
     o.state='done';o.doneAt=Date.now();st.coins+=o.coins;st.nDeliv++;st.fed[o.cu]=(st.fed[o.cu]||0)+1;
     track('deliver');track('coin',o.coins);
     flyCoins($('#orders').children[k],o.coins,false);
-    const rwTxt='🪙 +'+o.coins+'  ⭐ 경험치 +'+o.xp;
+    const evN=evAdd(o);
+    const rwTxt='🪙 +'+o.coins+'  ⭐ 경험치 +'+o.xp+(evN?'  🌰 +'+evN:'');
     flyXp($('#orders').children[k],o.xp);
     setTimeout(()=>{gainXp(o.xp);refresh();save();},560);
     if(tutXp){st.tut=5;setTimeout(()=>{if(st.tut===5){st.tut=7;save();tutDraw();}},3000);setTimeout(()=>{if(st.tut===7){st.tut=10;save();tutDraw();}},6200);}
@@ -2999,7 +3067,7 @@ function openStory(p,k){
   const body='<div class="story"><div class="who2">'+face(p)+'<b>'+escH(petName(p))+'</b></div>'+c.l.map((x,i)=>'<p data-emo="'+(((STORY_EMO[p]||[])[k]||[])[i]||'')+'" data-pet="'+p+'">'+escH(x)+'</p>').join('')+'</div>';
   showReward(c.t,body,first?'이야기를 읽으면 코인 30개를 받아요.':'',first?()=>{
     st.read[p]=k+1;st.coins+=30;refresh();renderDex();sfx('badge');toast('코인 30개를 받았어요');
-    if(st.tut>=10&&st.tut<20){st.tut=8;st.guideDecor=2;save();setTimeout(()=>{closeSheet('dex');bigText('이제 마을을 자유롭게 가꿔 보세요!',true);},400);}
+    if(st.tut>=10&&st.tut<20){st.tut=8;st.guideDecor=2;save();setTimeout(()=>{closeSheet('dex');bigText('이제 마을을 자유롭게 가꿔 보세요!',true);},400);setTimeout(()=>{try{if(!attCheck())evCheckStart();}catch(e){}},2600);}
     if(p===0&&k===2&&!owned('run'))st.guideMsg='옆 빈 방에 쳇바퀴를 놓아 볼까요?';
     save();
   }:null);
@@ -3132,6 +3200,9 @@ $('#navPass').addEventListener('click',()=>{renderPass();openSheet('pass');});
 $('#navQuest').addEventListener('click',()=>{questSync();viewDay=Math.min(7,curDay());renderQuests();openSheet('quest');});
 $('#navDecor').addEventListener('click',()=>{if(st.tut===14){st.tut=15;st.guideDecor=2;save();}if(st.guideDecor===1){st.guideDecor=2;save();}if(st.guideMsg){st.guideMsg='';save();}dSel=null;renderDecor();openSheet('decor');});
 $('#navDex').addEventListener('click',()=>{dexSel=null;renderDex();openSheet('dex');});
+$('#evBtn').addEventListener('click',()=>{renderEvent();openSheet('event');sfx('tap');});
+$('#evList').addEventListener('click',e=>{const b=e.target.closest('[data-ev]');if(!b)return;const i=+b.dataset.ev,ev=evState(),g=EVENT.goals[i];if(!g||ev.got.indexOf(i)>=0||ev.pts<g.p)return;
+  ev.got.push(i);attGive(g.r);save();refresh();renderEvent();sfx('done');toast('🍂 축제 선물을 받았어요!');});
 $('#goalChip').addEventListener('click',()=>{
   const g=$('#goalChip')._g||nextGoal();sfx('tap');
   if(g.act==='decor')$('#navDecor').click();
@@ -3273,7 +3344,7 @@ $('#startGo').addEventListener('click',()=>{
   try{sfx('tap');}catch(e){}
   $('#startScr').hidden=true;
   if(!st.intro)setTimeout(showIntro,400);
-  else setTimeout(()=>{try{checkGenUnlock();}catch(e){}},1500);
+  else setTimeout(()=>{try{checkGenUnlock();}catch(e){}try{if(!attCheck())evCheckStart();}catch(e){}},1500);
   wakeReq();
 });
 
