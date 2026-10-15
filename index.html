@@ -1785,7 +1785,7 @@ bgmPreload();
 
 /* ---------- small effects ---------- */
 function toast(msg,light){
-  const t=$('#toast');t.textContent=msg;t.classList.toggle('light',!!light);t.classList.add('show');
+  const t=$('#toast');t.textContent=msg;t.classList.toggle('light',light!==false);t.classList.add('show');
   clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2300);
 }
 function runFx(el,txt,gold){
