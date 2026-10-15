@@ -1522,7 +1522,7 @@ const josa=(w,a,b)=>{const ch=w.charCodeAt(w.length-1)-44032;return (ch>=0&&ch<1
 const genLockMsg=c=>{const p=GEN_BY(c);return '아직 발견하지 못한 생성기예요. '+(p!=null?PET_HINT[p]+' 누군가 가져올지도 몰라요!':'');};
 let arriveQ=[],arriveBusy=false;
 function checkGenUnlock(){ /* 이름은 그대로: 보드 그릴 때마다 이사 조건을 살펴요 */
-  if(!st||!st.gOpen||(st.tut&&st.tut<8))return;
+  if(!st||!st.gOpen||inTut())return;
   for(const p of PET_ORDER){
     if(st.unlocked.indexOf(p)>=0)continue;
     const prev=PET_ORDER[PET_ORDER.indexOf(p)-1];
@@ -1580,7 +1580,7 @@ function seed(){
   const cells=new Array(N).fill(null);
   return fill({cells:cells,coins:30,xp:0,lv:1,e:40,eAt:Date.now(),locks:[36,37,38,39,40,41],unlockN:0,gu:{},bonusE:0,oNext:null,
     unlocked:[0],claimed:[],
-    orders:[mkOrder(0,[['br',2]],'easy'),mkOrder(0,[['br',1],['br',2]],'mid')]});
+    orders:[mkOrder(0,[['br',2]],'easy'),mkOrder(0,[['br',1],['br',3]],'mid')]});
 }
 function fill(o){
   o.gu=o.gu||{};o.bonusE=o.bonusE||0;o.unlockN=o.unlockN||0;o.xp=o.xp||0;o.eAt=o.eAt||Date.now();
@@ -1969,7 +1969,7 @@ function nextPet(){
 }
 function nextGoal(){
   const cnt=z=>SPOTS.filter(x=>x.zone===z&&owned(x.id)).length,tot=z=>SPOTS.filter(x=>x.zone===z).length;
-  if(!st.intro||(st.tut&&st.tut<8))return {t:'배고픈 보리에게 해바라기씨 주기',act:'none',emo:6};
+  if(!st.intro||inTut())return {t:st.tut>=14?'보리에게 침대 마련해 주기':st.tut>=10?'보리의 두 번째 부탁 들어주기':'배고픈 보리에게 해바라기씨 주기',act:'none',emo:6};
   if(storyReady()){let who=0;st.unlocked.some(p=>{const rd=st.read[p]||0;if(rd<STORY[p].length&&chapterState(p,rd)==='ready'){who=p;return true;}return false;});
     return {t:'📖 '+petName(who)+'의 새 이야기 읽기',act:'dex',who:who,emo:3};}
   if(!zoneDone(0))return {t:'보리 침대·간식 선반 마련',a:cnt(0),b:tot(0),act:'decor',emo:6};
@@ -2363,7 +2363,7 @@ function deliver(i,k){
     flyCoins($('#orders').children[k],o.coins);
     flyXp($('#orders').children[k],o.xp);
     setTimeout(()=>{gainXp(o.xp);refresh();save();},560);
-    if(tutXp){st.tut=5;setTimeout(()=>{if(st.tut===5){st.tut=7;save();tutDraw();}},3000);setTimeout(()=>{if(st.tut===7){st.tut=8;save();tutDraw();}},6200);}
+    if(tutXp){st.tut=5;setTimeout(()=>{if(st.tut===5){st.tut=7;save();tutDraw();}},3000);setTimeout(()=>{if(st.tut===7){st.tut=10;save();tutDraw();}},6200);}
     refresh();
     if(o.cu===1&&st.fed[1]===1){const cd=$('#orders').children[k];if(cd){setEmo(cd,1,2);sayFix(cd.querySelector('.face')||cd,'고마워! 이제 우리 이웃이야!',3000);}}
     else if(st.nDeliv===1&&o.cu===0){const cd=$('#orders').children[k];if(cd){setEmo(cd,0,4);}if(cd)sayFix(cd.querySelector('.cface,.face,img')||cd,'와작와작… 살 것 같아요! 정말 고마워요!',3000);}else sayAt(k);sfx('done');
@@ -2487,7 +2487,7 @@ function renderSell(){
   if(el.setAttribute)el.setAttribute('aria-label',it?nm(it.c,it.l)+' 팔기, 코인 '+SELLP[it.l]:'장터에 팔기 (끌어다 놓기)');
 }
 function refresh(){
-  if(st&&!st.guideDecor&&(!st.tut||st.tut>=8)&&st.coins>=40&&!SPOTS.some(x=>owned(x.id)))st.guideDecor=1;
+  if(st&&!st.guideDecor&&!inTut()&&st.coins>=40&&!SPOTS.some(x=>owned(x.id)))st.guideDecor=1;
   save();renderTop();renderOrders();checkBadges(false);
 }
 function askUnlock(i){
@@ -2513,7 +2513,8 @@ function sellItem(i){
 }
 
 /* ---------- generators ---------- */
-function genRoll(c){if(st&&st.tut&&st.tut<=3)return 1;const t=GU[guLv(c)],r=Math.random();return r<t.p3?3:r<t.p3+t.p2?2:1;}
+function inTut(){return !!(st&&st.tut&&(st.tut<8||(st.tut>=10&&st.tut<20)));}
+function genRoll(c){if(st&&st.tut&&(st.tut<=3||inTut()))return 1;const t=GU[guLv(c)],r=Math.random();return r<t.p3?3:r<t.p3+t.p2?2:1;}
 /* 처음 에너지가 부족할 때 한 번만: 에너지 +60 무료 충전 */
 function freeEnergyOffer(){
   if(st.freeEnergyClaimed)return;
@@ -2536,7 +2537,7 @@ function generate(c){
   st.cells[j]={c:c,l:l};
   if(!saved)st.e-=1;
   track('gen');
-  if(st.tut===1)st.tut=2;else if(st.tut===2)st.tut=3;
+  if(st.tut===1)st.tut=2;else if(st.tut===2)st.tut=3;else if(st.tut===10)st.tut=11;
   let j2=null;
   if(t.dbl>0&&Math.random()<t.dbl){
     const em2=emptyCells();
@@ -2575,7 +2576,7 @@ function act(i,j){
 }
 function collectXp(i){
   const it=st.cells[i];if(!it||it.c!=='xp')return;
-  if(st.tut===6){st.tut=7;setTimeout(()=>{if(st.tut===7){st.tut=8;save();tutDraw();}},3200);}
+  if(st.tut===6){st.tut=7;setTimeout(()=>{if(st.tut===7){st.tut=10;save();tutDraw();}},3200);}
   const v=XPV[it.l];st.cells[i]=null;sel=null;
   const el=cellEl(i);if(el)floatAt(el,'+'+v+' 경험치');
   sfx('coin');renderBoard();gainXp(v);refresh();
@@ -2670,6 +2671,7 @@ window.addEventListener('contextmenu',e=>{if(e.target.closest&&e.target.closest(
 /* ---------- chain recipe ---------- */
 function openChain(c,l){
   noteFound();
+  if(st&&st.tut===12){st.tut=13;save();}
   const mx=st.fmax[c]||0;
   $('#chT').textContent=CH[c].t+' 재료';
   $('#chD').textContent='부탁한 재료는 '+l+'단계 '+nm(c,l)+'이에요. 같은 단계 두 개를 합치면 다음 단계가 돼요.';
@@ -2940,6 +2942,7 @@ function openStory(p,k){
   const body='<div class="story"><div class="who2">'+face(p)+'<b>'+escH(petName(p))+'</b></div>'+c.l.map((x,i)=>'<p data-emo="'+(((STORY_EMO[p]||[])[k]||[])[i]||'')+'" data-pet="'+p+'">'+escH(x)+'</p>').join('')+'</div>';
   showReward(c.t,body,first?'이야기를 읽으면 코인 30개를 받아요.':'',first?()=>{
     st.read[p]=k+1;st.coins+=30;refresh();renderDex();sfx('badge');toast('코인 30개를 받았어요');
+    if(st.tut>=10&&st.tut<20){st.tut=8;st.guideDecor=2;save();setTimeout(()=>{closeSheet('dex');bigText('이제 마을을 자유롭게 가꿔 보세요!',true);},400);}
     if(p===0&&k===1&&!zoneDone(1))st.guideMsg='옆에 빈 방이 하나 있던데… 누가 살았을까요?';
     if(p===0&&k===2&&!zoneDone(1))st.guideMsg='마지막 한 칸을 꾸미면 알 수 있을지도?';
     save();
@@ -3070,7 +3073,7 @@ $('#rwBody').addEventListener('click',()=>{if(stQ)storyStep();});
 $('#navShop').addEventListener('click',()=>{renderShop();openSheet('shop');});
 $('#navPass').addEventListener('click',()=>{renderPass();openSheet('pass');});
 $('#navQuest').addEventListener('click',()=>{questSync();viewDay=Math.min(7,curDay());renderQuests();openSheet('quest');});
-$('#navDecor').addEventListener('click',()=>{if(st.guideDecor===1){st.guideDecor=2;save();}if(st.guideMsg){st.guideMsg='';save();}dSel=null;renderDecor();openSheet('decor');});
+$('#navDecor').addEventListener('click',()=>{if(st.tut===14){st.tut=15;st.guideDecor=2;save();}if(st.guideDecor===1){st.guideDecor=2;save();}if(st.guideMsg){st.guideMsg='';save();}dSel=null;renderDecor();openSheet('decor');});
 $('#navDex').addEventListener('click',()=>{dexSel=null;renderDex();openSheet('dex');});
 $('#goalChip').addEventListener('click',()=>{
   const g=$('#goalChip')._g||nextGoal();sfx('tap');
@@ -3220,7 +3223,7 @@ $('#startGo').addEventListener('click',()=>{
 let tipEnT=0;
 function tipDone(k){if(st&&st.tips&&st.tips[k]===1){st.tips[k]=2;save();}}
 function tipCheck(){
-  if(!st||(st.tut&&st.tut<8)||!$('#startScr').hidden)return;
+  if(!st||inTut()||!$('#startScr').hidden)return;
   const T=st.tips=st.tips||{};
   if(!T.box&&st.tq.length&&st.lv>=2)T.box=1;
   if(!T.full&&st.nDeliv>0&&emptyCells().length<=4)T.full=1;
@@ -3245,8 +3248,42 @@ function tipTarget(){
   }
   return null;
 }
+function tutNorm(){
+  if(!st||!st.tut||st.tut<10||st.tut>=20)return;
+  const two=st.orders.find(o=>o.cu===0&&o.needs.length>1&&o.state!=='done');
+  if(st.tut<=13&&!two)st.tut=14;
+  if(st.tut===11&&(st.fmax.br||0)>=3)st.tut=12;
+  if(st.tut>=14&&st.tut<=16&&owned('bed'))st.tut=17;
+  if(st.tut===17&&!$('#dex').hidden)st.tut=18;
+  if(st.tut>=17&&(st.read[0]||0)>=1){st.tut=8;st.guideDecor=2;}
+}
+function tutExt(t){
+  const two=()=>{const k=st.orders.findIndex(o=>o.cu===0&&o.needs.length>1&&o.state!=='done');return k>=0?$('#orders').children[k]:null;};
+  const gen=document.querySelector('.gencell:not(.glock)');
+  const pair=()=>{for(let i=0;i<N;i++){const x=st.cells[i];if(!x||x.c!=='br'||x.l>=3||isLocked(i)||isGen(i))continue;for(let j=i+1;j<N;j++){if(canMerge(i,j)&&!isLocked(j)&&!isGen(j))return [i,j];}}return null;};
+  if(t===10)return {el:two(),txt:'이번엔 재료가 두 개 필요해요. 생성기를 눌러 하나씩 만들어 볼까요?',emo:6};
+  if(t===11){const pr=pair();if(pr)return {el:cellEl(pr[0]),to:cellEl(pr[1]),txt:'같은 재료를 계속 합쳐서 새싹(3단계)까지 키워 보세요'};return {el:gen,txt:'재료가 모자라요. 생성기를 눌러 더 꺼내요'};}
+  if(t===12){const c=two();const nd=c&&c.querySelector('.need[data-l="3"]:not(.done)');return {el:nd||c,txt:'주문 재료를 누르면 몇 단계인지 볼 수 있어요'};}
+  if(t===13){const c=two();const r=c&&c.querySelector('.subbtn.ready');if(r)return {el:r,txt:'두 재료를 다 모았어요! 전해 주세요'};const pr=pair();if(pr)return {el:cellEl(pr[0]),to:cellEl(pr[1]),txt:'남은 재료도 만들어 주세요'};return {el:gen,txt:'남은 재료도 만들어 주세요. 생성기를 눌러요'};}
+  if(t===14)return {el:$('#navDecor'),txt:'코인이 모였어요! 보리에게 침대를 마련해 줄까요?',emo:3};
+  if(t===15||t===16){
+    if($('#decor').hidden)return {el:$('#navDecor'),txt:'꾸미기를 눌러 보세요'};
+    if(dSel!=='bed'){st.tut=15;return {el:document.querySelector('#dscene .slot.s-bed'),txt:'침대 자리를 눌러 보세요',sheet:'decor'};}
+    st.tut=16;const b=document.querySelector('#dPanel [data-buy]');try{if(b&&!b._sc){b._sc=1;b.scrollIntoView({block:'center',behavior:'smooth'});}}catch(e){}return {el:b,txt:'마음에 드는 침대를 골라 설치해요',sheet:'decor',up:true};
+  }
+  if(t===17){if(!$('#decor').hidden)return {el:document.querySelector('#decor [data-close]'),txt:'창을 닫고 보리를 만나러 가요',sheet:'decor'};return {el:$('#navDex'),txt:'보리의 이야기가 있어요. 도감에서 읽어 볼까요?',emo:2};}
+  if(t===18){
+    if($('#dex').hidden)return {el:$('#navDex'),txt:'도감을 눌러 보세요'};
+    if(dexTab!=='res')return {el:document.querySelector('[data-dtab=res]'),txt:'주민 도감을 눌러요',sheet:'dex'};
+    if(dexSel!==0)return {el:document.querySelector('.dcell[data-p="0"]'),txt:'보리를 눌러 보세요',sheet:'dex'};
+    return {el:document.querySelector('.btn.main[data-a=story][data-p="0"]'),txt:'「이사 온 날」을 읽어 봐요',sheet:'dex',up:true};
+  }
+  return null;
+}
 function tutTarget(){
+  try{tutNorm();}catch(e){}
   const t=st&&st.tut;
+  if(t>=10&&t<20)return tutExt(t);
   if(!t||t>=8){const tp=tipTarget();if(tp)return tp;const n=$('#navDecor');if(st&&st.guideDecor===1)return n?{el:n,txt:'코인이 모였어요! 보리에게 침대를 마련해 줄까요?'}:null;if(st&&st.guideMsg)return n?{el:n,txt:st.guideMsg}:null;return null;}
   const B=$('#board');
   if(t===1||t===2){const g=document.querySelector('.gencell:not(.glock)');return {el:g,txt:t===1?'생성기를 눌러 보세요':'한 번 더 눌러 보세요'};}
@@ -3283,7 +3320,7 @@ function tutDraw(){
     const bw=Math.min(260,innerWidth-24);
     let bx=Math.min(Math.max(cx,bw/2+12),innerWidth-bw/2-12);
     /* 기본은 가리키는 곳 아래(주문판·햄스터를 가리지 않게), 화면 아래쪽이면 위로 */
-    let by=r.bottom+70;if(!T.up&&by+90>innerHeight)by=r.top-14;
+    let by=r.bottom+70;if(by+90>innerHeight)by=r.top-14;
     b.style.left=bx+'px';b.style.top=by+'px';b.classList.toggle('below',by>r.top);
   }catch(e){}
 }
