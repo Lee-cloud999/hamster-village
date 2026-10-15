@@ -1032,6 +1032,14 @@ body{padding-inline:8px}
 @media (prefers-reduced-motion: no-preference){.say.rw{animation:sayrw 1.7s ease-out forwards}@keyframes sayrw{0%{opacity:0;transform:translate(-50%,-90%) scale(.8)}10%{opacity:1;transform:translate(-50%,-100%) scale(1)}80%{opacity:1}100%{opacity:0}}}
 
 .say.fix.ord{z-index:130}
+
+/* 한글 줄바꿈: 단어 중간에서 끊지 않고 띄어쓰기에서만 */
+body,.sheet,#tut .tut-b,.say,.toast,.float,#rwBody,#rwNote{word-break:keep-all;overflow-wrap:break-word;line-break:strict}
+#tut .tut-b,.say,.toast,#rwNote,.sheet p,.have{text-wrap:balance}
+#tut .tut-b{max-width:min(330px,calc(100vw - 24px))!important}
+#tut .tut-b.wf{width:auto!important;max-width:min(330px,calc(100vw - 24px))!important}
+.say.big{max-width:min(280px,82vw)!important}
+.toast{max-width:min(94vw,440px)!important}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
