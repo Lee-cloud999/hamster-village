@@ -1055,6 +1055,9 @@ body,.sheet,#tut .tut-b,.say,.toast,.float,#rwBody,#rwNote{word-break:keep-all;o
 .evbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#f6c27a,#e99a5c);border-radius:12px}
 .evbar span{position:absolute;inset:0;display:grid;place-items:center;font-size:12px;font-weight:800;color:#5b3a28}
 #event .prow{grid-template-columns:auto 1fr auto}
+
+.stat .hb.evbtn{position:relative;font-size:17px!important;background:linear-gradient(135deg,#fff3d6,#ffe1c7);border-color:#f5c98a}
+.stat .hb.evbtn .nb{position:absolute;top:-7px;right:-7px}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -1079,7 +1082,7 @@ body,.sheet,#tut .tut-b,.say,.toast,.float,#rwBody,#rwNote{word-break:keep-all;o
     <div class="pill" id="coinpill"></div>
     <div class="brandrow">
       <button class="ttl" id="ttlchip" type="button">이사 온 햄스터</button>
-      <button class="hb" id="navProf" type="button" aria-label="프로필">🐹</button>
+      <button class="hb evbtn" id="evBtn" type="button" aria-label="이벤트">🍂<span class="nb" id="bEv" hidden></span></button>
     </div>
   </div>
 
@@ -1097,7 +1100,6 @@ body,.sheet,#tut .tut-b,.say,.toast,.float,#rwBody,#rwNote{word-break:keep-all;o
   </section>
 
   <div class="botrow">
-  <button class="evbtn" id="evBtn" type="button" aria-label="이벤트">🍂<span class="nb" id="bEv" hidden></span></button>
   <button class="goalchip" id="goalChip" type="button"></button>
   <div class="sell" id="sell" role="button" tabindex="0">팔기</div>
 
@@ -3137,7 +3139,7 @@ function fmtPT(ms){const m=Math.floor(ms/60000),h=Math.floor(m/60);return h?h+'�
 function checkBadges(silent){
   const got=[];
   BADGES.forEach(b=>{if(!st.badges[b.id]&&b.t()){st.badges[b.id]=Date.now();got.push(b);}});
-  if(got.length&&!silent){sfx('badge');toast('새 배지! '+got.map(b=>b.ico+' '+b.n).join(', ')+' · 프로필에서 볼 수 있어요');}
+  if(got.length&&!silent){sfx('badge');toast('새 배지! '+got.map(b=>b.ico+' '+b.n).join(', ')+'');}
 }
 function buildTitles(){
   const o=titleOpts(),cur=st.title&&o.find(x=>x.id===st.title&&x.ok)?st.title:'auto';
@@ -3223,7 +3225,7 @@ $('#goalChip').addEventListener('click',()=>{
   else if(g.act==='chain'){const c=g.chain||'br';openChain(c,6);$('#chD').textContent=CH[c].t+' 재료를 두 개씩 합쳐서 6단계까지 키우면 새 이웃이 찾아올지도 몰라요!';}
 });
 document.querySelector('.dtabs').addEventListener('click',e=>{const b=e.target.closest('.dtab');if(!b)return;dexTab=b.dataset.dtab;sfx('tap');renderDex();});
-$('#navProf').addEventListener('click',()=>{renderProf();openSheet('prof');});
+
 $('#ttlchip').addEventListener('click',()=>{renderProf();openSheet('prof');});
 $('#navSnd').addEventListener('click',()=>{renderSnd();openSheet('snd');});
 
