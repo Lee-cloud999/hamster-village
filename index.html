@@ -580,7 +580,7 @@ body{overflow:hidden;overscroll-behavior:none;height:100%}
 /* every popup centered */
 .sheet{top:50%;bottom:auto;left:50%;transform:translate(-50%,-50%);max-height:calc(100% - 32px);max-width:440px}
 #decor.sheet{max-height:calc(100% - 24px)!important}
-@media (prefers-reduced-motion: no-preference){.sheet:not([hidden]){animation:popc .22s ease-out}@keyframes popc{from{opacity:0;transform:translate(-50%,-48%) scale(.96)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}}
+@media (prefers-reduced-motion: no-preference){.sheet:not([hidden]){animation:popc .22s ease-out}@keyframes popc{from{opacity:0;transform:translate(-50%,-48%) scale(calc(var(--sz,1)*.96))}to{opacity:1;transform:translate(-50%,-50%) scale(var(--sz,1))}}}
 
 .orwrap>section{position:relative}
 .orwrap .ordwait{display:block;position:absolute;right:0;bottom:4px;width:32%;font-size:11px;line-height:1.3;text-align:center;color:var(--muted)}
@@ -991,6 +991,22 @@ body{padding-inline:8px}
 
 #tut .tut-b.wf{display:flex;align-items:center;gap:8px;text-align:left;width:min(270px,calc(100vw - 24px));max-width:none;box-sizing:border-box}
 #tut .tut-b .tut-face{width:46px;height:46px;flex:0 0 46px;object-fit:contain;margin:-6px 0 -6px -6px}
+
+/* 메뉴 창: 조금 작게, 오른쪽 위 X 버튼, 화면에 맞춰 축소 */
+.sheet{transform:translate(-50%,-50%) scale(var(--sz,1))!important;transform-origin:50% 50%}
+@media (max-aspect-ratio:1/1),(max-width:699px),(max-height:539px){
+  .sheet:not(#decor){width:calc(100% - 44px)!important;max-width:380px!important;padding:14px!important;border-radius:22px!important}
+}
+.sheet header{position:relative;padding-right:40px;min-height:34px}
+.sheet header .x[data-close]{position:absolute;top:-4px;right:-4px;width:36px;height:36px;padding:0;border-radius:50%;display:grid;place-items:center;font-size:17px;font-weight:700;line-height:1;color:var(--muted);background:var(--cell);border:1px solid var(--line)}
+.sheet header .x[data-close]:active{transform:scale(.92)}
+#quest #qInfo{font-size:12px}
+#quest .qk{padding:6px 10px}
+
+#quest #qInfo{display:none}
+#quest #qTime{font-size:12px;margin-top:-4px}
+#quest .qsec{margin:2px 0 0}
+#pass.sheet{max-height:calc(100% - 44px)!important}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -1054,20 +1070,20 @@ body{padding-inline:8px}
 <div class="scrim" id="scrim" hidden></div>
 
 <section class="sheet" id="shop" role="dialog" aria-label="상점" hidden>
-  <header><h2>상점</h2><button class="x" data-close>닫기</button></header>
+  <header><h2>상점</h2><button class="x" data-close aria-label="닫기">✕</button></header>
   <p class="have" id="shopHave"></p>
   <div id="shopList" style="display:grid;gap:8px"></div>
 </section>
 
 <section class="sheet" id="pass" role="dialog" aria-label="레벨 보상" hidden>
-  <header><h2>레벨 보상</h2><button class="x" data-close>닫기</button></header>
+  <header><h2>레벨 보상</h2><button class="x" data-close aria-label="닫기">✕</button></header>
   <p class="have" id="passInfo"></p>
   <button class="btn main" id="claimAll" type="button" hidden>모두 받기</button>
   <div id="passList" style="display:grid;gap:8px"></div>
 </section>
 
 <section class="sheet" id="quest" role="dialog" aria-label="퀘스트" hidden>
-  <header><h2>퀘스트</h2><button class="x" data-close>닫기</button></header>
+  <header><h2>퀘스트</h2><button class="x" data-close aria-label="닫기">✕</button></header>
   <h3 class="qsec main">⭐ 메인 퀘스트</h3>
   <div class="qgoal" id="qGoal"></div>
   <h3 class="qsec">📅 일일 퀘스트</h3>
@@ -1083,14 +1099,14 @@ body{padding-inline:8px}
 </section>
 
 <section class="sheet" id="decor" role="dialog" aria-label="마을 꾸미기" hidden style="max-height:92%">
-  <header><h2>마을 꾸미기</h2><button class="x" data-close>닫기</button></header>
+  <header><h2>마을 꾸미기</h2><button class="x" data-close aria-label="닫기">✕</button></header>
   <div class="scene" id="dscene"></div>
   <div class="zones" id="zones"></div>
   <div id="dPanel" style="display:grid;gap:8px"></div>
 </section>
 
 <section class="sheet" id="dex" role="dialog" aria-label="도감" hidden>
-  <header><h2>도감</h2><button class="x" data-close>닫기</button></header>
+  <header><h2>도감</h2><button class="x" data-close aria-label="닫기">✕</button></header>
   <div class="dtabs" role="tablist"><button type="button" class="dtab on" role="tab" data-dtab="mat">재료 도감</button><button type="button" class="dtab" role="tab" data-dtab="res">주민 도감</button></div>
   <div id="dexMatP" class="dpanel">
     <p class="have" id="dexMatInfo"></p>
@@ -1104,7 +1120,7 @@ body{padding-inline:8px}
 </section>
 
 <section class="sheet" id="prof" role="dialog" aria-label="프로필" hidden>
-  <header><h2>프로필</h2><button class="x" data-close>닫기</button></header>
+  <header><h2>프로필</h2><button class="x" data-close aria-label="닫기">✕</button></header>
   <div class="dp-t"><b id="profT"></b><small id="profS"></small></div>
   <div class="pstats" id="pstats"></div>
   <div class="sec">칭호 선택</div>
@@ -1115,7 +1131,7 @@ body{padding-inline:8px}
 
 
 <section class="sheet" id="dev" role="dialog" aria-label="테스트 모드" hidden>
-  <header><h2>🛠 테스트 모드</h2><button class="x" data-close>닫기</button></header>
+  <header><h2>🛠 테스트 모드</h2><button class="x" data-close aria-label="닫기">✕</button></header>
   <p class="have" id="devInfo"></p>
   <div class="devg">
     <button class="btn" data-dev="coin">코인 +1000</button>
@@ -1143,7 +1159,7 @@ body{padding-inline:8px}
   <p class="have">주소 끝에 <b>?test</b>를 붙여 열면 이 버튼이 보여요. 테스트 기록은 일반 기록과 같은 저장소를 써요.</p>
 </section>
 <section class="sheet" id="snd" role="dialog" aria-label="소리 설정" hidden>
-  <header><h2>설정</h2><button class="x" data-close>닫기</button></header>
+  <header><h2>설정</h2><button class="x" data-close aria-label="닫기">✕</button></header>
   <div class="setrow"><b style="font-weight:400">배경음악</b><button class="sw" id="swBgm" role="switch" aria-checked="true" aria-label="배경음악"></button></div>
   <div class="setrow col"><label for="rgBgm" class="have">배경음악 크기 <span id="vBgm"></span></label><input type="range" id="rgBgm" min="0" max="100" step="5"></div>
   <div class="setrow col"><span class="have">배경음악 고르기</span><div class="trk" id="trk"></div></div>
@@ -1155,7 +1171,7 @@ body{padding-inline:8px}
 </section>
 
 <section class="sheet top" id="chain" role="dialog" aria-label="재료 단계" hidden>
-  <header><h2 id="chT"></h2><button class="x" data-close>닫기</button></header>
+  <header><h2 id="chT"></h2><button class="x" data-close aria-label="닫기">✕</button></header>
   <p class="have" id="chD"></p>
   <div class="steps" id="chB"></div>
 </section>
@@ -1824,12 +1840,29 @@ function hearts(el){
 const MAIN_SHEETS=['shop','pass','quest','decor','dex','prof','snd','dev'].filter(id=>document.getElementById(id));
 const TOP_SHEETS=['confirm','reward','chain'];
 function syncScrim(){$('#scrim').hidden=!Array.prototype.some.call(document.querySelectorAll('.sheet'),s=>!s.hidden);}
+/* 메뉴 창: 스크롤 없이 한눈에 보이도록 화면에 맞춰 살짝 줄여요 */
+const NOFIT=['decor','pass'];
+function fitSheet(el){
+  if(!el||el.hidden||NOFIT.indexOf(el.id)>=0)return;
+  const land=matchMedia('(min-aspect-ratio:1/1) and (min-width:700px) and (min-height:540px)').matches;
+  el.style.setProperty('--sz','1');el.style.maxHeight='none';
+  const avail=Math.min(innerHeight-(land?28:44),innerHeight*.9),h=el.offsetHeight;
+  let z=Math.min(1,avail/h);
+  if(z<.66){z=.66;el.style.maxHeight=Math.floor(avail/z)+'px';}
+  else el.style.maxHeight='none';
+  el.style.setProperty('--sz',String(Math.floor(z*1000)/1000));
+}
+let fitRO=null;
+function fitWatch(el){
+  try{if(!fitRO&&window.ResizeObserver)fitRO=new ResizeObserver(es=>es.forEach(e=>{if(!e.target.hidden)requestAnimationFrame(()=>fitSheet(e.target));}));if(fitRO&&!el._fw){fitRO.observe(el);el._fw=1;}}catch(e){}
+}
+addEventListener('resize',()=>document.querySelectorAll('.sheet:not([hidden])').forEach(fitSheet));
 function openSheet(id){
   if(!$('#'+id).hidden)return;
   const prev=document.activeElement;
   if(MAIN_SHEETS.indexOf(id)>=0)MAIN_SHEETS.forEach(s=>{if(s!==id)$('#'+s).hidden=true;});
   if(!lastFocus&&prev&&prev!==document.body)lastFocus=prev;
-  $('#'+id).hidden=false;syncScrim();
+  $('#'+id).hidden=false;syncScrim();fitSheet($('#'+id));fitWatch($('#'+id));
   const x=$('#'+id+' .x');if(x)x.focus();
 }
 function closeSheet(id){
