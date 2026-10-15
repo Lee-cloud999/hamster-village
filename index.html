@@ -2310,18 +2310,26 @@ function questTick(){
 }
 
 /* ---------- levels and the reward pass ---------- */
+/* 레벨 보상: 코인 + 다섯 가지 꾸러미가 번갈아 (도구 → 최대 에너지·상자 → 꿀단지 → 은·금 상자 → 에너지) */
 function rewardOf(L){
-  const r={coins:L*20};if(L%5===0)r.boxG=2;
+  const r={coins:L*20};
   if(REWARD_PET[L]!=null)r.pet=REWARD_PET[L];
-  r.box=true;
-  if(L<=PASS_LAST&&L%5===3)r.energy=1;
+  const m=L%5;
+  if(m===2){r.item={c:'tl',l:[1,2,3][Math.floor(L/5)%3]};}
+  else if(m===3){r.box=true;if(L<=PASS_LAST)r.energy=1;}
+  else if(m===4){r.item={c:'tg',l:1};r.box=true;}
+  else if(m===0){r.box=true;r.boxG=(L%10===0)?3:2;}
+  else{r.item={c:'en',l:L>=20?3:2};r.box=true;}
   return r;
 }
+const itemChip=it=>'<span class="rc"><em>'+em(it.c,it.l)+'</em><b>'+nm(it.c,it.l)+'</b></span>';
+const itemBig=it=>'<div class="bi"><span class="bimg">'+em(it.c,it.l)+'</span><b>'+nm(it.c,it.l)+'</b><small>'+(it.c==='tl'?'도구':it.c==='tg'?'에너지 없이 10번':'에너지 +'+ENV[it.l])+'</small></div>';
 function chips(L){
   const r=rewardOf(L);
   let h='<span class="rc">'+COIN+'<b>'+r.coins+'</b></span>';
   if(r.pet!=null)h+=st.unlocked.indexOf(r.pet)>=0?'<span class="rc"><em>'+face(r.pet)+'</em><b>'+escH(petName(r.pet))+'</b><small>새 이웃</small></span>':'<span class="rc mys"><em class="qm">?</em><b>새 이웃</b></span>';
-  if(r.box)h+='<span class="rc"><em>'+BOXI+'</em><b>재료 상자</b></span>';
+  if(r.item)h+=itemChip(r.item);
+  if(r.box)h+='<span class="rc"><em>'+boxImg(r.boxG)+'</em><b>'+BOXN[r.boxG||1]+'</b></span>';
   if(r.energy)h+='<span class="rc">'+BOLT+'<b>최대 에너지 +10</b></span>';
   return h;
 }
@@ -2333,6 +2341,7 @@ function claimMany(levels){
     const r=rewardOf(L);st.claimed.push(L);st.coins+=r.coins;got++;
     if(r.pet!=null&&st.unlocked.indexOf(r.pet)<0){if(petReady(r.pet)){st.unlocked.push(r.pet);arr.push(r.pet);}else if(st.petWait.indexOf(r.pet)<0){st.petWait.push(r.pet);waitNote=1;}}
     if(r.box)spawnBox(r.boxG);
+    if(r.item)qGive(r.item.c,r.item.l);
     if(r.energy)st.bonusE=(st.bonusE||0)+1;
   });
   if(!got)return;
@@ -2387,7 +2396,8 @@ function petPopup(pets,next){
 function bigChips(L){
   const r=rewardOf(L);
   let h='<div class="bi"><span class="bimg">'+COIN+'</span><b>'+r.coins+'</b><small>코인</small></div>';
-  if(r.box)h+='<div class="bi"><span class="bimg">'+boxImg(r.boxG)+'</span><b>'+BOXN[r.boxG||1]+'</b><small>재료 '+(r.boxG===2?5:3)+'개</small></div>';
+  if(r.item)h+=itemBig(r.item);
+  if(r.box)h+='<div class="bi"><span class="bimg">'+boxImg(r.boxG)+'</span><b>'+BOXN[r.boxG||1]+'</b><small>'+(r.boxG===3?'재료·도구·꿀단지':r.boxG===2?'재료·에너지·도구':'재료 3개')+'</small></div>';
   if(r.energy)h+='<div class="bi"><span class="bimg">'+BOLT+'</span><b>+10</b><small>최대 에너지</small></div>';
   return h;
 }
@@ -2413,7 +2423,7 @@ function gainXp(n){
   if(st.xp>=need(st.lv)){st.xp-=need(st.lv);st.lv++;ups.push(st.lv);}
   if(!ups.length)return;
   tickEnergy();
-  ups.filter(L=>L>PASS_LAST).forEach(L=>{const r=rewardOf(L);st.coins+=r.coins;st.claimed.push(L);if(r.box)spawnBox(r.boxG);});
+  ups.filter(L=>L>PASS_LAST).forEach(L=>{const r=rewardOf(L);st.coins+=r.coins;st.claimed.push(L);if(r.box)spawnBox(r.boxG);if(r.item)qGive(r.item.c,r.item.l);});
   const inPass=ups.filter(L=>L<=PASS_LAST);
   if(inPass.length)setTimeout(()=>openLevelUp(inPass),320);
   else{sfx('level');setTimeout(()=>{bigText('레벨 '+st.lv+'!',true);toast('레벨 '+st.lv+' · 코인을 받았어요');},260);}
@@ -3614,7 +3624,7 @@ let devInf=false;
     else if(a==='energy'){st.e=maxE();st.eAt=Date.now();}
     else if(a==='inf'){devInf=!devInf;try{localStorage.setItem('hv-dev-inf',devInf?'1':'0');}catch(e2){}st.e=maxE();}
     else if(a==='xp'){closeSheet('dev');gainXp(100);}
-    else if(a==='lv1'||a==='lv5'){closeSheet('dev');const k=a==='lv1'?1:5,ups=[];for(let i=0;i<k;i++){st.xp=0;st.lv++;ups.push(st.lv);}tickEnergy();const ip=ups.filter(L=>L<=PASS_LAST);ups.filter(L=>L>PASS_LAST).forEach(L=>{const r=rewardOf(L);st.coins+=r.coins;st.claimed.push(L);if(r.box)spawnBox(r.boxG);});if(ip.length)setTimeout(()=>openLevelUp(ip),320);}
+    else if(a==='lv1'||a==='lv5'){closeSheet('dev');const k=a==='lv1'?1:5,ups=[];for(let i=0;i<k;i++){st.xp=0;st.lv++;ups.push(st.lv);}tickEnergy();const ip=ups.filter(L=>L<=PASS_LAST);ups.filter(L=>L>PASS_LAST).forEach(L=>{const r=rewardOf(L);st.coins+=r.coins;st.claimed.push(L);if(r.box)spawnBox(r.boxG);if(r.item)qGive(r.item.c,r.item.l);});if(ip.length)setTimeout(()=>openLevelUp(ip),320);}
     else if(a==='box'){spawnBox(1);spawnBox(2);spawnBox(3);}
     else if(a==='orders'){st.orders=[];st.oNext=null;ordFill0();}
     else if(a==='pets'){for(let p=1;p<CUST.length;p++)if(st.unlocked.indexOf(p)<0)st.unlocked.push(p);}
