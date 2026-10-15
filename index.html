@@ -1058,6 +1058,8 @@ body,.sheet,#tut .tut-b,.say,.toast,.float,#rwBody,#rwNote{word-break:keep-all;o
 
 .stat .hb.evbtn{position:relative;font-size:17px!important;background:linear-gradient(135deg,#fff3d6,#ffe1c7);border-color:#f5c98a}
 .stat .hb.evbtn .nb{position:absolute;top:-7px;right:-7px}
+
+@media (prefers-reduced-motion: no-preference){#tut .tut-b.nudge{animation:tbNudge .35s}@keyframes tbNudge{25%{margin-left:-6px}75%{margin-left:6px}}}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -3472,6 +3474,18 @@ function tutDraw(){
   }catch(e){}
 }
 setInterval(tutDraw,250);
+/* '보리에게 침대를 사 줄까요?' 안내 중에는 꾸미기 버튼만 눌러져요 */
+function tutLockEl(){
+  if(!st||!$('#startScr').hidden||document.querySelector('.sheet:not([hidden])'))return null;
+  if(st.tut===14||(st.guideDecor===1&&!inTut()))return $('#navDecor');
+  return null;
+}
+['pointerdown','pointerup','click','touchstart','touchend','mousedown'].forEach(ev=>document.addEventListener(ev,e=>{
+  const ok=tutLockEl();if(!ok)return;
+  if(ok.contains(e.target))return;
+  e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+  if(ev==='click'){const b=document.querySelector('#tut .tut-b');if(b){b.classList.remove('nudge');void b.offsetWidth;b.classList.add('nudge');}}
+},{capture:true,passive:false}));
 
 /* ---------- test mode (?test) ---------- */
 let devInf=false;
