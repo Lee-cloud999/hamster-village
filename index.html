@@ -3174,7 +3174,8 @@ function tutDraw(){
     if(T.to){const r2=T.to.getBoundingClientRect();f.style.setProperty('--dx',(r2.left+r2.width/2-cx)+'px');f.style.setProperty('--dy',(r2.top+r2.height/2-cy)+'px');}
     const bw=Math.min(260,innerWidth-24);
     let bx=Math.min(Math.max(cx,bw/2+12),innerWidth-bw/2-12);
-    let by=r.top-14;if(by<70||T.up)by=r.bottom+70;
+    /* 기본은 가리키는 곳 아래(주문판·햄스터를 가리지 않게), 화면 아래쪽이면 위로 */
+    let by=r.bottom+70;if(!T.up&&by+90>innerHeight)by=r.top-14;
     b.style.left=bx+'px';b.style.top=by+'px';b.classList.toggle('below',by>r.top);
   }catch(e){}
 }
