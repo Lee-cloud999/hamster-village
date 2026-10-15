@@ -1060,6 +1060,8 @@ body,.sheet,#tut .tut-b,.say,.toast,.float,#rwBody,#rwNote{word-break:keep-all;o
 .stat .hb.evbtn .nb{position:absolute;top:-7px;right:-7px}
 
 @media (prefers-reduced-motion: no-preference){#tut .tut-b.nudge{animation:tbNudge .35s}@keyframes tbNudge{25%{margin-left:-6px}75%{margin-left:6px}}}
+
+#rwNote{color:#5b4038!important;font-weight:700;font-size:15px}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -3085,7 +3087,8 @@ function openStory(p,k){
   const body='<div class="story"><div class="who2">'+face(p)+'<b>'+escH(petName(p))+'</b></div>'+c.l.map((x,i)=>'<p data-emo="'+(((STORY_EMO[p]||[])[k]||[])[i]||'')+'" data-pet="'+p+'">'+escH(x)+'</p>').join('')+'</div>';
   showReward(c.t,body,first?'이야기를 읽으면 코인 30개를 받아요.':'',first?()=>{
     st.read[p]=k+1;st.coins+=30;refresh();renderDex();sfx('badge');toast('코인 30개를 받았어요');
-    if(st.tut>=10&&st.tut<20){st.tut=8;st.guideDecor=2;save();setTimeout(()=>{closeSheet('dex');bigText('이제 마을을 자유롭게 가꿔 보세요!',true);},400);setTimeout(()=>{try{if(!attCheck())evCheckStart();}catch(e){}},2600);}
+    if(st.tut>=10&&st.tut<20){st.tut=8;st.guideDecor=2;save();setTimeout(()=>{closeSheet('dex');sfx('level');
+      showReward('준비 끝!','<div class="bigrw gen">'+bi(faceE(0,3),petName(0),'')+'</div>','이제 마을을 자유롭게 가꿔 보세요!',()=>{setTimeout(()=>{try{if(!attCheck())evCheckStart();}catch(e){}},500);},'좋아요');},700);}
     if(p===0&&k===2&&!owned('run'))st.guideMsg='옆 빈 방에 쳇바퀴를 놓아 볼까요?';
     save();
   }:null);
