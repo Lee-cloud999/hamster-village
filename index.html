@@ -1025,6 +1025,13 @@ body{padding-inline:8px}
 #devTime{position:fixed;right:10px;top:calc(104px + env(safe-area-inset-top,0px));z-index:200;padding:3px 8px;border-radius:10px;background:rgba(255,255,255,.92);color:#222;font-size:12px;font-weight:700;border:1px solid rgba(0,0,0,.12);box-shadow:0 2px 6px rgba(0,0,0,.15);pointer-events:none;font-variant-numeric:tabular-nums}
 
 #dscene .slot .q{font-size:22px;font-weight:800;color:#8a7a6a;font-family:var(--f-display)}
+
+.say.rw{display:grid;justify-items:center;gap:1px;background:#fff;color:#222;border:1.5px solid rgba(0,0,0,.12);box-shadow:0 3px 10px rgba(0,0,0,.18);padding:4px 10px}
+.say.rw small{font-size:11px;font-weight:800;color:#c0703a;white-space:nowrap}
+.say.big{white-space:pre-line}
+@media (prefers-reduced-motion: no-preference){.say.rw{animation:sayrw 1.7s ease-out forwards}@keyframes sayrw{0%{opacity:0;transform:translate(-50%,-90%) scale(.8)}10%{opacity:1;transform:translate(-50%,-100%) scale(1)}80%{opacity:1}100%{opacity:0}}}
+
+.say.fix.ord{z-index:130}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -2351,11 +2358,13 @@ function orderLabel(o){
   const cs=[];o.needs.forEach(n=>{if(cs.indexOf(n.c)<0)cs.push(n.c);});
   return (cs.length===1?CH[cs[0]].t:'세트')+SUF[o.lb];
 }
-function sayAt(k,text){
+function sayAt(k,text,rw){
   const card=$('#orders').children[k];if(!card)return;
-  const old=card.querySelector('.say');if(old)old.remove();
-  const e=document.createElement('div');e.className='say'+(text?' big':'');e.textContent=text||SAY[rnd(SAY.length)];
-  card.appendChild(e);setTimeout(()=>e.remove(),text?3000:1300);
+  const r=card.getBoundingClientRect();
+  const e=document.createElement('div');e.className='say fix ord'+(text?' big':'')+(rw?' rw':'');
+  e.innerHTML=escH(rn(text||SAY[rnd(SAY.length)]))+(rw?'<small>'+escH(rw)+'</small>':'');
+  e.style.left=Math.min(Math.max(r.left+r.width/2,90),innerWidth-90)+'px';e.style.top=(r.top+6)+'px';
+  document.body.appendChild(e);setTimeout(()=>e.remove(),text?3000:1700);
 }
 function renderOrders(fresh){
   $('#orders').innerHTML=st.orders.map((o,k)=>{
@@ -2383,23 +2392,27 @@ function deliver(i,k){
     const tutXp=st.tut===4;
     o.state='done';o.doneAt=Date.now();st.coins+=o.coins;st.nDeliv++;st.fed[o.cu]=(st.fed[o.cu]||0)+1;
     track('deliver');track('coin',o.coins);
-    flyCoins($('#orders').children[k],o.coins);
+    flyCoins($('#orders').children[k],o.coins,false);
+    const rwTxt='🪙 +'+o.coins+'  ⭐ 경험치 +'+o.xp;
     flyXp($('#orders').children[k],o.xp);
     setTimeout(()=>{gainXp(o.xp);refresh();save();},560);
     if(tutXp){st.tut=5;setTimeout(()=>{if(st.tut===5){st.tut=7;save();tutDraw();}},3000);setTimeout(()=>{if(st.tut===7){st.tut=10;save();tutDraw();}},6200);}
     refresh();
-    if(o.cu===1&&st.fed[1]===1){const cd=$('#orders').children[k];if(cd){setEmo(cd,1,2);sayFix(cd.querySelector('.face')||cd,'고마워! 이제 우리 이웃이야!',3000);}}
-    else if(st.nDeliv===1&&o.cu===0){const cd=$('#orders').children[k];if(cd){setEmo(cd,0,4);}if(cd)sayFix(cd.querySelector('.cface,.face,img')||cd,'와작와작… 살 것 같아요! 정말 고마워요!',3000);}else sayAt(k);sfx('done');
+    if(o.cu===1&&st.fed[1]===1){const cd=$('#orders').children[k];if(cd){setEmo(cd,1,2);sayFix(cd.querySelector('.face')||cd,'고마워! 이제 우리 이웃이야!\n'+rwTxt,3000);}}
+    else if(st.nDeliv===1&&o.cu===0){const cd=$('#orders').children[k];if(cd){setEmo(cd,0,4);}if(cd)sayFix(cd.querySelector('.cface,.face,img')||cd,'와작와작… 살 것 같아요! 정말 고마워요!\n'+rwTxt,3000);}else sayAt(k,null,rwTxt);sfx('done');
     setTimeout(()=>orderLeave(o),700);
   }else{
     refresh();
-    floatAt($('#orders').children[k],'일부 전하기');sfx('coin');
+    if(!quietPart){floatAt($('#orders').children[k],'일부 전하기');sfx('coin');}
   }
   return true;
 }
+let quietPart=false;
 function submitOrder(k){
   sel=null;let n=0;const o=st.orders[k];
-  if(o&&o.state!=='done')findMatches(k).forEach(p=>{if(deliver(p[1],k))n++;});
+  quietPart=true;
+  try{if(o&&o.state!=='done')findMatches(k).forEach(p=>{if(deliver(p[1],k))n++;});}finally{quietPart=false;}
+  if(n&&o&&o.state!=='done'){floatAt($('#orders').children[k],'일부 전하기');sfx('coin');}
   if(!n){
     const card=$('#orders').children[k];
     if(card&&!reduce){card.classList.add('shake');setTimeout(()=>card.classList.remove('shake'),400);}
@@ -2452,9 +2465,9 @@ function flyXp(from,n){
   }
   setTimeout(()=>{bar.classList.remove('xpglow');void bar.offsetWidth;bar.classList.add('xpglow');},560);
 }
-function flyCoins(from,n){
+function flyCoins(from,n,label){
   const pill=$('#coinpill');
-  floatAt(from,'+'+n);
+  if(label!==false)floatAt(from,label||('+'+n));
   if(!from||!pill||reduce)return;
   pill.dataset.hold='1';
   const a=from.getBoundingClientRect(),b=pill.getBoundingClientRect();
