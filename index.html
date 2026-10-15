@@ -3101,7 +3101,9 @@ $('#qGift').addEventListener('click',()=>claimGift(viewDay));
 $('#dscene').addEventListener('click',e=>{
   const pg=e.target.closest('.pg');if(pg){petReact(pg);return;}
   const sp=e.target.closest('[data-spot]');
-  if(sp){dSel=sp.dataset.spot;dPick=owned(dSel)?st.dec[dSel]:0;sfx('tap');renderDecor();return;}
+  if(sp){const S=SPOTS.find(x=>x.id===sp.dataset.spot);
+    if(S&&!owned(S.id)&&!spotOpen(S)){sfx('err');{const zn=DZ[curZone()].n;toast('🔒 '+zn+josa(zn,'을','를')+' 먼저 다 꾸미면 열려요. 무엇이 들어올지는 그때 확인해요!');}return;}
+    dSel=sp.dataset.spot;dPick=owned(dSel)?st.dec[dSel]:0;sfx('tap');renderDecor();return;}
 });
 $('#dPanel').addEventListener('click',e=>{
   const t=e.target.closest('button');if(!t)return;
