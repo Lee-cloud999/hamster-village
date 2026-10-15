@@ -2830,7 +2830,7 @@ function showIntro(){
     '<p data-emo="1" data-pet="0">볼주머니에 이삿짐을 가득 넣은 햄스터가 왔어요.</p>'+
     '<p data-emo="5" data-pet="0">"안녕하세요… 저는 보리예요. 마을이 생각보다 조용하네요?"</p>'+
     '<p data-emo="6" data-pet="0"><i>꼬르륵—</i> "앗… 초면에 죄송해요. 급히 오느라 아무것도 못 먹어서요…"</p></div>';
-  showReward('햄스터 마을에 어서 오세요',body,'너무 귀여운 햄스터다!\n재료를 합쳐 햄스터들의 부탁을 들어주고,\n코인을 모아서 가구를 마련해 주자.\n우선 해바라기씨부터 만들어 줄까?',()=>{st.intro=1;if(st.tut==null&&!st.nDeliv)st.tut=1;save();tutDraw();});
+  showReward('햄스터 마을에 어서 오세요',body,'너무 귀여운 햄스터다!\n우선 해바라기씨부터 만들어 줄까?',()=>{st.intro=1;if(st.tut==null&&!st.nDeliv)st.tut=1;save();tutDraw();});
 }
 function openStory(p,k){
   if(chapterState(p,k)==='lock')return;
