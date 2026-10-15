@@ -1296,6 +1296,7 @@ body,.sheet,#tut .tut-b,.say,.toast,.float,#rwBody,#rwNote{word-break:keep-all;o
   <div class="setrow"><b style="font-weight:400">효과음</b><button class="sw" id="swSfx" role="switch" aria-checked="true" aria-label="효과음"></button></div>
   <div class="setrow col"><label for="rgSfx" class="have">효과음 크기 <span id="vSfx"></span></label><input type="range" id="rgSfx" min="0" max="100" step="5"></div>
   <div class="setrow col"><span class="have">화면 모드</span><div class="trk" id="thm"><button class="btn" type="button" data-thm="light">라이트</button><button class="btn" type="button" data-thm="auto">기기 설정 따라가기</button><button class="btn" type="button" data-thm="dark">다크</button></div></div>
+  <div class="setrow"><b style="font-weight:400">진동 (햅틱)</b><button class="sw" id="swHap" role="switch" aria-checked="true" aria-label="진동"></button></div>
   <div class="setrow"><b style="font-weight:400">게임 중 화면 켜 두기</b><button class="sw" id="swWake" role="switch" aria-checked="true" aria-label="게임 중 화면 켜 두기"></button></div>
   <div class="setrow col"><span class="have">게임 데이터</span><button class="btn rstbtn" id="resetBtn" type="button">처음부터 다시 하기</button></div>
 </section>
@@ -1855,7 +1856,22 @@ function mb(f,off,d,v){ /* music-box / glockenspiel-ish pluck */
 }
 const PENT=[0,2,4,7,9]; /* major pentatonic */
 const pn=k=>523.25*Math.pow(2,(PENT[((k%5)+5)%5]+12*Math.floor(k/5))/12); /* k=0 -> C5 */
+/* 햅틱: 안드로이드는 진동, 아이폰(사파리 18+)은 스위치 트릭 */
+const HAP_KEY='hamster-village-haptic';
+function hapOn(){try{return localStorage.getItem(HAP_KEY)!=='0';}catch(e){return true;}}
+let hapEl=null;
+function hap(ms){
+  if(!hapOn())return;
+  try{
+    if(navigator.vibrate){navigator.vibrate(ms);return;}
+    if(!hapEl){const l=document.createElement('label');l.style.cssText='position:fixed;left:-99px;top:-99px;opacity:0;pointer-events:none';l.setAttribute('aria-hidden','true');
+      const c=document.createElement('input');c.type='checkbox';c.setAttribute('switch','');l.appendChild(c);document.body.appendChild(l);hapEl=l;}
+    hapEl.click();
+  }catch(e){}
+}
+const HAP={tap:6,move:8,gen:10,coin:12,unlock:12,pet:8,err:[12,50,12],done:[14,40,22],level:[20,50,30,50,40],badge:[14,40,14]};
 function sfx(n,a,b){
+  try{if(n==='merge')hap((a||2)>=5?[18,40,28]:(a||2)>=4?[16,30,16]:14);else if(HAP[n]!=null)hap(HAP[n]);}catch(e){}
   if(!sndS.sfx)return;
   initAudio();if(!AC)return;
   const now=performance.now();sfxRecent=sfxRecent.filter(t=>now-t<120);
@@ -2947,7 +2963,7 @@ window.addEventListener('pointermove',e=>{
   if(!drag||e.pointerId!==drag.id)return;
   if(!drag.on){
     if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<7)return;
-    drag.on=true;sel=null;
+    drag.on=true;sel=null;hap(10);
     const it=st.cells[drag.i];
     const g=document.createElement('div');g.className='ghost c-'+it.c;
     g.style.width=g.style.height=(drag.size*1.2)+'px';g.innerHTML=em(it.c,it.l);
@@ -3487,6 +3503,9 @@ $('#swWake').addEventListener('click',()=>{const on=!wakeOn();try{localStorage.s
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')wakeReq();});
 addEventListener('pointerdown',()=>{if(!wakeLock)wakeReq();},true);
 renderWake();
+function renderHap(){const b=$('#swHap');if(b){b.setAttribute('aria-checked',hapOn()?'true':'false');b.classList.toggle('on',hapOn());}}
+$('#swHap').addEventListener('click',()=>{const on=!hapOn();try{localStorage.setItem(HAP_KEY,on?'1':'0');}catch(e){}renderHap();if(on)hap(15);});
+renderHap();
 $('#swSfx').addEventListener('click',()=>{sndS.sfx=!sndS.sfx;sndSave();renderSnd();if(sndS.sfx){initAudio();sfx('tap');}});
 $('#rgBgm').addEventListener('input',e=>{sndS.bgmV=+e.target.value;$('#vBgm').textContent=sndS.bgmV;bgmApplyVol();sndSave();});
 $('#rgSfx').addEventListener('input',e=>{sndS.sfxV=+e.target.value;$('#vSfx').textContent=sndS.sfxV;sndSave();});
