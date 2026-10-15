@@ -922,6 +922,7 @@ body{padding-inline:8px}
 @media (min-aspect-ratio:1/1) and (min-width:700px) and (min-height:540px){
   #decor.sheet:not([hidden]){max-width:min(980px,calc(100vw - 32px))!important;width:min(980px,calc(100vw - 32px));max-height:calc(100% - 24px)!important;box-sizing:border-box;display:grid!important;grid-template-columns:auto minmax(280px,1fr);grid-template-rows:auto auto 1fr;column-gap:18px;align-content:start;overflow:hidden}
   #decor header{grid-column:1/3}
+  #decor .dsw{display:contents}
   #decor #dscene{grid-column:1;grid-row:2/4;height:calc(100vh - 130px);height:calc(100dvh - 130px);width:auto;max-height:860px;aspect-ratio:380/612}
   #decor #zones{grid-column:2;grid-row:2;align-self:start}
   #decor #dPanel{grid-column:2;grid-row:3;align-self:start;overflow-y:auto;max-height:calc(100vh - 200px)}
@@ -1091,8 +1092,22 @@ body,.sheet,#tut .tut-b,.say,.toast,.float,#rwBody,#rwNote{word-break:keep-all;o
 
 /* 세로 화면 꾸미기: 장면 높이를 줄여 아래 스타일 첫 줄까지 한눈에 */
 @media (max-aspect-ratio:1/1),(max-width:699px),(max-height:539px){
-  #decor #dscene.scene{height:min(calc(100dvh - 400px),calc((100vw - 72px)*612/380));width:auto;margin:0 auto;max-width:100%}
-  #decor .stys{grid-auto-rows:auto}
+  #decor.sheet:not([hidden]){display:flex!important;flex-direction:column;height:calc(100% - 24px);max-height:calc(100% - 24px)!important;overflow:hidden!important;gap:8px!important;padding-top:12px!important;padding-bottom:12px!important}
+  #decor header{flex:0 0 auto;margin:0!important}
+  #decor .dsw{flex:1 1 0;min-height:0;container-type:size;display:flex;justify-content:center;align-items:flex-start}
+  #decor #dscene.scene{height:min(100cqh,100cqw*612/380);width:auto;max-width:100%;margin:0 auto;aspect-ratio:380/612}
+  #decor .zones{flex:0 0 auto;margin:0!important}
+  #decor.sel .zones{display:none!important}
+  #decor #dPanel{flex:0 0 auto;gap:6px!important}
+  #decor .dp-head{display:flex;align-items:center;gap:8px}
+  #decor .dp-head .dp-t{flex:1;min-width:0}
+  #decor .dp-head .dp-t small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #decor .dp-head .x{width:auto!important;height:30px!important;padding:0 12px!important;border-radius:99px!important;font-size:12px!important;white-space:nowrap;flex:0 0 auto}
+  #decor .stys{display:grid;grid-template-columns:none!important;grid-auto-flow:column;grid-auto-columns:88px;overflow-x:auto;overflow-y:hidden;gap:6px;padding:2px 2px 4px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  #decor .stys::-webkit-scrollbar{display:none}
+  #decor .sty{scroll-snap-align:start;padding:4px!important}
+  #decor .sty .pvw{height:50px!important}
+  #decor .dp-act{margin-top:0!important}
 }
 
 /* 보리의 산책길 */
@@ -1338,7 +1353,7 @@ body,.sheet,#tut .tut-b,.say,.toast,.float,#rwBody,#rwNote{word-break:keep-all;o
 
 <section class="sheet" id="decor" role="dialog" aria-label="마을 꾸미기" hidden style="max-height:92%">
   <header><h2>마을 꾸미기</h2><button class="x" data-close aria-label="닫기">✕</button></header>
-  <div class="scene" id="dscene"></div>
+  <div class="dsw"><div class="scene" id="dscene"></div></div>
   <div class="zones" id="zones"></div>
   <div id="dPanel" style="display:grid;gap:8px"></div>
 </section>
@@ -3284,10 +3299,10 @@ function renderDecor(){
     const sp=SPOTS.filter(x=>x.zone===k),n=sp.filter(x=>owned(x.id)).length;
     return '<span class="zc '+(zoneDone(k)?'done':k===cz?'now':'lock')+'">'+z.n+' '+n+'/'+sp.length+'</span>';
   }).join('');
-  const P=$('#dPanel');
+  const P=$('#dPanel');$('#decor').classList.toggle('sel',!!dSel);
   if(dSel){
     const sp=SPOTS.find(x=>x.id===dSel),own=owned(sp.id);
-    const note=own?'스타일을 누르면 미리보기 · 적용하기를 눌러 확정해요':DZ[sp.zone].n+' 구역 · 스타일을 골라 설치하세요';
+    const note=own?'눌러서 미리 보고 적용해요':'스타일을 골라 설치해요';
     const cur=st.dec[sp.id],lockedPick=!styleOwned(sp.id,dPick),pp=stylePrice(dPick);
     let act;
     if(!own&&!spotOpen(sp))act='<button class="dp-act" type="button" disabled>미리보기 중 · 앞 구역을 꾸미면 설치할 수 있어요</button>';
