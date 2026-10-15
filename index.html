@@ -1088,6 +1088,12 @@ body,.sheet,#tut .tut-b,.say,.toast,.float,#rwBody,#rwNote{word-break:keep-all;o
 #evList .prow{min-height:46px;box-sizing:border-box;align-items:center}
 #evList .prow>:last-child{height:32px;min-width:52px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;margin:0}
 #evList .prow>.btn:last-child{padding:0 12px;font-size:13px;min-height:0}
+
+/* 세로 화면 꾸미기: 장면 높이를 줄여 아래 스타일 첫 줄까지 한눈에 */
+@media (max-aspect-ratio:1/1),(max-width:699px),(max-height:539px){
+  #decor #dscene.scene{height:min(calc(100dvh - 400px),calc((100vw - 72px)*612/380));width:auto;margin:0 auto;max-width:100%}
+  #decor .stys{grid-auto-rows:auto}
+}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
