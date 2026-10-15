@@ -1172,6 +1172,16 @@ body,.sheet,#tut .tut-b,.say,.toast,.float,#rwBody,#rwNote{word-break:keep-all;o
 .fm.done{opacity:.55}
 
 .fcell .fim{position:relative}.fcell .fim .im,.fcell .fim img{position:static!important;transform:none!important;margin:0!important}
+
+/* 주문 카드: 햄스터 옆 보상 미리보기 */
+.order .orw{position:absolute;left:calc(50% + 24px);top:-34px;display:grid;gap:1px;z-index:3;pointer-events:none}
+@media (min-aspect-ratio:1/1) and (min-width:700px) and (min-height:540px){.orwrap .order .orw{left:auto;right:8px;top:6px;grid-auto-flow:column}}
+.order .orw i{display:flex;align-items:center;gap:1px;font-style:normal;background:rgba(255,255,255,.95);border-radius:9px;padding:0 5px 0 2px;box-shadow:0 1px 3px rgba(0,0,0,.18);font-size:11px;line-height:16px;white-space:nowrap}
+.order .orw i img,.order .orw i svg{width:13px!important;height:13px!important}
+.order .orw b{font-weight:800;color:#6b3f20}
+.order .orw .ox{font-size:9px}.order .orw .ox b{font-size:11px;color:#b07a10}
+.order .orw .oe b{color:#a5502e}
+.order .rew{display:none!important}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -2740,12 +2750,16 @@ function sayAt(k,text,rw){
   e.style.left=Math.min(Math.max(r.left+r.width/2,90),innerWidth-90)+'px';e.style.top=(r.top+6)+'px';
   document.body.appendChild(e);setTimeout(()=>e.remove(),text?3000:1700);
 }
+function ordRw(o){
+  let n=0;try{if(evOn())n=o.needs.length+(o.tier==='hard'?1:0);}catch(e){}
+  return '<span class="orw"><i>'+COIN+'<b>+'+o.coins+'</b></i><i class="ox">⭐<b>+'+o.xp+'</b></i>'+(n?'<i class="oe">'+evI('acorn',14)+'<b>+'+n+'</b></i>':'')+'</span>';
+}
 function renderOrders(fresh){
   $('#orders').innerHTML=st.orders.map((o,k)=>{
     const cu=CUST[o.cu],rd=o.state!=='done'&&findMatches(k).length>0;
     const cls='order'+(o.state==='done'?' done':'')+(rd?' ready':'')+(wants(k)?' wants':'')+
       ((fresh==='all'||fresh===k||(Array.isArray(fresh)&&fresh.indexOf(k)>=0))?' enter':'');
-    return '<article class="'+cls+'" data-k="'+k+'">'+
+    return '<article class="'+cls+'" data-k="'+k+'">'+ordRw(o)+
       '<div class="who"><span class="face">'+faceE(o.cu,o.state==='done'?2:rd?3:0)+'</span><b>'+escH(petName(o.cu))+'</b>'+(o.tier==='hard'?'<i class="tier">★</i>':'')+'</div>'+
       '<div class="otxt">'+orderLabel(o)+'</div>'+
       '<div class="plate">'+o.needs.map(n=>'<span class="need c-'+n.c+(n.done?' done':'')+'" data-c="'+n.c+'" data-l="'+n.l+'" role="button" aria-label="'+nm(n.c,n.l)+' '+n.l+'단계">'+em(n.c,n.l)+(n.done?'<u class="ck">✓</u>':'')+'</span>').join('')+'</div>'+
