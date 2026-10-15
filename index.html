@@ -1193,6 +1193,45 @@ body,.sheet,#tut .tut-b,.say,.toast,.float,#rwBody,#rwNote{word-break:keep-all;o
 #pass .stone.got{filter:saturate(.45) drop-shadow(0 4px 4px rgba(90,60,30,.2))}
 #pass .stone .slv{top:-14px}
 #pass .stone .scn{bottom:-6px}
+
+/* order card v2: hamster left, needs beside, tap card to deliver */
+.order{cursor:pointer;grid-template-columns:auto minmax(0,1fr)!important;padding:6px 6px 6px 4px!important;gap:2px 4px!important;align-items:center}
+.order .who{position:static!important;transform:none!important;grid-column:1;grid-row:1;align-self:end;pointer-events:none;margin:-14px 0 -6px -2px}
+.order .who .face{clip-path:none!important;font-size:50px}
+.order .who .face img,.order .who .face .im,.order .who .face .rim{width:60px!important;height:60px!important}
+.order .plate{grid-column:2!important;grid-row:1!important;justify-content:flex-start!important;flex-wrap:nowrap!important;min-height:30px}
+.order .subbtn{display:none!important}
+.orders{margin-top:24px}
+.order .orw{left:2px!important;right:auto!important;top:-21px!important;grid-auto-flow:column}
+.orders{grid-template-columns:none!important;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}
+.order{container-type:inline-size}
+.order .who .face img,.order .who .face .im,.order .who .face .rim{width:56px!important;height:56px!important}
+@container (max-width:118px){
+  .order .plate{display:grid!important;grid-auto-flow:column;grid-template-rows:repeat(2,auto);gap:2px!important;justify-content:start!important;align-content:center}
+  .order .who{margin:-12px -2px -6px -4px}
+  .order .who .face img,.order .who .face .im,.order .who .face .rim{width:50px!important;height:50px!important}
+}
+@container (max-width:118px){
+  .order .orw i{font-size:9px;line-height:14px;padding:0 3px 0 1px;gap:0}
+  .order .orw i img,.order .orw i svg{width:10px!important;height:10px!important}
+  .order .orw b{font-size:10px}
+  .order .orw{gap:1px!important}
+}
+@container (max-width:96px){
+  .order .orw .ox{display:none}
+  .order .plate:has(.need:nth-child(3)){display:flex!important;grid-column:1/-1!important;grid-row:2!important;justify-content:center!important;margin-top:4px}
+  .order .need{width:24px!important;height:24px!important}
+}
+.order.ready{background:#f2fbe9}
+.order:active:not(.done){transform:scale(.97)}
+@media (min-aspect-ratio:1/1) and (min-width:700px) and (min-height:540px){
+  .orwrap .order{grid-template-columns:84px minmax(0,1fr)!important;padding:10px 12px!important}
+  .orwrap .order .who{grid-row:1/3;margin:0;align-self:center}
+  .orwrap .order .who .face img,.orwrap .order .who .face .im,.orwrap .order .who .face .rim{width:80px!important;height:80px!important}
+  .orwrap .order .plate{grid-column:2!important;grid-row:1/3!important;align-self:center}
+  .orwrap .order .orw{left:auto!important;right:8px!important;top:6px!important}
+  .orwrap .orders{grid-auto-flow:row!important}
+}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -2777,7 +2816,6 @@ function renderOrders(fresh){
       '<div class="otxt">'+orderLabel(o)+'</div>'+
       '<div class="plate">'+o.needs.map(n=>'<span class="need c-'+n.c+(n.done?' done':'')+'" data-c="'+n.c+'" data-l="'+n.l+'" role="button" aria-label="'+nm(n.c,n.l)+' '+n.l+'단계">'+em(n.c,n.l)+(n.done?'<u class="ck">✓</u>':'')+'</span>').join('')+'</div>'+
       '<div class="rew">'+COIN+'<b>'+o.coins+'</b></div>'+
-      (o.state==='done'?'':'<button class="subbtn'+(rd?' ready':'')+'" type="button" data-k="'+k+'">전하기</button>')+
       '</article>';
   }).join('');
   renderWait();
@@ -2795,14 +2833,11 @@ function deliver(i,k){
     track('deliver');track('coin',o.coins);
     flyCoins($('#orders').children[k],o.coins,false);
     const evN=evAdd(o);
-    const rwTxt='🪙 +'+o.coins+'  ⭐ 경험치 +'+o.xp+(evN?'  🌰 +'+evN:'');
-    const rwHtml=COIN+'+'+o.coins+' &nbsp;⭐ 경험치 +'+o.xp+(evN?' &nbsp;'+evI('acorn',16)+'+'+evN:'');
     flyXp($('#orders').children[k],o.xp);
     setTimeout(()=>{gainXp(o.xp);refresh();save();},560);
     if(tutXp){st.tut=5;setTimeout(()=>{if(st.tut===5){st.tut=7;save();tutDraw();}},3000);setTimeout(()=>{if(st.tut===7){st.tut=10;save();tutDraw();}},6200);}
     refresh();
-    if(o.cu===1&&st.fed[1]===1){const cd=$('#orders').children[k];if(cd){setEmo(cd,1,2);sayFix(cd.querySelector('.face')||cd,'고마워! 이제 우리 이웃이야!\n'+rwTxt,3000);}}
-    else if(st.nDeliv===1&&o.cu===0){const cd=$('#orders').children[k];if(cd){setEmo(cd,0,4);}if(cd)sayFix(cd.querySelector('.cface,.face,img')||cd,'와작와작… 살 것 같아요! 정말 고마워요!\n'+rwTxt,3000);}else sayAt(k,null,rwHtml);sfx('done');
+    {const cd=$('#orders').children[k];if(cd){if(o.cu===1&&st.fed[1]===1)setEmo(cd,1,2);else if(st.nDeliv===1&&o.cu===0)setEmo(cd,0,4);}}sfx('done');
     setTimeout(()=>orderLeave(o),700);
   }else{
     refresh();
@@ -3486,10 +3521,11 @@ function renderSnd(){
 
 /* ---------- event wiring ---------- */
 $('#orders').addEventListener('click',e=>{
-  const b=e.target.closest('.subbtn');
-  if(b){submitOrder(+b.dataset.k);return;}
+  const card=e.target.closest('.order');if(!card||card.classList.contains('done'))return;
   const nd=e.target.closest('.need');
-  if(nd&&CH[nd.dataset.c]){sfx('tap');openChain(nd.dataset.c,+nd.dataset.l);}
+  if(nd&&CH[nd.dataset.c]&&!nd.classList.contains('done')){const k=+card.dataset.k,ni=[...nd.parentNode.children].indexOf(nd);
+    if(st.tut===12||!findMatches(k).some(m=>m[0]===ni)){sfx('tap');openChain(nd.dataset.c,+nd.dataset.l);return;}}
+  hap&&hap(10);submitOrder(+card.dataset.k);
 });
 $('#sell').addEventListener('click',()=>{
   if(sel==null||!st.cells[sel]){toast('먼저 팔 재료를 눌러서 고르세요');return;}
@@ -3738,7 +3774,7 @@ function tutExt(t){
   if(t===10)return {el:two(),txt:'이번엔 재료가 두 개예요!',emo:6};
   if(t===11){const pr=pair();if(pr)return {el:cellEl(pr[0]),to:cellEl(pr[1]),txt:'새싹까지 합쳐서 키워요'};return {el:gen,txt:'생성기로 재료를 더 꺼내요'};}
   if(t===12){const c=two();const nd=c&&c.querySelector('.need[data-l="3"]:not(.done)');return {el:nd||c,txt:'재료를 누르면 단계가 보여요'};}
-  if(t===13){const c=two();const r=c&&c.querySelector('.subbtn.ready');if(r)return {el:r,txt:'다 모았어요! 전해 주세요'};const pr=pair();if(pr)return {el:cellEl(pr[0]),to:cellEl(pr[1]),txt:'남은 재료도 만들어 주세요'};return {el:gen,txt:'생성기로 남은 재료를 만들어요'};}
+  if(t===13){const c=two();const r=c&&c.classList.contains('ready')?c:null;if(r)return {el:r,txt:'다 모았어요! 전해 주세요'};const pr=pair();if(pr)return {el:cellEl(pr[0]),to:cellEl(pr[1]),txt:'남은 재료도 만들어 주세요'};return {el:gen,txt:'생성기로 남은 재료를 만들어요'};}
   if(t===14)return {el:$('#navDecor'),txt:'보리에게 침대를 사 줄까요?',emo:3};
   if(t===15||t===16){
     if($('#decor').hidden)return {el:$('#navDecor'),txt:'꾸미기를 눌러 보세요'};
@@ -3767,7 +3803,7 @@ function tutTarget(){
     if(a<0)return {el:null,txt:'같은 재료를 합쳐 보세요'};
     return {el:cellEl(a),to:cellEl(b),txt:'같은 재료를 끌어서 합쳐요'};
   }
-  if(t===4){const r=document.querySelector('.subbtn.ready')||document.querySelector('.subbtn');return {el:r,txt:document.querySelector('.subbtn.ready')?'햄스터에게 전해 주세요':'재료를 모아 전해 주세요'};}
+  if(t===4){const rr=document.querySelector('#orders .order.ready');const r=rr||document.querySelector('#orders .order:not(.done)');return {el:r,txt:rr?'주문판을 눌러 전해 주세요':'재료를 모아 전해 주세요'};}
   if(t===5)return null;
   if(t===6){const it=B.querySelector('.item.c-xp');return {el:it?it.closest('.cell'):null,txt:'도토리를 두 번 눌러요'};}
   if(t===7)return {el:document.querySelector('.stat .xp'),txt:'레벨이 오르면 선물이 와요!',up:true};
