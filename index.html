@@ -1187,6 +1187,7 @@ body,.sheet,#tut .tut-b,.say,.toast,.float,#rwBody,#rwNote{word-break:keep-all;o
 .fm .fmp,.fm .btn{display:flex;align-items:center;gap:2px;font-size:12px;font-weight:800;color:#4a5a20;height:28px;padding:0 8px;min-width:58px;justify-content:center;box-sizing:border-box}
 .fm.done{opacity:.55}
 
+.fcell{height:60px!important;margin:0 6px!important;border-radius:12px!important}.fcell .fim{width:40px!important;height:40px!important}
 .fcell .fim{position:relative}.fcell .fim .im,.fcell .fim img{position:static!important;transform:none!important;margin:0!important}
 
 /* 주문 카드: 햄스터 옆 보상 미리보기 */
@@ -1222,6 +1223,11 @@ body,.sheet,#tut .tut-b,.say,.toast,.float,#rwBody,#rwNote{word-break:keep-all;o
   background:#fff;border-radius:11px;box-shadow:0 2px 0 rgba(170,130,100,.28),0 3px 8px rgba(0,0,0,.10);z-index:2}
 .order .need{width:26px!important;height:26px!important}
 .order .tier{left:-5px!important;right:auto!important}
+.order .orw i,.order .orw .ox,.order .orw .oe{font-size:11px!important;line-height:17px!important}
+.order .orw b,.order .orw .ox b,.order .orw .oe b{font-size:12px!important;color:#6b3f20!important;font-weight:800}
+.order .orw i img,.order .orw i svg,.order .orw .ox img,.order .orw .ox svg{width:14px!important;height:14px!important}
+@container (max-width:100px){.order .orw i,.order .orw .ox,.order .orw .oe{font-size:9px!important;line-height:14px!important}.order .orw b,.order .orw .ox b,.order .orw .oe b{font-size:10px!important}.order .orw i img,.order .orw i svg{width:11px!important;height:11px!important}}
+@media (min-aspect-ratio:1/1) and (min-width:700px) and (min-height:540px){.orwrap .order .orw b,.orwrap .order .orw .ox b,.orwrap .order .orw .oe b{font-size:13px!important}}
 .order,.order.ready,.order.done,.orwrap .order{background:transparent!important;border:0!important;box-shadow:none!important}
 .order .plate{border:2px solid #e9c9b2!important}
 .order.ready .plate{border-color:#7cc25a!important;box-shadow:0 0 0 3px rgba(124,194,90,.28),0 3px 8px rgba(0,0,0,.10)!important}
