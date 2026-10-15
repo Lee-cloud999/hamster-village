@@ -2253,16 +2253,17 @@ function newOrder(tier,forceCu){
   const unl=st.unlocked;let pool=unl.filter(i=>used.indexOf(i)<0);
   if(!pool.length)pool=unl.slice();
   const cu=forceCu!=null?forceCu:pool[rnd(pool.length)];
-  const top=Math.min(MAXLV,3+Math.floor((st.lv-1)/3));
-  const low=st.lv<4?1:2;
+  /* 주문 단계: 1단계는 거의 없이 2~4단계 위주, 레벨이 오르면 5·6단계도 */
+  const top=Math.min(MAXLV,4+Math.floor((st.lv-1)/3));
+  const low=st.lv<2?1:2;
   let lo=low,hi=top,count=1;
-  if(tier==='easy')hi=Math.min(top,low+1);
+  if(tier==='easy'){lo=low;hi=Math.min(top,3);}
   if(tier==='mid'){
     if(st.lv>=3&&Math.random()<Math.min(.65,(st.lv-2)*.12+.1))count=2;
     if(st.lv>=7&&Math.random()<.25)count=3;
   }
   if(tier==='hard'){
-    lo=Math.max(low,top-1);
+    lo=Math.max(3,top-1);
     if(st.lv>=3&&Math.random()<.5)count=2;
     if(st.lv>=7&&Math.random()<.3)count=3;
   }
@@ -2280,7 +2281,7 @@ function newOrder(tier,forceCu){
     let f=cand.filter(x=>!shown[x.key]&&!chosen[x.key]&&x.key!==lastKey);
     if(!f.length)f=cand.filter(x=>!chosen[x.key]);
     if(!f.length)f=cand;
-    const w=x=>tier==='hard'?(x.l-lo+2):(hi-x.l+2);
+    const w=x=>tier==='hard'?(x.l-lo+2):tier==='easy'?(x.l===3?3:2):(x.l===3||x.l===4?4:x.l===2?2:1);
     const tot=f.reduce((t,x)=>t+w(x),0);
     let r=Math.random()*tot,pick=f[0];
     for(let k=0;k<f.length;k++){r-=w(f[k]);if(r<=0){pick=f[k];break;}}
