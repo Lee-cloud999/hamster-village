@@ -3292,7 +3292,7 @@ function tutTarget(){
     if(a<0)return {el:null,txt:'같은 재료 두 개를 합쳐 보세요'};
     return {el:cellEl(a),to:cellEl(b),txt:'같은 재료 두 개를 끌어서 합쳐 보세요'};
   }
-  if(t===4){const r=document.querySelector('.subbtn.ready')||document.querySelector('.subbtn');return {el:r,txt:document.querySelector('.subbtn.ready')?'햄스터에게 전해 주세요 (‘전하기’)':'재료를 모아 햄스터에게 전해 주세요'};}
+  if(t===4){const r=document.querySelector('.subbtn.ready')||document.querySelector('.subbtn');return {el:r,txt:document.querySelector('.subbtn.ready')?'햄스터에게 전해 주세요':'재료를 모아 햄스터에게 전해 주세요'};}
   if(t===5)return null;
   if(t===6){const it=B.querySelector('.item.c-xp');return {el:it?it.closest('.cell'):null,txt:'황금 도토리를 두 번 터치해 보세요'};}
   if(t===7)return {el:document.querySelector('.stat .xp'),txt:'경험치가 올라요! 레벨이 오르면 선물을 받아요',up:true};
