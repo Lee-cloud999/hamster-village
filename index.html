@@ -1893,7 +1893,7 @@ let viewDay=1, dSel=null, dPick=0, dJust=null, dexSel=null, tk=0;
 
 /* ---------- derived values ---------- */
 const need=lv=>lv<5?[0,30,50,70,100][lv]:30*lv;
-const ordCap=()=>Math.min(4,(st.unlocked||[0]).length+1);
+const ordCap=()=>4;
 const maxE=()=>Math.min(120,40+Math.floor((st.lv-1)/2)*10)+(st.bonusE||0)*10;
 const refillCost=()=>maxE()*2;
 /* ---------- 이웃 이사 = 이야기 진행 (이웃이 새 생성기를 선물로 가져와요) ---------- */
@@ -2998,17 +2998,18 @@ function nextTier(){
 }
 function newBatch(){
   const n=Math.min(ordCap(),2+rnd(3));
+  const T=n<=2?['easy','mid']:n===3?['easy','mid','hard']:['easy','mid','mid','hard'];
+  for(let i=T.length-1;i>0;i--){const j=rnd(i+1);[T[i],T[j]]=[T[j],T[i]];}
   st.orders=[];
-  for(let i=0;i<n;i++)st.orders.push(newOrder(nextTier()));
+  T.forEach(t=>st.orders.push(newOrder(t)));
 }
 function ordFill0(){
-  newBatch();st.oNext=st.orders.length<ordCap()?Date.now()+20000:null;save();renderOrders('all');
+  newBatch();st.oNext=null;save();renderOrders('all');
 }
 function orderLeave(o){
   const fin=()=>{
     const j=st.orders.indexOf(o);if(j>=0)st.orders.splice(j,1);
     if(!st.orders.length){ordFill0();return;}
-    if(!st.oNext)st.oNext=Date.now()+20000;
     save();renderOrders();
   };
   if(o.leaving)return;o.leaving=1;
@@ -3022,6 +3023,8 @@ function ordTick(){
   if(stuck.length){stuck.forEach(o=>{o.leaving=0;orderLeave(o);});return;}
   const c=st.orders.length;
   if(c===0){ordFill0();return;}
+  /* 주문은 묶음으로: 모두 전하면 2~4개가 한꺼번에 새로 와요 (중간에 하나씩 채우지 않음) */
+  if(st.oNext){st.oNext=null;save();}renderWait();return;
   if(c>=ordCap()){if(st.oNext){st.oNext=null;save();}renderWait();return;}
   if(!st.oNext){st.oNext=Date.now()+20000;save();}
   if(Date.now()>=st.oNext){
