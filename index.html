@@ -1261,6 +1261,11 @@ html,body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 img,svg{-webkit-user-drag:none;user-drag:none}
 input,textarea,[contenteditable="true"]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
 button:focus,[role=button]:focus,.order:focus{outline:none}
+
+/* 눈에 띄어야 하는 안내창: 노란 테두리 반짝반짝 */
+#tut .tut-b.glow{border:3px solid #ffd23f!important;box-shadow:0 0 0 2px #fff6c9,0 0 14px 4px rgba(255,205,40,.75),0 6px 16px rgba(0,0,0,.18)!important}
+@media (prefers-reduced-motion: no-preference){#tut .tut-b.glow{animation:tutGlow 1s ease-in-out infinite}
+@keyframes tutGlow{0%,100%{border-color:#ffd23f;box-shadow:0 0 0 2px #fff6c9,0 0 10px 2px rgba(255,205,40,.55),0 6px 16px rgba(0,0,0,.18)}50%{border-color:#ffb800;box-shadow:0 0 0 3px #fff3a8,0 0 22px 8px rgba(255,210,40,.95),0 6px 16px rgba(0,0,0,.18)}}}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -3808,7 +3813,7 @@ function tutExt(t){
   if(t===11){const pr=pair();if(pr)return {el:cellEl(pr[0]),to:cellEl(pr[1]),txt:'새싹까지 합쳐서 키워요'};return {el:gen,txt:'생성기로 재료를 더 꺼내요'};}
   if(t===12){const c=two();const nd=c&&c.querySelector('.need[data-l="3"]:not(.done)');return {el:nd||c,txt:'재료를 누르면 단계가 보여요'};}
   if(t===13){const c=two();const r=c&&c.classList.contains('ready')?c:null;if(r)return {el:r,txt:'다 모았어요! 전해 주세요'};const pr=pair();if(pr)return {el:cellEl(pr[0]),to:cellEl(pr[1]),txt:'남은 재료도 만들어 주세요'};return {el:gen,txt:'생성기로 남은 재료를 만들어요'};}
-  if(t===14)return {el:$('#navDecor'),txt:'보리에게 침대를 사 줄까요?',emo:3};
+  if(t===14)return {el:$('#navDecor'),txt:'보리에게 침대를 사 줄까요?',emo:3,glow:1};
   if(t===15||t===16){
     if($('#decor').hidden)return {el:$('#navDecor'),txt:'꾸미기를 눌러 보세요'};
     if(dSel!=='bed'){st.tut=15;return {el:document.querySelector('#dscene .slot.s-bed'),txt:'침대 자리를 눌러 보세요',sheet:'decor'};}
@@ -3827,7 +3832,7 @@ function tutTarget(){
   try{tutNorm();}catch(e){}
   const t=st&&st.tut;
   if(t>=10&&t<20)return tutExt(t);
-  if(!t||t>=8){const tp=tipTarget();if(tp)return tp;const n=$('#navDecor');if(st&&st.guideDecor===1)return n?{el:n,txt:'보리에게 침대를 사 줄까요?'}:null;if(st&&st.guideMsg)return n?{el:n,txt:st.guideMsg}:null;return null;}
+  if(!t||t>=8){const tp=tipTarget();if(tp)return tp;const n=$('#navDecor');if(st&&st.guideDecor===1)return n?{el:n,txt:'보리에게 침대를 사 줄까요?',glow:1}:null;if(st&&st.guideMsg)return n?{el:n,txt:st.guideMsg}:null;return null;}
   const B=$('#board');
   if(t===1||t===2){const g=document.querySelector('.gencell:not(.glock)');return {el:g,txt:t===1?'생성기를 눌러 보세요':'한 번 더 눌러 보세요'};}
   if(t===3){
@@ -3853,11 +3858,13 @@ function tutDraw(){
     o.hidden=false;
     const b=o.querySelector('.tut-b'),f=o.querySelector('.tut-f');
     if(T.emo&&EXPRU[0]){b.innerHTML='<img class="tut-face" src="'+emoU(0,T.emo)+'" alt="">'+'<span>'+escH(rn(T.txt))+'</span>';b.classList.add('wf');}else{b.textContent=rn(T.txt);b.classList.remove('wf');}
-    f.classList.toggle('drag',!!T.to);
+    b.classList.toggle('glow',!!T.glow);f.classList.toggle('drag',!!T.to);
     if(!T.el){f.style.display='none';b.style.left='50%';b.style.top='40%';return;}
     f.style.display='';
     const r=T.el.getBoundingClientRect();
-    const cx=r.left+r.width/2,cy=r.top+r.height/2;
+    let cx=r.left+r.width/2,cy=r.top+r.height/2;
+    /* 주문판을 가리킬 땐 햄스터 얼굴을 가리켜서 아래 재료 선반이 가려지지 않게 */
+    if(T.el.classList&&T.el.classList.contains('order')){const wh=T.el.querySelector('.who img,.who .face');if(wh){const q=wh.getBoundingClientRect();cx=q.left+q.width*.42;cy=q.top+q.height*.22;}}
     f.style.left=cx+'px';f.style.top=(T.up?r.bottom:cy)+'px';
     if(T.to){const r2=T.to.getBoundingClientRect();f.style.setProperty('--dx',(r2.left+r2.width/2-cx)+'px');f.style.setProperty('--dy',(r2.top+r2.height/2-cy)+'px');}
     const bw=Math.min(260,innerWidth-24);
