@@ -1870,7 +1870,7 @@ const openChains=()=>KEYS.filter(genOpen);
 const isLocked=i=>st.locks.indexOf(i)>=0;
 const isGen=i=>GENS[i]!=null;
 const guLv=c=>(st.gu&&st.gu[c])||0;
-const unlockCost=()=>25+10*(st.unlockN||0);
+const unlockCost=()=>25*Math.pow(2,Math.min(st.unlockN||0,10)); /* 25 → 50 → 100 → 200 → 400 → 800 */
 const petName=p=>(st.petName&&st.petName[p])||CUST[p][0];
 /* 주민 이름을 바꾸면 안내·이야기 속 기본 이름도 새 이름으로 (조사도 맞춰요) */
 function rn(str){
