@@ -1253,6 +1253,13 @@ body,.sheet,#tut .tut-b,.say,.toast,.float,#rwBody,#rwNote{word-break:keep-all;o
   .orwrap .order .plate{left:6px!important;right:6px!important;bottom:6px!important;height:40px!important;min-height:0!important;gap:4px!important;justify-content:center!important;grid-column:auto!important;grid-row:auto!important}
   .orwrap .order .need{width:32px!important;height:32px!important}
 }
+
+/* 탭 하이라이트·글자 선택 막기 */
+*,*::before,*::after{-webkit-tap-highlight-color:transparent!important}
+html,body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+img,svg{-webkit-user-drag:none;user-drag:none}
+input,textarea,[contenteditable="true"]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
+button:focus,[role=button]:focus,.order:focus{outline:none}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
