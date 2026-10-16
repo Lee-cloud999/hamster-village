@@ -1825,12 +1825,22 @@ const PET_COND={
   1:()=>owned('run'),
   2:()=>(st.fmax.br||0)>=MAXLV, 3:()=>(st.fmax.sw||0)>=MAXLV, 5:()=>(st.fmax.dr||0)>=MAXLV,
   6:()=>(st.fmax.ml||0)>=MAXLV, 4:()=>(st.fmax.fr||0)>=MAXLV, 7:()=>(st.fmax.ic||0)>=MAXLV&&zoneDone(2)};
+/* 이웃이 너무 빨리 오지 않게: 앞 재료 6단계 + 플레이어 레벨 + 앞 이웃 이야기 3편 모두 읽기 */
+const PET_LV={1:0,2:5,3:8,5:11,6:14,4:17,7:20};
+const petPrev=p=>PET_ORDER[PET_ORDER.indexOf(p)-1];
+function petNeed(p){ /* 아직 못 채운 조건 하나 (없으면 null) */
+  const pv=petPrev(p);
+  if(p!==1&&!PET_COND[p]())return null; /* 재료 조건은 기존 안내가 맡아요 */
+  if(st.lv<(PET_LV[p]||0))return {t:'레벨 '+PET_LV[p]+' 달성 · 새 이웃',a:st.lv,b:PET_LV[p],act:'pass'};
+  if(pv!=null&&pv!==0&&(st.read[pv]||0)<STORY[pv].length)return {t:petName(pv)+' 이야기 모두 읽기 · 새 이웃',a:st.read[pv]||0,b:STORY[pv].length,act:'dex'};
+  return null;
+}
 const PET_HINT={1:'빈 방에 쳇바퀴를 놓으면',2:'해바라기씨를 6단계까지 키우면',3:'도토리를 6단계까지 키우면',5:'잠자리 재료를 6단계까지 키우면',6:'집짓기 재료를 6단계까지 키우면',4:'텃밭 재료를 6단계까지 키우면',7:'놀이 재료를 6단계까지 키우고 광장을 꾸미면'};
 const PET_GIFT_TXT={1:'달리다 주운 도토리가 한가득이래요!',2:'폭신한 잠자리를 만들 수 있는 목화래요.',3:'책장을 만들 나뭇가지를 잔뜩 모아 왔대요.',5:'평생 아껴 온 씨앗 봉투래요.',6:'반짝반짝 장난감이 가득해요!'};
 const GEN_BY=c=>{for(const k in PET_GEN)if(PET_GEN[k]===c)return +k;return null;};
 const genOpen=c=>c==='br'||!!(st.gOpen&&st.gOpen[c]);
 const josa=(w,a,b)=>{const ch=w.charCodeAt(w.length-1)-44032;return (ch>=0&&ch<11172&&ch%28)?a:b;};
-const genLockMsg=c=>{const p=GEN_BY(c);return '아직 발견하지 못한 생성기예요. '+(p!=null?PET_HINT[p]+' 누군가 가져올지도 몰라요!':'');};
+const genLockMsg=c=>{const p=GEN_BY(c);return '아직 발견하지 못한 생성기예요. '+(p!=null?(PET_LV[p]?'레벨 '+PET_LV[p]+' 이후 ':'')+PET_HINT[p]+' 누군가 가져올지도 몰라요!':'');};
 let arriveQ=[],arriveBusy=false;
 function checkGenUnlock(){ /* 이름은 그대로: 보드 그릴 때마다 이사 조건을 살펴요 */
   if(!st||!st.gOpen||inTut())return;
@@ -1838,7 +1848,7 @@ function checkGenUnlock(){ /* 이름은 그대로: 보드 그릴 때마다 이�
     if(st.unlocked.indexOf(p)>=0)continue;
     const prev=PET_ORDER[PET_ORDER.indexOf(p)-1];
     if(prev!=null&&st.unlocked.indexOf(prev)<0)break;
-    if(PET_COND[p]&&PET_COND[p]()&&arriveQ.indexOf(p)<0){arriveQ.push(p);setTimeout(runArrive,700);}
+    if(PET_COND[p]&&PET_COND[p]()&&!petNeed(p)&&arriveQ.indexOf(p)<0){arriveQ.push(p);setTimeout(runArrive,700);}
     break;
   }
 }
@@ -2355,7 +2365,7 @@ function nextGoal(){
   if(!zoneDone(0))return {t:'보리 침대·간식 선반 마련',a:cnt(0),b:tot(0),act:'decor',emo:6};
   if(!owned('run')){if((st.read[0]||0)>=3)return {t:'빈 방에 쳇바퀴 놓기',act:'decor',emo:5};return {t:'보리 부탁 들어주기 · 새 이야기',a:Math.min(8,st.fed[0]||0),b:8,act:'none',emo:6};}
   if(!zoneDone(1)&&SPOTS.some(x=>x.zone===1&&spotOpen(x)))return {t:'이웃 방 꾸미기',a:cnt(1),b:tot(1),act:'decor',emo:1};
-  {const np=nextPet();if(np&&np.c)return {t:CH[np.c].t+' 6단계 키우기 · 새 이웃',a:Math.min(6,st.fmax[np.c]||1),b:6,act:'chain',chain:np.c,emo:3};}
+  {const np=nextPet();if(np){const nd=petNeed(np.p);if(nd)return Object.assign({emo:3},nd);}if(np&&np.c&&!PET_COND[np.p]())return {t:CH[np.c].t+' 6단계 키우기 · 새 이웃',a:Math.min(6,st.fmax[np.c]||1),b:6,act:'chain',chain:np.c,emo:3};}
   if(!zoneDone(1))return {t:'콩이 부탁 들어주기 · 이웃 방 꾸미기',a:cnt(1),b:tot(1),act:'none',emo:1};
   if(!zoneDone(2)&&SPOTS.some(x=>x.zone===2&&spotOpen(x)))return {t:'마을 광장 꾸미기',a:cnt(2),b:tot(2),act:'decor',emo:2};
   if(!zoneDone(2))return {t:'새 이웃을 만나 마을 광장 넓히기',a:cnt(2),b:tot(2),act:'none',emo:1};
@@ -3567,7 +3577,7 @@ function renderDex(){
   $('#dexGrid').innerHTML=CUST.map((x,p)=>{
     const u=st.unlocked.indexOf(p)>=0,out=u&&st.petHide[p],rd=st.read[p]||0,nw=u&&rd<STORY[p].length&&chapterState(p,rd)==='ready';
     let nn=0;if(u)for(let k=rd;k<STORY[p].length&&chapterState(p,k)==='ready';k++)nn++;
-    return '<div class="dcell'+(u?'':' lock')+(dexSel===p?' sel':'')+'"'+(u?' data-p="'+p+'" role="button" tabindex="0"':'')+'>'+(nn?'<i class="nb dnb">'+nn+'</i>':'')+'<span class="de">'+(u?face(p):'❔')+'</span><b>'+(u?escH(petName(p)):'???')+'</b>'+(u?(nw?'<small>새 이야기</small>':out?'<small>마을 밖</small>':'<small>'+rd+'/'+STORY[p].length+'편</small>'):'<small>'+x[2]+'</small>')+'</div>';
+    return '<div class="dcell'+(u?'':' lock')+(dexSel===p?' sel':'')+'"'+(u?' data-p="'+p+'" role="button" tabindex="0"':'')+'>'+(nn?'<i class="nb dnb">'+nn+'</i>':'')+'<span class="de">'+(u?face(p):'❔')+'</span><b>'+(u?escH(petName(p)):'???')+'</b>'+(u?(nw?'<small>새 이야기</small>':out?'<small>마을 밖</small>':'<small>'+rd+'/'+STORY[p].length+'편</small>'):'<small>'+(PET_LV[p]?'Lv.'+PET_LV[p]+' · ':'')+x[2]+'</small>')+'</div>';
   }).join('');
   const M=$('#dexMgr');
   if(dexSel==null||st.unlocked.indexOf(dexSel)<0){
@@ -3686,6 +3696,7 @@ $('#goalChip').addEventListener('click',()=>{
   const g=$('#goalChip')._g||nextGoal();sfx('tap');
   if(g.act==='decor')$('#navDecor').click();
   else if(g.act==='dex'){dexTab='res';dexSel=g.who!=null?g.who:null;renderDex();openSheet('dex');}
+  else if(g.act==='pass'){$('#navPass').click();}
   else if(g.act==='chain'){const c=g.chain||'br';openChain(c,6);$('#chD').textContent=CH[c].t+' 재료를 두 개씩 합쳐서 6단계까지 키우면 새 이웃이 찾아올지도 몰라요!';}
 });
 document.querySelector('.dtabs').addEventListener('click',e=>{const b=e.target.closest('.dtab');if(!b)return;dexTab=b.dataset.dtab;sfx('tap');renderDex();});
