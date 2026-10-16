@@ -1301,6 +1301,10 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
 #pass .stone.can::after{display:none!important}
 #pass .stone.can .srw{display:none}
 #pass .stone .tapme{bottom:4px!important}
+
+#enbox{cursor:pointer}
+#ebuyHave b{font-weight:800}
+#ebuyHave img,#ebuyHave svg{width:16px;height:16px;vertical-align:-3px}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -1363,6 +1367,13 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
 
 
 <div class="scrim" id="scrim" hidden></div>
+
+<section class="sheet" id="ebuy" role="dialog" aria-label="에너지 충전" hidden>
+  <header><h2>에너지 충전</h2><button class="x" data-close aria-label="닫기">✕</button></header>
+  <p class="have" id="ebuyHave"></p>
+  <div id="ebuyList" style="display:grid;gap:8px"></div>
+  <p class="have" style="font-size:12px;margin:2px 0 0">에너지는 2분마다 1씩 저절로 차요.</p>
+</section>
 
 <section class="sheet" id="shop" role="dialog" aria-label="상점" hidden>
   <header><h2>상점</h2><button class="x" data-close aria-label="닫기">✕</button></header>
@@ -2251,7 +2262,7 @@ function hearts(el){
 }
 
 /* ---------- sheets ---------- */
-const MAIN_SHEETS=['event','shop','pass','quest','decor','dex','prof','snd','dev'].filter(id=>document.getElementById(id));
+const MAIN_SHEETS=['event','ebuy','shop','pass','quest','decor','dex','prof','snd','dev'].filter(id=>document.getElementById(id));
 const TOP_SHEETS=['confirm','reward','chain'];
 function syncScrim(){$('#scrim').hidden=!Array.prototype.some.call(document.querySelectorAll('.sheet'),s=>!s.hidden);}
 /* 메뉴 창: 스크롤 없이 한눈에 보이도록 화면에 맞춰 살짝 줄여요 */
@@ -3171,12 +3182,13 @@ function setHover(el){
     el.classList.toggle('can',can);el.classList.toggle('drop',!can);
   }
 }
+$('#board').addEventListener('click',e=>{const cell=e.target.closest('.cell.lock');if(!cell)return;const i=+cell.dataset.i;if(isLocked(i)&&$('#confirm').hidden)askUnlock(i);});
 $('#board').addEventListener('pointerdown',e=>{
   if(e.button>0)return;
   if(drag){drag=null;}
   const cell=e.target.closest('.cell');if(!cell)return;
   const i=+cell.dataset.i;
-  if(isLocked(i)){askUnlock(i);e.preventDefault();return;}
+  if(isLocked(i)){e.preventDefault();return;} /* 잠긴 칸은 click에서 열기 창을 띄워요(누르자마자 열리면 손을 뗄 때 바깥 터치로 바로 닫혀요) */
   if(isGen(i)){
     sel=null;
     if(!genOpen(GENS[i])){toast(genLockMsg(GENS[i]),true);sfx('err');}
@@ -3309,6 +3321,16 @@ function shopBuy(id){
   }
   refresh();
   if(!$('#shop').hidden)renderShop();
+  if(!$('#ebuy').hidden)renderEbuy();
+}
+function renderEbuy(){
+  tickEnergy();const m=maxE();
+  $('#ebuyHave').innerHTML='에너지 <b>'+st.e+'/'+m+'</b> · 보유 코인 '+st.coins;
+  $('#ebuyList').innerHTML=shopRows().filter(r=>r.id==='e20'||r.id==='efull').map(r=>{
+    const full=r.id==='efull'?st.e>=m:st.e>=999,dis=st.coins<r.p||full;
+    return '<div class="prow"><div class="sico">'+r.ico+'</div><div class="prw"><b>'+r.n+'</b><span>'+(full&&r.id==='efull'?'이미 가득 찼어요':r.d)+'</span></div>'+
+      '<button class="btn" type="button" data-id="'+r.id+'"'+(dis?' disabled':'')+'>'+COIN+r.p+'</button></div>';
+  }).join('');
 }
 
 /* ---------- decorating ---------- */
@@ -3678,6 +3700,8 @@ document.addEventListener('click',e=>{
   const x=e.target.closest('[data-close]');
   if(x){const sh=x.closest('.sheet');if(sh)closeSheet(sh.id);}
 });
+$('#ebuy').addEventListener('click',e=>{const b=e.target.closest('button[data-id]');if(b&&!b.disabled){shopBuy(b.dataset.id);hap(15);}});
+$('#enbox').addEventListener('click',()=>{sfx('tap');renderEbuy();openSheet('ebuy');});
 $('#shop').addEventListener('click',e=>{const b=e.target.closest('button[data-id]');if(b&&!b.disabled)shopBuy(b.dataset.id);});
 $('#passList').addEventListener('click',e=>{const b=e.target.closest('.stone');if(!b)return;const L=+b.dataset.l;if(b.classList.contains('can'))openLevelUp([L],true);else{const r=rewardOf(L),m=walkMain(L);toast(b.classList.contains('got')?'Lv.'+L+' 보상은 이미 받았어요':b.classList.contains('far')?'Lv.'+L+'에 무엇이 있을까요?':'Lv.'+L+' · '+m.name+' + 코인 '+r.coins,true);sfx('tap');}});
 $('#claimAll').addEventListener('click',()=>{const c=claimable();if(c.length)openLevelUp(c,true);});
@@ -3826,6 +3850,7 @@ function tipCheck(){
   if(!T.quest&&st.lv>=3&&$('#reward').hidden)T.quest=1;
   {const xi=st.cells.findIndex((x,i)=>x&&x.c==='xp'&&!isLocked(i));if(!T.xp&&xi>=0)T.xp=1;else if(T.xp===1&&xi<0)tipDone('xp');}
   {const ei=st.cells.findIndex((x,i)=>x&&x.c==='en'&&!isLocked(i));if(!T.eni&&ei>=0)T.eni=1;else if(T.eni===1&&ei<0)tipDone('eni');}
+  {const gi=st.cells.findIndex((x,i)=>x&&x.c==='tg'&&!isLocked(i));if(!T.tgi&&gi>=0)T.tgi=1;else if(T.tgi===1&&gi<0)tipDone('tgi');}
 }
 function tipTarget(){
   tipCheck();
@@ -3839,7 +3864,11 @@ function tipTarget(){
     /* 딱 한 번: 도토리를 한 번 누르거나 10초가 지나면 끝 */
     if(xi>=0&&sel===xi){tipDone('xp');return null;}
     if(xi>=0){if(!T.xpAt){T.xpAt=Date.now();save();}if(Date.now()-T.xpAt>10000){tipDone('xp');return null;}return {el:cellEl(xi),txt:'황금 도토리예요! 두 번 눌러 보세요',emo:3};}}
-  if(T.eni===1&&T.xp!==1){const ei=st.cells.findIndex((x,i)=>x&&x.c==='en'&&!isLocked(i));
+  if(T.tgi===1&&T.xp!==1){const gi=st.cells.findIndex((x,i)=>x&&x.c==='tg'&&!isLocked(i));
+    /* 딱 한 번: 꿀단지를 한 번 누르거나 10초가 지나면 끝 */
+    if(gi>=0&&sel===gi){tipDone('tgi');return null;}
+    if(gi>=0){if(!T.tgiAt){T.tgiAt=Date.now();save();}if(Date.now()-T.tgiAt>10000){tipDone('tgi');return null;}return {el:cellEl(gi),txt:'꿀단지가 나왔어요! 한 번 눌러 보세요',emo:2};}}
+  if(T.eni===1&&T.xp!==1&&T.tgi!==1){const ei=st.cells.findIndex((x,i)=>x&&x.c==='en'&&!isLocked(i));
     /* 딱 한 번: 에너지를 한 번 누르거나 10초가 지나면 끝 */
     if(ei>=0&&sel===ei){tipDone('eni');return null;}
     if(ei>=0){if(!T.eniAt){T.eniAt=Date.now();save();}if(Date.now()-T.eniAt>10000){tipDone('eni');return null;}return {el:cellEl(ei),txt:'에너지가 나왔어요! 두 번 눌러 보세요',emo:2};}}
