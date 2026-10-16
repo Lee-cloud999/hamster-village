@@ -2371,7 +2371,7 @@ const EVENT={id:'acorn-2026',name:'가을 도토리 축제',start:'2026-10-15',e
    [{item:['tl',3]},{coins:500}],
    [{coins:300},{item:['en',4]}],
    [{box:1,boxG:3},{box:2,boxG:3}]],
-  missions:[{id:'deliver',n:'주민 5명 돕기',t:5,p:20,face:0},{id:'merge',n:'합치기 20번',t:20,p:15,face:1},{id:'merge3',n:'3단계 이상 5개 만들기',t:5,p:20,face:2},{id:'gen',n:'재료 30번 꺼내기',t:30,p:15,face:3}]};
+  missions:[{id:'deliver',n:'주민 10명 돕기',t:10,p:20,face:0},{id:'merge',n:'합치기 40번',t:40,p:15,face:1},{id:'merge3',n:'3단계 이상 10개 만들기',t:10,p:20,face:2},{id:'gen',n:'재료 60번 꺼내기',t:60,p:15,face:3}]};
 
 const evOn=()=>{const t=todayKey();return t>=EVENT.start&&t<=EVENT.end;};
 function evState(){st.ev=st.ev&&st.ev.id===EVENT.id?st.ev:{id:EVENT.id,pts:0,got:[],seen:0};const e=st.ev;e.gotF=e.gotF||[];e.gotG=e.gotG||[];return e;}
