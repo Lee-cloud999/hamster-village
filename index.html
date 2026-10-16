@@ -3802,6 +3802,7 @@ function tipCheck(){
   if(T.energy===1&&!tipEnT){tipEnT=setTimeout(()=>tipDone('energy'),7000);}
   if(!T.quest&&st.lv>=3&&$('#reward').hidden)T.quest=1;
   {const xi=st.cells.findIndex((x,i)=>x&&x.c==='xp'&&!isLocked(i));if(!T.xp&&xi>=0)T.xp=1;else if(T.xp===1&&xi<0)tipDone('xp');}
+  {const ei=st.cells.findIndex((x,i)=>x&&x.c==='en'&&!isLocked(i));if(!T.eni&&ei>=0)T.eni=1;else if(T.eni===1&&ei<0)tipDone('eni');}
 }
 function tipTarget(){
   tipCheck();
@@ -3812,6 +3813,7 @@ function tipTarget(){
     if(a>=0)return {el:cellEl(a),to:$('#sell'),txt:'안 쓰는 재료는 팔기로 끌어요',emo:5};
   }
   if(T.xp===1){const xi=st.cells.findIndex((x,i)=>x&&x.c==='xp'&&!isLocked(i));if(xi>=0)return {el:cellEl(xi),txt:sel===xi?'한 번 더 누르면 경험치를 받아요':'황금 도토리예요! 두 번 눌러 보세요',emo:3};}
+  if(T.eni===1&&T.xp!==1){const ei=st.cells.findIndex((x,i)=>x&&x.c==='en'&&!isLocked(i));if(ei>=0)return {el:cellEl(ei),txt:sel===ei?'한 번 더 누르면 에너지가 채워져요':'에너지가 나왔어요! 두 번 눌러 보세요',emo:2};}
   if(T.energy===1)return {el:$('#enbox'),txt:'에너지는 2분마다 1씩 차요',emo:7,up:true};
   if(T.quest===1){
     if($('#quest').hidden&&T.qo){tipDone('quest');return null;}
