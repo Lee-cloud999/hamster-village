@@ -1343,6 +1343,11 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
   .orwrap .qcol .stbtn{width:94px;height:44px}
   .stbtn .stt{font-size:12px}.stbtn b{font-size:13px}
 }
+
+/* 주문판: 3개까지 보이고 나머지는 옆으로 밀어서 보기 (스크롤바 숨김) */
+.orwrap .orders,.orders{display:grid!important;grid-template-columns:none!important;grid-auto-flow:column!important;grid-auto-columns:calc((100% - 8px)/3)!important;gap:4px!important;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior-x:contain;padding-top:8px;margin-top:4px!important}
+.orders::-webkit-scrollbar{display:none}
+.orders>.order{scroll-snap-align:start}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
