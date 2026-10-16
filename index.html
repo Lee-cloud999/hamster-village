@@ -2384,7 +2384,7 @@ const EVENT={id:'acorn-2026',name:'가을 도토리 축제',start:'2026-10-15',e
    [{item:['tl',3]},{coins:500}],
    [{coins:300},{item:['en',4]}],
    [{box:1,boxG:3},{box:2,boxG:3}]],
-  missions:[{id:'deliver',n:'주민 25명 돕기',t:25,p:20,face:0},{id:'merge',n:'합치기 70번',t:70,p:15,face:1},{id:'merge3',n:'3단계 이상 30개 만들기',t:30,p:20,face:2},{id:'gen',n:'재료 100번 꺼내기',t:100,p:15,face:3}]};
+  missions:[{id:'deliver',n:'주민 50명 돕기',t:50,p:20,face:0},{id:'merge5',n:'5단계 재료 5개 만들기',t:5,p:20,face:1},{id:'xpget',n:'황금 도토리 10개 모으기',t:10,p:15,face:2},{id:'decor',n:'마을 꾸미기 3번 하기',t:3,p:15,face:3}]};
 
 const evOn=()=>{const t=todayKey();return t>=EVENT.start&&t<=EVENT.end;};
 function evState(){st.ev=st.ev&&st.ev.id===EVENT.id?st.ev:{id:EVENT.id,pts:0,got:[],seen:0};const e=st.ev;e.gotF=e.gotF||[];e.gotG=e.gotG||[];return e;}
@@ -3118,7 +3118,7 @@ function act(i,j){
     combo=(now-lastMergeAt<2200)?combo+1:1;lastMergeAt=now;
     st.cells[i]=null;st.cells[j]={c:a.c,l:nl};sel=null;
     st.nMerge++;if(st.tut===3)st.tut=4;if(combo>st.maxCombo)st.maxCombo=combo;
-    track('merge');if(nl>=3)track('merge3');
+    track('merge');if(nl>=3)track('merge3');if(nl>=5)track('merge5');
     let bonus=0;if(combo>=3){bonus=combo-1;st.coins+=bonus;}
     let bj=null;
     renderBoard();pop(j);fxAt(j,nl,combo);refresh();sfx('merge',nl,combo);juiceMerge(j,nl);
@@ -3136,7 +3136,7 @@ function act(i,j){
 function collectXp(i){
   const it=st.cells[i];if(!it||it.c!=='xp')return;
   if(st.tut===6){st.tut=7;setTimeout(()=>{if(st.tut===7){st.tut=10;save();tutDraw();}},3200);}
-  const v=XPV[it.l];st.cells[i]=null;sel=null;
+  const v=XPV[it.l];st.cells[i]=null;sel=null;track('xpget');
   const el=cellEl(i);if(el)floatAt(el,'+'+v+' 경험치');
   sfx('coin');renderBoard();gainXp(v);refresh();
 }
@@ -3420,7 +3420,7 @@ function buyDecor(){
   if(!sp||owned(sp.id)||!spotOpen(sp))return;
   const extra=styleOwned(sp.id,dPick)?0:stylePrice(dPick);
   if(st.coins<sp.cost+extra){toast('코인이 부족해요');sfx('err');return;}
-  st.coins-=sp.cost+extra;st.dec[sp.id]=dPick;
+  st.coins-=sp.cost+extra;st.dec[sp.id]=dPick;track('decor');
   if(extra){st.own[sp.id]=st.own[sp.id]||[];st.own[sp.id].push(dPick);}
   dJust=sp.id;
   refresh();renderDecor();sfx('done');
@@ -3440,7 +3440,7 @@ function restyle(){
     if(st.coins<pr){toast('코인이 부족해요');sfx('err');return;}
     st.coins-=pr;(st.own[dSel]=st.own[dSel]||[]).push(dPick);refresh();
   }
-  st.dec[dSel]=dPick;dJust=dSel;save();renderDecor();sfx('unlock');
+  st.dec[dSel]=dPick;dJust=dSel;track('decor');save();renderDecor();sfx('unlock');
   toast('적용했어요!');
 }
 
