@@ -2644,7 +2644,7 @@ function renderPass(){
     if(r.energy)extra+='<i class="wx wxe">'+BOLT+'<b>+10</b></i>';
     h+='<button type="button" class="stone'+(big?' big':'')+(got?' got':'')+(can?' can':'')+(far?' far':'')+(L===st.lv?' now':'')+'" data-l="'+L+'" style="left:'+x+'%;top:'+y+'px" aria-label="Lv.'+L+' '+m.name+'">'+
       '<span class="slv">Lv.'+L+'</span>'+
-      '<span class="sim">'+(far?'<span class="sq">?</span>':m.img)+'</span>'+
+      (far?'':'<span class="sim">'+m.img+'</span>')+
       (far?'':'<span class="scn">'+COIN+'<b>'+r.coins+'</b></span>')+
       (far?'':extra)+
       (got?'<span class="spaw">'+evI('paw',34)+'</span>':'')+
