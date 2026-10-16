@@ -1314,6 +1314,9 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
 #reward header{display:block!important;text-align:center!important;padding-left:0!important;padding-right:0!important}
 #rwT{text-align:center!important;width:100%;margin-left:0!important;margin-right:0!important}
 #cText{text-align:center}
+
+.stat .hb.sndbtn{background:var(--panel)!important;border-color:var(--line)!important}
+.stat .hb.sndbtn img{width:26px!important;height:26px!important;object-fit:contain}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -1338,7 +1341,7 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
     <div class="pill" id="coinpill"></div>
     <div class="brandrow">
       <button class="ttl" id="ttlchip" type="button">이사 온 햄스터</button>
-      <button class="hb evbtn" id="evBtn" type="button" aria-label="이벤트"><span class="nb" id="bEv" hidden></span></button>
+      <button class="hb evbtn sndbtn" id="sndBtn" type="button" aria-label="설정"></button>
     </div>
   </div>
 
@@ -1368,7 +1371,7 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
     <button class="btn" id="navDex" type="button"><span class="nl">도감</span><span class="nb" id="bDex" hidden></span></button>
     <button class="btn" id="navQuest" type="button"><span class="nl">퀘스트</span><span class="nb" id="bQuest" hidden></span></button>
     <button class="btn" id="navShop" type="button"><span class="nl">상점</span></button>
-    <button class="btn" id="navSnd" type="button"><span class="nl">설정</span></button>
+    <button class="btn" id="navEv" type="button"><span class="nl">이벤트</span><span class="nb" id="bEv" hidden></span></button>
     <button class="btn" id="navPass" type="button"><span class="nl">보상</span><span class="nb" id="bPass" hidden></span></button>
   </nav>
 </main>
@@ -1877,13 +1880,16 @@ function arrivePet(p,after){ /* 이사 + 선물 + 첫 주문 */
     },300);
   });
 }
+/* 새 이웃이 오기 전 '누가 오고 있어요!' 창 */
+function comingPopup(note,next){
+  showReward('누가 오고 있어요!','<div class="bigrw gen"><div class="bi"><span class="bimg">'+evI('paw',72)+'</span></div></div>',note,()=>setTimeout(next,250),'누구일까?');
+}
 function runArrive(){
   if(arriveBusy||!arriveQ.length)return;
   if(!$('#reward').hidden||document.querySelector('.sheet:not([hidden])')||(drag&&drag.on)){setTimeout(runArrive,900);return;}
   const p=arriveQ.shift();if(st.unlocked.indexOf(p)>=0){runArrive();return;}
   arriveBusy=true;
-  bigRose('어디선가 누가 오고 있어요…');sfx('pet');
-  setTimeout(()=>arrivePet(p),1200);
+  sfx('pet');comingPopup('어디선가 작은 발소리가 들려요.',()=>arrivePet(p));
 }
 const openChains=()=>KEYS.filter(genOpen);
 const isLocked=i=>st.locks.indexOf(i)>=0;
@@ -2464,7 +2470,7 @@ function renderEvent(){
   $('#evInfo').textContent=on?'부탁을 들어주거나 미션을 하면 축제 도토리가 모여요. '+EVENT.step+'개마다 한 칸씩 올라가요.':'축제가 끝났어요. 받지 못한 보상은 지금 받을 수 있어요.';
   requestAnimationFrame(()=>{try{const sc=$('#fScroll'),r=sc.querySelector('.fcell.can')||sc.querySelectorAll('.frow')[Math.max(0,tier-1)];if(r&&!sc._s){sc._s=1;sc.scrollTop=r.offsetTop-20;}}catch(e){}});
 }
-function renderEvBtn(){const b=$('#evBtn');if(!b)return;if(!b.querySelector('.evi'))b.insertAdjacentHTML('afterbegin',evI('badge',26));const show=evOn()||evClaimable()>0||true;b.hidden=!show;setBadge('#bEv',evClaimable()+((st.att&&st.att.last!==todayKey())?1:0));}
+function renderEvBtn(){const b=$('#navEv');if(!b)return;const show=evOn()||evClaimable()>0||true;b.hidden=!show;setBadge('#bEv',evClaimable()+((st.att&&st.att.last!==todayKey())?1:0));}
 function renderGoalChip(){
   try{renderEvBtn();}catch(e){}
   const el=$('#goalChip');if(!el)return;const g=nextGoal();g.t=rn(g.t);el._g=g;
@@ -3467,7 +3473,7 @@ function buyDecor(){
   g.forEach((b,k)=>setTimeout(()=>{b.classList.remove('jump');void b.offsetWidth;b.classList.add('jump');},200+k*60));
   const firstBuy=SPOTS.filter(x=>owned(x.id)).length===1,bori=document.querySelector('.pg[data-pet="0"]');
   if(firstBuy&&bori)setTimeout(()=>{setEmo(bori,0,3,3200);sayFix(bori,sp.id==='bed'?'제 침대예요?! 폭신폭신해요!':'이거 저 주시는 거예요?!',3000);hearts(bori);},450);
-  else if(sp.id==='run'&&st.unlocked.indexOf(1)<0){setTimeout(()=>{sfxWheel();bigRose('🔊 덜그럭덜그럭… 누가 오고 있어요!');},700);setTimeout(()=>{if(st.unlocked.indexOf(1)<0&&!arriveBusy){arriveBusy=true;arrivePet(1);}},2200);}
+  else if(sp.id==='run'&&st.unlocked.indexOf(1)<0){setTimeout(()=>{if(st.unlocked.indexOf(1)>=0||arriveBusy)return;arriveBusy=true;sfxWheel();comingPopup('🔊 덜그럭덜그럭…\n벽 너머에서 쳇바퀴 소리가 들려요.',()=>arrivePet(1));},700);}
   else if(g.length)setTimeout(()=>sayFix(g[rnd(g.length)],'새 '+sp.n+' 멋져요!'),450);
   toast(sp.n+' 설치 완료!');
   grantZone(sp.zone);
@@ -3689,7 +3695,7 @@ addEventListener('resize',()=>{if(!$('#pass').hidden)renderPass();});
 $('#navQuest').addEventListener('click',()=>{questSync();viewDay=Math.min(7,curDay());renderQuests();openSheet('quest');});
 $('#navDecor').addEventListener('click',()=>{if(st.tut===14){st.tut=15;st.guideDecor=2;save();}if(st.guideDecor===1){st.guideDecor=2;save();}if(st.guideMsg){st.guideMsg='';save();}dSel=null;renderDecor();openSheet('decor');});
 $('#navDex').addEventListener('click',()=>{dexSel=null;renderDex();openSheet('dex');});
-$('#evBtn').addEventListener('click',()=>{renderEvent();openSheet('event');sfx('tap');});
+$('#navEv').addEventListener('click',()=>{renderEvent();openSheet('event');sfx('tap');});
 $('#evList').addEventListener('click',ev=>{
   const b=ev.target.closest('.fcell');if(!b)return;const i=+b.dataset.t,side=b.dataset.s,e=evState(),r=EVENT.tiers[i][side==='f'?0:1];
   if(!b.classList.contains('can')){toast(b.classList.contains('lock')?'황금 패스를 열면 받을 수 있어요':b.classList.contains('got')?'이미 받았어요':(i+1)+'칸 보상 · '+rwTxt(r),true);sfx('tap');return;}
@@ -3710,7 +3716,7 @@ $('#goalChip').addEventListener('click',()=>{
 document.querySelector('.dtabs').addEventListener('click',e=>{const b=e.target.closest('.dtab');if(!b)return;dexTab=b.dataset.dtab;sfx('tap');renderDex();});
 
 $('#ttlchip').addEventListener('click',()=>{renderProf();openSheet('prof');});
-$('#navSnd').addEventListener('click',()=>{renderSnd();openSheet('snd');});
+$('#sndBtn').addEventListener('click',()=>{sfx('tap');renderSnd();openSheet('snd');});
 
 $('#scrim').addEventListener('click',dismissTop);
 document.addEventListener('keydown',e=>{if(e.key==='Escape')dismissTop();});
@@ -3821,9 +3827,10 @@ document.addEventListener('visibilitychange',()=>{
 });
 
 (function(){try{
-  [['navDecor',0],['navDex',1],['navQuest',2],['navShop',3],['navSnd',4],['navPass',5]].forEach(a=>{
-    const b=document.getElementById(a[0]);if(b)b.insertAdjacentHTML('afterbegin','<img class="ni" src="'+NAVU[a[1]]+'" alt="" draggable="false">');
+  [['navDecor',0],['navDex',1],['navQuest',2],['navShop',3],['navEv',-1],['navPass',5]].forEach(a=>{
+    const b=document.getElementById(a[0]);if(b)b.insertAdjacentHTML('afterbegin','<img class="ni" src="'+(a[1]<0?EVU.evt:NAVU[a[1]])+'" alt="" draggable="false">');
   });
+  {const sb=document.getElementById('sndBtn');if(sb)sb.insertAdjacentHTML('afterbegin','<img src="'+NAVU[4]+'" alt="" draggable="false">');}
 }catch(e){}})();
 initDeco();
 st=load();
