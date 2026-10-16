@@ -1275,6 +1275,11 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
 #tut .tut-b.glow{animation:tutGlow 1s ease-in-out infinite,tutPop .45s cubic-bezier(.3,1.6,.5,1) 1}
 @keyframes tutPop{0%{scale:.6}100%{scale:1}}}
 #tut .tut-b.glow{font-size:17px!important}
+
+/* 주문판 안내: 손가락 대신 주문판 둘레가 노랗게 반짝 */
+#tut .tut-spot.ring{border-radius:16px;box-shadow:0 0 0 3px #ffd23f,0 0 16px 5px rgba(255,210,40,.85)}
+@media (prefers-reduced-motion: no-preference){#tut .tut-spot.ring{animation:ringPulse 1s ease-in-out infinite}
+@keyframes ringPulse{50%{box-shadow:0 0 0 5px #ffb800,0 0 26px 10px rgba(255,210,40,1)}}}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -3868,13 +3873,13 @@ function tutDraw(){
     const b=o.querySelector('.tut-b'),f=o.querySelector('.tut-f');
     if(T.emo&&EXPRU[0]){b.innerHTML='<img class="tut-face" src="'+emoU(0,T.emo)+'" alt="">'+'<span>'+escH(rn(T.txt))+'</span>';b.classList.add('wf');}else{b.textContent=rn(T.txt);b.classList.remove('wf');}
     b.classList.toggle('glow',!!T.glow);f.classList.toggle('drag',!!T.to);
-    {const sp=o.querySelector('.tut-spot');if(sp){if(T.glow&&T.el){const q=T.el.getBoundingClientRect(),pd=8;sp.style.cssText='left:'+(q.left-pd)+'px;top:'+(q.top-pd)+'px;width:'+(q.width+pd*2)+'px;height:'+(q.height+pd*2)+'px';sp.hidden=false;}else sp.hidden=true;}}
+    {const sp=o.querySelector('.tut-spot');const ord=!!(T.el&&T.el.classList&&T.el.classList.contains('order'));if(sp){if((T.glow||ord)&&T.el){const q=T.el.getBoundingClientRect(),pd=ord?4:8,top=ord?q.top-14:q.top-pd;sp.style.cssText='left:'+(q.left-pd)+'px;top:'+top+'px;width:'+(q.width+pd*2)+'px;height:'+(q.bottom+pd-top)+'px';sp.classList.toggle('ring',ord);sp.hidden=false;}else sp.hidden=true;}}
     if(!T.el){f.style.display='none';b.style.left='50%';b.style.top='40%';return;}
     f.style.display='';
     const r=T.el.getBoundingClientRect();
     let cx=r.left+r.width/2,cy=r.top+r.height/2;
     /* 주문판을 가리킬 땐 햄스터 얼굴을 가리켜서 아래 재료 선반이 가려지지 않게 */
-    if(T.el.classList&&T.el.classList.contains('order')){const wh=T.el.querySelector('.who img,.who .face');if(wh){const q=wh.getBoundingClientRect();cx=q.left+q.width*.42;cy=q.top+q.height*.22;}}
+    const isOrd=!!(T.el.classList&&T.el.classList.contains('order'));f.style.visibility=isOrd?'hidden':'';
     f.style.left=cx+'px';f.style.top=(T.up?r.bottom:cy)+'px';
     if(T.to){const r2=T.to.getBoundingClientRect();f.style.setProperty('--dx',(r2.left+r2.width/2-cx)+'px');f.style.setProperty('--dy',(r2.top+r2.height/2-cy)+'px');}
     const bw=Math.min(260,innerWidth-24);
