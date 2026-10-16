@@ -419,6 +419,7 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;ba
 #combo{top:36%;font-size:28px;color:var(--accent);text-shadow:0 2px 0 var(--bg)}
 #big{top:42%;font-size:34px;color:var(--ink);text-shadow:0 2px 0 var(--bg)}
 #big.gold{color:var(--gold)}
+#big.rose{color:#c2475e;font-weight:800;text-shadow:0 2px 0 #fff,0 0 12px rgba(255,255,255,.95),0 0 4px #fff}
 .float{position:fixed;transform:translate(-50%,0);font-family:var(--f-display);font-size:16px;color:var(--ink);background:var(--panel);border:1px solid var(--line);padding:1px 8px;border-radius:99px;pointer-events:none;z-index:96;white-space:nowrap}
 .heart{position:fixed;font-size:16px;pointer-events:none;z-index:96}
 
@@ -1863,7 +1864,7 @@ function runArrive(){
   if(!$('#reward').hidden||document.querySelector('.sheet:not([hidden])')||(drag&&drag.on)){setTimeout(runArrive,900);return;}
   const p=arriveQ.shift();if(st.unlocked.indexOf(p)>=0){runArrive();return;}
   arriveBusy=true;
-  bigText('어디선가 누가 오고 있어요…');sfx('pet');
+  bigRose('어디선가 누가 오고 있어요…');sfx('pet');
   setTimeout(()=>arrivePet(p),1200);
 }
 const openChains=()=>KEYS.filter(genOpen);
@@ -2219,7 +2220,8 @@ function runFx(el,txt,gold){
   clearTimeout(el._t);el._t=setTimeout(()=>{el.classList.remove('run');el.textContent='';},reduce?900:1000);
 }
 const showCombo=n=>runFx($('#combo'),n+' 콤보!');
-const bigText=(t,gold)=>runFx($('#big'),rn(t),gold);
+const bigText=(t,gold)=>{$('#big').classList.remove('rose');runFx($('#big'),rn(t),gold);};
+const bigRose=t=>{const el=$('#big');runFx(el,rn(t),false);el.classList.add('rose');};
 function floatAt(el,txt){
   if(!el)return;
   const r=el.getBoundingClientRect();
@@ -3447,7 +3449,7 @@ function buyDecor(){
   g.forEach((b,k)=>setTimeout(()=>{b.classList.remove('jump');void b.offsetWidth;b.classList.add('jump');},200+k*60));
   const firstBuy=SPOTS.filter(x=>owned(x.id)).length===1,bori=document.querySelector('.pg[data-pet="0"]');
   if(firstBuy&&bori)setTimeout(()=>{setEmo(bori,0,3,3200);sayFix(bori,sp.id==='bed'?'제 침대예요?! 폭신폭신해요!':'이거 저 주시는 거예요?!',3000);hearts(bori);},450);
-  else if(sp.id==='run'&&st.unlocked.indexOf(1)<0){setTimeout(()=>{sfxWheel();bigText('🔊 덜그럭덜그럭… 누가 오고 있어요!');},700);setTimeout(()=>{if(st.unlocked.indexOf(1)<0&&!arriveBusy){arriveBusy=true;arrivePet(1);}},2200);}
+  else if(sp.id==='run'&&st.unlocked.indexOf(1)<0){setTimeout(()=>{sfxWheel();bigRose('🔊 덜그럭덜그럭… 누가 오고 있어요!');},700);setTimeout(()=>{if(st.unlocked.indexOf(1)<0&&!arriveBusy){arriveBusy=true;arrivePet(1);}},2200);}
   else if(g.length)setTimeout(()=>sayFix(g[rnd(g.length)],'새 '+sp.n+' 멋져요!'),450);
   toast(sp.n+' 설치 완료!');
   grantZone(sp.zone);
