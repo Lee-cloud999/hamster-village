@@ -3885,8 +3885,10 @@ function tutDraw(){
     const bw=Math.min(260,innerWidth-24);
     let bx=Math.min(Math.max(cx,bw/2+12),innerWidth-bw/2-12);
     /* 기본은 가리키는 곳 아래(주문판·햄스터를 가리지 않게), 화면 아래쪽이면 위로 */
-    let by=r.bottom+70;if(by+90>innerHeight)by=r.top-14;
-    b.style.left=bx+'px';b.style.top=by+'px';b.classList.toggle('below',by>r.top);
+    /* 끌어서 옮기는 안내면 출발칸·도착칸을 모두 피해서 놓기 */
+    let top=r.top,bot=r.bottom;if(T.to){const r2=T.to.getBoundingClientRect();top=Math.min(top,r2.top);bot=Math.max(bot,r2.bottom);}
+    let by=bot+70;if(by+90>innerHeight)by=top-14;
+    b.style.left=bx+'px';b.style.top=by+'px';b.classList.toggle('below',by>top);
   }catch(e){}
 }
 setInterval(tutDraw,250);
