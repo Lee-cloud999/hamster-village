@@ -2658,7 +2658,7 @@ function renderPass(){
   let h='';
   Ls.forEach((L,k)=>{
     const q=at(s0+(s1-s0)*k/(Ls.length-1)),x=+q[0].toFixed(2),y=Math.round(q[1]);
-    const r=rewardOf(L),got=st.claimed.indexOf(L)>=0,can=!got&&L<=st.lv,far=!got&&!can&&L>st.lv+3,big=L%5===0;
+    const r=rewardOf(L),got=st.claimed.indexOf(L)>=0,can=!got&&L<=st.lv,far=false,big=L%5===0;
     const m=walkMain(L);
     let extra='';
     if(r.item&&r.box&&!r.boxG)extra+='<i class="wx">'+BOXI+'</i>';
