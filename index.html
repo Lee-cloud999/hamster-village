@@ -2902,7 +2902,7 @@ function levelUpPopup(L){
   const go=()=>{
     if(document.querySelector('.sheet:not([hidden])')){setTimeout(go,700);return;}
     sfx('level');hap&&hap([30,60,30]);
-    showReward('레벨 '+L+' 달성!','<div class="lvup"><img class="lvimg" alt="" src="'+blobUrl(LVUP_B64[rnd(LVUP_B64.length)])+'"><span class="lvbig"><small>LV</small>'+L+'</span></div>','보리의 산책길에 새 보상이 열렸어요!',()=>setTimeout(openWalkAuto,250),'보상 받으러 가기');
+    showReward('레벨 '+L+' 달성!','<div class="lvup"><img class="lvimg" alt="" src="'+blobUrl(LVUP_B64[rnd(LVUP_B64.length)])+'"></div>','보리의 산책길에 새 보상이 열렸어요!',()=>setTimeout(openWalkAuto,250),'보상 받으러 가기');
     fireworks();
   };
   go();
