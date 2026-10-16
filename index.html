@@ -3524,7 +3524,7 @@ function renderDex(){
   if(dexSel==null||st.unlocked.indexOf(dexSel)<0){
     dexSel=null;
     const shown=st.unlocked.filter(p=>!st.petHide[p]).length;
-    M.innerHTML='<div class="dp-t"><b>이웃 이야기</b><small>이웃을 눌러 이야기를 읽거나 이름을 바꿀 수 있어요. 지금 마을에 있는 주민 '+shown+'명</small></div>';
+    M.innerHTML='<div class="dp-t"><b>이웃 이야기</b><small>이웃을 눌러 이야기를 읽거나 이름을 바꿀 수 있어요.<br><span style="display:block;margin-top:4px">지금 마을에 있는 주민 '+shown+'명</span></small></div>';
     return;
   }
   const p=dexSel,hide=!!st.petHide[p],dc=decoCount();
