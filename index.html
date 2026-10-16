@@ -2454,9 +2454,9 @@ const randTool=()=>{const r=Math.random();return r<.45?1:r<.8?2:3;};
 function boxContents(g){
   const keys=openChains(),pick=()=>keys[rnd(keys.length)],q=[];
   if(g===1){
-    for(let k=0;k<5;k++){
-      if(k===4&&Math.random()<.12){q.push(['tl',randTool()]);continue;}
-      if(k>=3&&Math.random()<.3){q.push(['en',Math.random()<.75?1:2]);continue;}
+    for(let k=0;k<3;k++){
+      if(k===2&&Math.random()<.12){q.push(['tl',randTool()]);continue;}
+      if(k===2&&Math.random()<.3){q.push(['en',Math.random()<.75?1:2]);continue;}
       q.push([pick(),Math.random()<.7?2:3]);}
   }else if(g===2){
     for(let k=0;k<3;k++)q.push([pick(),Math.random()<.6?3:2]);
@@ -3239,9 +3239,9 @@ function shopRows(){
     rows.push({id:'gu'+c,ico:gem(c),n:GEN_NAME[c]+' '+stars(lv),
       d:nx?('다음 강화: '+guDesc(nx)):'최대 강화예요 · '+guDesc(GU[lv]),p:nx?nx.cost:0,off:!nx,lab:nx?null:'MAX'});
   });
-  rows.push({sec:'재료 상자 · 2~3단계 재료 5개'});
-  openChains().forEach(c=>rows.push({id:'box'+c,ico:em(c,3),n:CH[c].t+' 상자',d:CH[c].t+' 재료 5개',p:SHOP_BOX}));
-  rows.push({id:'boxR',ico:BOXI,n:'랜덤 상자',d:'여러 계열의 재료 5개',p:SHOP_RAND});
+  rows.push({sec:'재료 상자 · 2~3단계 재료 3개'});
+  openChains().forEach(c=>rows.push({id:'box'+c,ico:em(c,3),n:CH[c].t+' 상자',d:CH[c].t+' 재료 3개',p:SHOP_BOX}));
+  rows.push({id:'boxR',ico:BOXI,n:'랜덤 상자',d:'여러 계열의 재료 3개',p:SHOP_RAND});
   rows.push({sec:'보드 도우미'});
   rows.push({id:'sort',ico:'🧹',n:'보드 정리',d:'같은 계열끼리 모아 높은 단계부터 정렬해요',p:SHOP_SORT});
   return rows;
@@ -3270,14 +3270,14 @@ function shopBuy(id){
     toast(GEN_NAME[c]+' 강화 완료! '+guDesc(nx));
   }else if(id.indexOf('box')===0){
     const empty=emptyCells();
-    if(empty.length<5){toast('보드에 빈 칸이 5개 이상 필요해요');sfx('err');return;}
+    if(empty.length<3){toast('보드에 빈 칸이 3개 이상 필요해요');sfx('err');return;}
     pay(r.p);const keys=openChains(),made=[];
-    for(let k=0;k<5;k++){
+    for(let k=0;k<3;k++){
       const c=id==='boxR'?keys[rnd(keys.length)]:id.slice(3),l=Math.random()<.7?2:3;
       const j=empty.splice(rnd(empty.length),1)[0];
       st.cells[j]={c:c,l:l};made.push(j);
     }
-    sel=null;renderBoard();made.forEach(pop);toast('상자에서 재료 5개가 나왔어요');
+    sel=null;renderBoard();made.forEach(pop);toast('상자에서 재료 3개가 나왔어요');
   }else if(id==='sort'){
     const idx=[];st.cells.forEach((x,i)=>{if(!isLocked(i)&&!isGen(i))idx.push(i);});
     const items=idx.map(i=>st.cells[i]).filter(Boolean).sort((a,b)=>a.c<b.c?-1:a.c>b.c?1:b.l-a.l);
