@@ -2735,7 +2735,7 @@ function petPopup(pets,next){
     const pb='<div class="bigrw gen">'+pets.map(pt=>bi(faceE(pt,PET_HELLO_EMO[pt]||0),escH(petName(pt)))).join('')+'</div>';
     const hi=pets.length===1&&PET_HELLO[pets[0]]?PET_HELLO[pets[0]]+'\n':'';
     if(pets.indexOf(1)>=0)sfxWheel();
-    showReward('새 이웃 등장!',pb,hi+(pets.length>1?'새 이웃들이 마을에 이사 왔어요! 도감에서 이야기를 읽어 보세요.':escH(petName(pets[0]))+josa(petName(pets[0]),'이','가')+' 마을에 이사 왔어요! 도감에서 이야기를 읽어 보세요.'),()=>{pets.forEach(firstOrderFor);if(next)next();});
+    showReward('새 이웃 등장!',pb,hi+(pets.length>1?'새 이웃들이 마을에 이사 왔어요!\n도감에서 이야기를 읽어 보세요.':escH(petName(pets[0]))+josa(petName(pets[0]),'이','가')+' 마을에 이사 왔어요!\n도감에서 이야기를 읽어 보세요.'),()=>{pets.forEach(firstOrderFor);if(next)next();});
   },350);
 }
 function bigChips(L){
