@@ -1293,6 +1293,11 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
 @media (prefers-reduced-motion: no-preference){#pass .stone .tapme{animation:tapPulse 1s ease-in-out infinite}@keyframes tapPulse{50%{transform:translate(-50%,0) scale(1.1)}}}
 
 #pass .stone .sim img.crate{transform:scale(1.25)}
+
+/* 받을 수 있는 돌: 분홍 테두리 없이 '눌러서 받기'만 */
+#pass .stone.can::after{display:none!important}
+#pass .stone.can .srw{display:none}
+#pass .stone .tapme{bottom:4px!important}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
