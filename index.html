@@ -3813,7 +3813,7 @@ $('#startGo').addEventListener('click',()=>{
 /* ---------- finger tutorial ---------- */
 /* 보리의 친절한 도움말: 필요한 순간에 한 번씩 */
 let tipEnT=0;
-let tipEniT=0;
+let tipEniT=0,tipXpT=0;
 function tipDone(k){if(st&&st.tips&&st.tips[k]===1){st.tips[k]=2;save();}}
 function tipCheck(){
   if(!st||inTut()||!$('#startScr').hidden)return;
@@ -3835,7 +3835,10 @@ function tipTarget(){
     let a=-1,lv=99;for(let i=0;i<N;i++){const x=st.cells[i];if(!x||isSpecial(x.c)||isLocked(i)||isGen(i))continue;if(x.l<lv){lv=x.l;a=i;}}
     if(a>=0)return {el:cellEl(a),to:$('#sell'),txt:'안 쓰는 재료는 팔기로 끌어요',emo:5};
   }
-  if(T.xp===1){const xi=st.cells.findIndex((x,i)=>x&&x.c==='xp'&&!isLocked(i));if(xi>=0)return {el:cellEl(xi),txt:sel===xi?'한 번 더 누르면 경험치를 받아요':'황금 도토리예요! 두 번 눌러 보세요',emo:3};}
+  if(T.xp===1){const xi=st.cells.findIndex((x,i)=>x&&x.c==='xp'&&!isLocked(i));
+    /* 딱 한 번: 도토리를 한 번 누르거나 10초가 지나면 끝 */
+    if(xi>=0&&sel===xi){tipDone('xp');return null;}
+    if(xi>=0){if(!tipXpT)tipXpT=setTimeout(()=>tipDone('xp'),10000);return {el:cellEl(xi),txt:'황금 도토리예요! 두 번 눌러 보세요',emo:3};}}
   if(T.eni===1&&T.xp!==1){const ei=st.cells.findIndex((x,i)=>x&&x.c==='en'&&!isLocked(i));
     /* 딱 한 번: 에너지를 한 번 누르거나 10초가 지나면 끝 */
     if(ei>=0&&sel===ei){tipDone('eni');return null;}
