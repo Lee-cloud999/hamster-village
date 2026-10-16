@@ -1348,6 +1348,15 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
 .orwrap .orders,.orders{display:grid!important;grid-template-columns:none!important;grid-auto-flow:column!important;grid-auto-columns:calc((100% - 8px)/3)!important;gap:4px!important;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior-x:contain;padding-top:8px;margin-top:4px!important}
 .orders::-webkit-scrollbar{display:none}
 .orders>.order{scroll-snap-align:start}
+
+/* 보관함 버튼 다시 꾸미기: 크림색 둥근 칸 + 작은 서랍 그림 */
+.stbtn{background:linear-gradient(180deg,#fffaf3,#fdeee2)!important;border:2px solid #ecd2bf!important;border-radius:14px!important;box-shadow:0 2px 0 rgba(170,120,90,.28),inset 0 1px 0 #fff!important;padding:0 4px!important}
+.stbtn .stt{display:flex;align-items:center;justify-content:center;gap:4px}
+.stbtn .sti{width:22px;height:19px;flex:0 0 auto;filter:drop-shadow(0 1px 0 rgba(0,0,0,.12))}
+.stbtn b{font-size:12px!important;color:#7a4f36!important}
+.stbtn.full{border-color:#f2a99a!important}
+.stbtn.full b{color:#c2475e!important}
+@media (min-aspect-ratio:1/1) and (min-width:700px) and (min-height:540px){.stbtn .sti{width:28px;height:24px}.stbtn b{font-size:14px!important}}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -1378,7 +1387,7 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
 
 
   <div class="orwrap">
-    <div class="qcol"><button class="qslot empty" id="qslot" type="button"></button><button class="stbtn" id="stBtn" type="button" aria-label="보관함"><span class="stt">보관함</span><b id="stN">0/4</b></button></div>
+    <div class="qcol"><button class="qslot empty" id="qslot" type="button"></button><button class="stbtn" id="stBtn" type="button" aria-label="보관함"><span class="stt"><svg class="sti" viewBox="0 0 32 28" aria-hidden="true"><rect x="2" y="3" width="28" height="23" rx="5" fill="#f3c98f" stroke="#a86b3c" stroke-width="2"/><rect x="5" y="6.5" width="22" height="7.5" rx="2.5" fill="#ffe3b8" stroke="#a86b3c" stroke-width="1.6"/><rect x="5" y="15.5" width="22" height="7.5" rx="2.5" fill="#ffe3b8" stroke="#a86b3c" stroke-width="1.6"/><rect x="13" y="9" width="6" height="2.4" rx="1.2" fill="#a86b3c"/><rect x="13" y="18" width="6" height="2.4" rx="1.2" fill="#a86b3c"/></svg><b id="stN">0/4</b></span></button></div>
     <section>
       <div class="orders" id="orders"></div>
       <p class="ordwait" id="ordWait" hidden></p>
