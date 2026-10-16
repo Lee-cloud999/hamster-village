@@ -1205,7 +1205,7 @@ body,.sheet,#tut .tut-b,.say,.toast,.float,#rwBody,#rwNote{word-break:keep-all;o
 #pass .stone.big{width:140px;height:88px;border:0;background:var(--stone2) center/100% 100% no-repeat;box-shadow:none;filter:drop-shadow(0 0 8px rgba(255,220,120,.9)) drop-shadow(0 5px 5px rgba(90,60,30,.3))}
 #pass .stone .sim{width:auto;height:68%;aspect-ratio:1;margin-top:0;transform:translateY(-30px)}
 #pass .stone.big .sim{transform:translateY(-37px)}
-#pass .stone .slv{z-index:3;top:-44px!important}#pass .stone.big .slv{top:-51px!important}#pass .stone .scn,#pass .stone .wx{z-index:3}
+#pass .stone .slv{z-index:3;top:-39px!important}#pass .stone.big .slv{top:-45px!important}#pass .stone .scn,#pass .stone .wx{z-index:3}
 #pass .stone.far{background:var(--stone1) center/100% 100% no-repeat;box-shadow:none;filter:grayscale(.5) brightness(.95)}
 #pass .stone.can{border:0}
 #pass .stone.can::after{inset:2px 6px;border-radius:50%}
@@ -1280,6 +1280,8 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
 #tut .tut-spot.ring{border-radius:16px;box-shadow:0 0 0 3px #ffc4ba,0 0 16px 5px rgba(255,182,168,.85)}
 @media (prefers-reduced-motion: no-preference){#tut .tut-spot.ring{animation:ringPulse 1s ease-in-out infinite}
 @keyframes ringPulse{50%{box-shadow:0 0 0 5px #ffad9e,0 0 26px 10px rgba(255,182,168,1)}}}
+
+#dscene .slot.empty .pc.lk svg,#dscene .slot.empty .pc.lk img{width:24px!important;height:24px!important;opacity:.85}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -3309,7 +3311,7 @@ function renderScene(){
     h+='<button class="'+cls+'" type="button" data-spot="'+sp.id+'" aria-label="'+sp.n+'">';
     if(showIt)h+=spotHTML(sp.id,shownStyle(sp.id));
     else if(spotOpen(sp))h+='<span>'+sp.n+'</span><span class="pc">'+COIN+sp.cost+'</span>';
-    else h+='<span class="q">?</span><span class="pc">'+LOCK+'</span>';
+    else h+='<span class="pc lk">'+LOCK+'</span>';
     h+='</button>';
   });
   const guests=st.unlocked.filter(p=>!st.petHide[p]);
@@ -3382,7 +3384,7 @@ function grantZone(z){
     if(r.box)zb+=bi(BOXI,'나무 상자'+(r.box>1?' ×'+r.box:''),'');
     if(r.energy)zb+=bi(BOLT,'+'+(r.energy*10),'최대 에너지');
     zb+='</div>';
-    showReward(DZ[z].n+' 완성!',zb,(z===0?'📖 보리의 새 이야기 「조용한 첫날 밤」이 열렸어요. 도감에서 읽어 보세요.\n':'')+(r.box?'상자가 임시 칸에 도착했어요. 보드에 놓고 눌러서 열어요.':''),()=>{if(zp!=null){arriveBusy=true;arrivePet(zp);}});
+    showReward(DZ[z].n+' 완성!',zb,(z===0?'📖 보리의 새 이야기 「조용한 첫날 밤」이 열렸어요.':''),()=>{if(zp!=null){arriveBusy=true;arrivePet(zp);}});
     renderDecor();
   },750);
 }
@@ -3485,7 +3487,7 @@ function openStory(p,k){
   showReward(c.t,body,first?'이야기를 읽으면 코인 30개를 받아요.':'',first?()=>{
     st.read[p]=k+1;st.coins+=30;refresh();renderDex();sfx('badge');toast('코인 30개를 받았어요');
     if(st.tut>=10&&st.tut<20){st.tut=8;st.guideDecor=2;save();setTimeout(()=>{closeSheet('dex');sfx('level');
-      showReward('준비 끝!','<div class="bigrw gen">'+bi(faceE(0,3),petName(0),'')+'</div>','이제 마을을 자유롭게 가꿔 보세요!',()=>{setTimeout(()=>{try{if(!attCheck())evCheckStart();}catch(e){}},500);},'좋아요');},700);}
+      showReward('준비 끝!','<div class="bigrw gen">'+bi(faceE(0,3),'','')+'</div>','이제 마을을 자유롭게 가꿔 보세요!',()=>{setTimeout(()=>{try{if(!attCheck())evCheckStart();}catch(e){}},500);},'좋아요');},700);}
     if(p===0&&k===2&&!owned('run'))st.guideMsg='옆 빈 방에 쳇바퀴를 놓아 볼까요?';
     save();
   }:null);
