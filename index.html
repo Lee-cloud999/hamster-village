@@ -3275,9 +3275,6 @@ function shopRows(){
     rows.push({id:'gu'+c,ico:gem(c),n:GEN_NAME[c]+' '+stars(lv),
       d:nx?('다음 강화: '+guDesc(nx)):'최대 강화예요 · '+guDesc(GU[lv]),p:nx?nx.cost:0,off:!nx,lab:nx?null:'MAX'});
   });
-  rows.push({sec:'재료 상자 · 2~3단계 재료 3개'});
-  openChains().forEach(c=>rows.push({id:'box'+c,ico:em(c,3),n:CH[c].t+' 상자',d:CH[c].t+' 재료 3개',p:SHOP_BOX}));
-  rows.push({id:'boxR',ico:CRATE,n:'랜덤 상자',d:'여러 계열의 재료 3개',p:SHOP_RAND});
   rows.push({sec:'보드 도우미'});
   rows.push({id:'sort',ico:'🧹',n:'보드 정리',d:'같은 계열끼리 모아 높은 단계부터 정렬해요',p:SHOP_SORT});
   return rows;
