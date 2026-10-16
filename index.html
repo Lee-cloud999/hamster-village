@@ -1881,7 +1881,7 @@ const isSpecial=c=>c==='xp'||c==='en'||c==='tl'||c==='tg'||c==='bx';
 const TOOL_TIP=['','가위: 재료 위에 놓으면 한 단계 아래 두 개로 나눠요','반짝 가루: 재료 위에 놓으면 한 단계 올라가요','거울: 재료 위에 놓으면 똑같은 재료가 하나 더 생겨요'];
 function canMerge(a,b){const x=st.cells[a],y=st.cells[b];return a!==b&&!!x&&!!y&&x.c===y.c&&x.l===y.l&&x.l<(x.c==='xp'?XPMAX:x.c==='en'?ENMAX:(x.c==='tl'||x.c==='tg'||x.c==='bx')?0:MAXLV);}
 function giveEn(n){for(let k=0;k<(n||1);k++){const e2=emptyCells();if(e2.length){const j=e2[rnd(e2.length)];st.cells[j]={c:'en',l:1};renderBoard();pop(j);}else qGive('en',1);}
-  if(!st.enTip){st.enTip=1;setTimeout(()=>toast('⚡ 에너지 방울이 나왔어요! 합치면 커지고, 두 번 누르면 에너지가 차요'),700);}save();}
+  save();}
 function useTool(i,j){
   const t=st.cells[i],b=st.cells[j];if(!t||!b||t.c!=='tl'||isSpecial(b.c))return false;
   if(t.l===1){
@@ -3838,11 +3838,11 @@ function tipTarget(){
   if(T.xp===1){const xi=st.cells.findIndex((x,i)=>x&&x.c==='xp'&&!isLocked(i));
     /* 딱 한 번: 도토리를 한 번 누르거나 10초가 지나면 끝 */
     if(xi>=0&&sel===xi){tipDone('xp');return null;}
-    if(xi>=0){if(!tipXpT)tipXpT=setTimeout(()=>tipDone('xp'),10000);return {el:cellEl(xi),txt:'황금 도토리예요! 두 번 눌러 보세요',emo:3};}}
+    if(xi>=0){if(!T.xpAt){T.xpAt=Date.now();save();}if(Date.now()-T.xpAt>10000){tipDone('xp');return null;}return {el:cellEl(xi),txt:'황금 도토리예요! 두 번 눌러 보세요',emo:3};}}
   if(T.eni===1&&T.xp!==1){const ei=st.cells.findIndex((x,i)=>x&&x.c==='en'&&!isLocked(i));
     /* 딱 한 번: 에너지를 한 번 누르거나 10초가 지나면 끝 */
     if(ei>=0&&sel===ei){tipDone('eni');return null;}
-    if(ei>=0){if(!tipEniT)tipEniT=setTimeout(()=>tipDone('eni'),10000);return {el:cellEl(ei),txt:'에너지가 나왔어요! 두 번 눌러 보세요',emo:2};}}
+    if(ei>=0){if(!T.eniAt){T.eniAt=Date.now();save();}if(Date.now()-T.eniAt>10000){tipDone('eni');return null;}return {el:cellEl(ei),txt:'에너지가 나왔어요! 두 번 눌러 보세요',emo:2};}}
   if(T.energy===1)return {el:$('#enbox'),txt:'에너지는 2분마다 1씩 차요',emo:7,up:true};
   if(T.quest===1){
     if($('#quest').hidden&&T.qo){tipDone('quest');return null;}
