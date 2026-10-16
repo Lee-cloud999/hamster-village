@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<script>/* 테스트 모드(?test)를 PC·태블릿 큰 화면에서 열면 휴대폰 화면 크기 틀(tester.html)로 열어요. ?test&pc 는 원래대로 */
+(function(){try{var q=location.search;if(!/[?&]test\b/.test(q)||/[?&](inframe|pc)\b/.test(q)||window.self!==window.top)return;
+if(Math.min(screen.width,screen.height)<600||innerWidth<700)return;location.replace('tester.html'+q+location.hash);}catch(e){}})();</script>
 <script>(function(){try{var t=localStorage.getItem('hamster-village-theme')||'light';if(t!=='auto')document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','light');}})();</script>
 <title>햄스터 마을</title>
 <meta name="description" content="재료를 합쳐 햄스터 주민들의 부탁을 들어주고 마을을 꾸미는 머지 게임">
