@@ -28,7 +28,7 @@
 - 수정할 때마다 일반 주소와 `?test` 주소를 함께 알려 주고, 가끔 강력 새로고침(Ctrl+Shift+R, 폰은 앱 완전히 닫았다 열기) 안내
 - 안내 문구는 짧게 한 줄, 팝업은 흰 바탕·검은 글씨, 강조색은 연한 로즈(#ffad9e 계열), 작은 안내 글씨는 로즈색
 - 스토리는 업데이트로 계속 이어지므로 엔딩을 만들지 않음. 대사는 사용자가 직접 쓴 대본을 그대로 넣음
-- 커밋: `git -c user.name="Lee-cloud999" -c user.email="ggiyoo@gmail.com" commit` 후 `git push origin main`
+- 커밋은 저장소 주인(Lee-cloud999) 계정으로 하고 `git push origin main`으로 바로 배포
 
 ## 확인 방법
 - 로컬 서버 `python3 -m http.server 8766` + Playwright(크로미움 설치됨)로 412×800 모바일, 1000~1180 가로 화면 스크린샷 확인
