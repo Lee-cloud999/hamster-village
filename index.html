@@ -1282,6 +1282,10 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
 @keyframes ringPulse{50%{box-shadow:0 0 0 5px #ffad9e,0 0 26px 10px rgba(255,182,168,1)}}}
 
 #dscene .slot.empty .pc.lk svg,#dscene .slot.empty .pc.lk img{width:24px!important;height:24px!important;opacity:.85}
+
+/* 산책길: 코인·에너지 보상을 아이템 아래 가운데 한 줄로 */
+#pass .stone .srw{position:absolute;left:50%;bottom:4px;transform:translateX(-50%);display:flex;gap:4px;z-index:3;white-space:nowrap}
+#pass .stone .srw .scn{position:static!important;transform:none!important;bottom:auto!important;left:auto!important}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -2662,11 +2666,10 @@ function renderPass(){
     const m=walkMain(L);
     let extra='';
     if(r.item&&r.box&&!r.boxG)extra+='<i class="wx">'+BOXI+'</i>';
-    if(r.energy)extra+='<i class="wx wxe">'+BOLT+'<b>+10</b></i>';
     h+='<button type="button" class="stone'+(big?' big':'')+(got?' got':'')+(can?' can':'')+(far?' far':'')+(L===st.lv?' now':'')+'" data-l="'+L+'" style="left:'+x+'%;top:'+y+'px" aria-label="Lv.'+L+' '+m.name+'">'+
       '<span class="slv">Lv.'+L+'</span>'+
       (far?'':'<span class="sim">'+m.img+'</span>')+
-      (far?'':'<span class="scn">'+COIN+'<b>'+r.coins+'</b></span>')+
+      (far?'':'<span class="srw"><span class="scn">'+COIN+'<b>'+r.coins+'</b></span>'+(r.energy?'<span class="scn sen">'+BOLT+'<b>+10</b></span>':'')+'</span>')+
       (far?'':extra)+
       (got?'<span class="spaw">'+evI('paw',34)+'</span>':'')+
     '</button>';
