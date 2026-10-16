@@ -2655,7 +2655,7 @@ function renderPass(){
   const c=claimable().length;
   $('#claimAll').hidden=c<2;$('#claimAll').textContent='보상 '+c+'개 모두 받기';
   $('#passInfo').textContent='레벨 '+st.lv+' · 다음 레벨까지 경험치 '+(need(st.lv)-st.xp)+' 남았어요';
-  requestAnimationFrame(()=>{try{const w=$('#walkWrap'),now=el.querySelector('.stone.now')||el.querySelector('.stone.can');if(w&&now)w.scrollTop=now.offsetTop-w.clientHeight/2;}catch(e){}});
+  requestAnimationFrame(()=>{try{const w=$('#walkWrap'),now=el.querySelector('.stone.now')||el.querySelector('.stone[data-l="'+Math.min(PASS_LAST,Math.max(2,st.lv+1))+'"]');if(w&&now)w.scrollTop=now.offsetTop-w.clientHeight/2;}catch(e){}});
 }
 function bi(img,name,sub){return '<div class="bi"><span class="bimg">'+img+'</span><b>'+name+'</b>'+(sub?'<small>'+sub+'</small>':'')+'</div>';}
 const PET_HELLO_EMO={1:6,2:7,3:6,5:2,6:3,4:6,7:3};
