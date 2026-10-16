@@ -1364,6 +1364,18 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
 .stbtn .stt{gap:3px!important}
 .stbtn .sti{width:34px!important;height:34px!important;object-fit:contain;filter:drop-shadow(0 1px 1px rgba(90,60,30,.25))!important}
 @media (min-aspect-ratio:1/1) and (min-width:700px) and (min-height:540px){.orwrap .qcol .qslot{height:70px!important}.orwrap .qcol .stbtn{height:56px}.stbtn .sti{width:42px!important;height:42px!important}}
+
+/* 레벨 달성 창 */
+.lvup{display:grid;place-items:center;padding:6px 0 2px}
+.lvbig{width:116px;height:116px;border-radius:50%;display:grid;place-items:center;align-content:center;font-family:var(--f-display);font-size:58px;font-weight:800;line-height:.9;color:#fff;background:radial-gradient(circle at 35% 30%,#ffd0c4,#ff9a86 60%,#f07d68);box-shadow:0 0 0 6px #fff,0 0 0 9px #ffd9cf,0 10px 24px rgba(240,125,104,.45);text-shadow:0 2px 0 rgba(160,60,40,.35)}
+.lvbig small{font-size:18px;letter-spacing:1px;opacity:.9}
+@media (prefers-reduced-motion: no-preference){.lvbig{animation:lvPop .6s cubic-bezier(.3,1.7,.5,1) both}@keyframes lvPop{0%{transform:scale(.3) rotate(-12deg)}100%{transform:scale(1) rotate(0)}}}
+#fwcv{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:400;display:none}
+
+/* 임시 칸은 원래 비율(높이 72) 그대로, 보관함은 그 아래 */
+.orwrap .qcol .qslot{height:72px!important;padding:14px 6px 6px!important}
+.orwrap .qcol .stbtn{height:46px}
+@media (min-aspect-ratio:1/1) and (min-width:700px) and (min-height:540px){.orwrap .qcol .qslot{height:96px!important;padding:18px 8px 8px!important}.orwrap .qcol .stbtn{height:56px}}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -2148,6 +2160,7 @@ function sfx(n,a,b){
   try{
     switch(n){
       case 'tap':pp(520,740,0,.07,'sine',.09);break;                       /* little bloop */
+      case 'pop':puff(0,.25,.08,3200);pp(900,300,0,.18,'triangle',.05);break; /* 폭죽 펑 */
       case 'move':puff(0,.07,.07,1500);pp(330,260,0,.06,'sine',.05);break;   /* soft plop */
       case 'gen':puff(0,.12,.09,2400);pp(280,600,.02,.12,'sine',.12);pp(380,820,.1,.1,'sine',.09);break; /* pouch rustle + pop */
       case 'merge':{
@@ -2878,6 +2891,43 @@ function openLevelUp(levels,passMode,after){
 }
 /* 레벨이 오르면 보리의 산책길이 열리고, 반짝이는 돌을 직접 눌러 보상을 받아요 */
 let walkAuto=0;
+/* 레벨 달성 창 + 폭죽 */
+function levelUpPopup(L){
+  const go=()=>{
+    if(document.querySelector('.sheet:not([hidden])')){setTimeout(go,700);return;}
+    sfx('level');hap&&hap([30,60,30]);
+    showReward('레벨 '+L+' 달성!','<div class="lvup"><span class="lvbig"><small>LV</small>'+L+'</span></div>','보리의 산책길에 새 보상이 열렸어요!',()=>setTimeout(openWalkAuto,250),'보상 받으러 가기');
+    fireworks();
+  };
+  go();
+}
+function fireworks(){
+  if(reduce)return;
+  let cv=document.getElementById('fwcv');
+  if(!cv){cv=document.createElement('canvas');cv.id='fwcv';document.body.appendChild(cv);}
+  const dpr=Math.min(2,window.devicePixelRatio||1),W=innerWidth,H=innerHeight;
+  cv.width=W*dpr;cv.height=H*dpr;cv.style.display='block';
+  const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);
+  const COLS=['#ffad9e','#ffd23f','#7cc25a','#8fd3ff','#ff8fb8','#ffffff','#c9a2ff'];
+  const P=[];let shells=0;
+  const burst=(x,y)=>{const c1=COLS[Math.floor(Math.random()*COLS.length)],c2=COLS[Math.floor(Math.random()*COLS.length)];const n=46+Math.floor(Math.random()*20);
+    for(let i=0;i<n;i++){const a=Math.PI*2*i/n+Math.random()*.15,sp=2.2+Math.random()*3.2;P.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1,c:i%2?c1:c2,r:2+Math.random()*1.6});}
+    try{sfx('pop');}catch(e){}};
+  const t0=performance.now();
+  const plan=[0,260,520,820,1100,1400];
+  function frame(t){
+    const el=t-t0;
+    while(shells<plan.length&&el>=plan[shells]){burst(W*(.18+Math.random()*.64),H*(.12+Math.random()*.32));shells++;}
+    g.clearRect(0,0,W,H);
+    for(let i=P.length-1;i>=0;i--){const p=P[i];p.vy+=.06;p.vx*=.985;p.vy*=.985;p.x+=p.vx;p.y+=p.vy;p.life-=.012;
+      if(p.life<=0){P.splice(i,1);continue;}
+      g.globalAlpha=Math.max(0,p.life);g.fillStyle=p.c;g.beginPath();g.arc(p.x,p.y,p.r*(.6+p.life*.6),0,Math.PI*2);g.fill();
+      if(Math.random()<.08){g.fillRect(p.x-p.vx*3,p.y-p.vy*3,1.5,1.5);}}
+    g.globalAlpha=1;
+    if(el<4200&&(P.length||shells<plan.length))requestAnimationFrame(frame);else{g.clearRect(0,0,W,H);cv.style.display='none';}
+  }
+  requestAnimationFrame(frame);
+}
 function openWalkAuto(){
   if(!claimable().length)return;
   if(document.querySelector('.sheet:not([hidden])')){setTimeout(openWalkAuto,700);return;}
@@ -2890,7 +2940,7 @@ function gainXp(n){
   tickEnergy();
   ups.filter(L=>L>PASS_LAST).forEach(L=>{const r=rewardOf(L);st.coins+=r.coins;st.claimed.push(L);if(r.box)spawnBox(r.boxG);if(r.item)qGive(r.item.c,r.item.l);});
   const inPass=ups.filter(L=>L<=PASS_LAST);
-  if(inPass.length)setTimeout(()=>{sfx('level');bigText('레벨 '+st.lv+'!',true);setTimeout(openWalkAuto,1100);},320);
+  if(inPass.length)setTimeout(()=>levelUpPopup(st.lv),320);
   else{sfx('level');setTimeout(()=>{bigText('레벨 '+st.lv+'!',true);toast('레벨 '+st.lv+' · 코인을 받았어요');},260);}
 }
 
