@@ -1219,7 +1219,7 @@ body,.sheet,#tut .tut-b,.say,.toast,.float,#rwBody,#rwNote{word-break:keep-all;o
 
 /* order card v3: 햄스터는 뒤에 크게, 보상은 오른쪽, 필요한 재료는 앞 선반 */
 .order{display:block!important;position:relative;height:104px;padding:0!important;container-type:inline-size;cursor:pointer;overflow:visible}
-.orders{margin-top:12px;grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-auto-flow:row}
+.orders{margin-top:12px;grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-auto-flow:row;gap:4px!important}
 .order .subbtn,.order .rew,.order .otxt{display:none!important}
 .order .who{position:absolute!important;left:40%!important;top:auto!important;bottom:22px;transform:translateX(-50%)!important;margin:0!important;z-index:1;pointer-events:none}
 .order .who .face{clip-path:none!important;display:block;line-height:0}
@@ -1247,7 +1247,7 @@ body,.sheet,#tut .tut-b,.say,.toast,.float,#rwBody,#rwNote{word-break:keep-all;o
   .order .plate{gap:2px!important;padding:0 2px}
 }
 @media (min-aspect-ratio:1/1) and (min-width:700px) and (min-height:540px){
-  .orwrap .orders{grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-auto-flow:row!important;gap:8px!important;margin-top:16px!important}
+  .orwrap .orders{grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-auto-flow:row!important;gap:8px!important;margin-top:16px!important}
   .orwrap .order{display:block!important;height:128px!important;min-height:0!important;padding:0!important;overflow:visible!important}
   .orwrap .order .who{left:38%!important;bottom:26px!important;position:absolute!important;grid-row:auto!important}
   .orwrap .order .who .face img,.orwrap .order .who .face .im,.orwrap .order .who .face .rim{width:min(96px,68cqw)!important;height:min(96px,68cqw)!important}
@@ -1317,6 +1317,32 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
 
 .stat .hb.sndbtn{background:var(--panel)!important;border-color:var(--line)!important}
 .stat .hb.sndbtn img{width:26px!important;height:26px!important;object-fit:contain}
+
+/* 보관함 (임시 칸 아래) */
+.orwrap .qcol{display:flex;flex-direction:column;gap:4px;min-width:0}
+.orwrap .qcol .qslot{height:64px!important;padding-top:12px!important}
+.stbtn{position:relative;height:36px;border:0;border-radius:10px;background:var(--img-panel) center/100% 100% no-repeat;color:#5a3d1c;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:2px 2px 0;font:inherit;line-height:1.05;cursor:pointer}
+.stbtn .stt{font-size:10px;font-weight:800}
+.stbtn b{font-size:11px;font-weight:800;color:#c2604b}
+.stbtn.full b{color:#b03a2e}
+.stbtn.drop,.stbtn.can{outline:3px solid #ffad9e;outline-offset:1px}
+.stbtn.flash{box-shadow:0 0 0 3px var(--accent)}
+.stgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.stc{aspect-ratio:1;border:2px solid #f0d6cc;border-radius:14px;background:#fff8ef;display:grid;place-items:center;padding:6px;font:inherit}
+.stc .im,.stc img{width:80%!important;height:80%!important;object-fit:contain}
+.stc.emp{background:#fdf3ee;border-style:dashed}
+.stc.buy{flex-direction:column;gap:2px;font-size:11px;font-weight:800;color:#c2604b;border-style:dashed;background:#fff}
+.stc.buy b{display:flex;align-items:center;gap:2px;color:#5b4038}
+.stc.buy b img,.stc.buy b svg{width:14px!important;height:14px!important}
+.stc.buy:disabled{opacity:.55}
+.stc.lockd{background:#f3ebe6;border-color:#eadbd3}
+.stc.lockd img,.stc.lockd svg{width:20px!important;height:20px!important;opacity:.5}
+@media (min-aspect-ratio:1/1) and (min-width:700px) and (min-height:540px){
+  .orwrap .qcol{flex-direction:column;gap:6px;flex:0 0 auto;align-self:flex-start}
+  .orwrap .qcol .qslot{height:70px!important;width:94px;padding-top:14px!important}
+  .orwrap .qcol .stbtn{width:94px;height:44px}
+  .stbtn .stt{font-size:12px}.stbtn b{font-size:13px}
+}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -1347,7 +1373,7 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
 
 
   <div class="orwrap">
-    <button class="qslot empty" id="qslot" type="button"></button>
+    <div class="qcol"><button class="qslot empty" id="qslot" type="button"></button><button class="stbtn" id="stBtn" type="button" aria-label="보관함"><span class="stt">보관함</span><b id="stN">0/4</b></button></div>
     <section>
       <div class="orders" id="orders"></div>
       <p class="ordwait" id="ordWait" hidden></p>
@@ -1501,6 +1527,12 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
   <div class="setrow col"><span class="have">게임 데이터</span><button class="btn rstbtn" id="resetBtn" type="button">처음부터 다시 하기</button></div>
 </section>
 
+<section class="sheet" id="stor" role="dialog" aria-label="보관함" hidden>
+  <header><h2>보관함</h2><button class="x" data-close aria-label="닫기">✕</button></header>
+  <p class="have" id="storHave"></p>
+  <div class="stgrid" id="storGrid"></div>
+</section>
+
 <section class="sheet top" id="chain" role="dialog" aria-label="재료 단계" hidden>
   <header><h2 id="chT"></h2><button class="x" data-close aria-label="닫기">✕</button></header>
   <p class="have" id="chD"></p>
@@ -1559,6 +1591,8 @@ const REWARD_PET={};
 const SAY=['고마워요! 볼이 빵빵해요','딱 필요했던 거예요','덕분에 한숨 돌렸어요','마을이 더 따뜻해졌어요','또 부탁해도 될까요?'];
 const PET_LINES=['볼주머니가 빵빵해요!','오늘도 마을이 포근해요','같이 간식 먹을래요?','쳇바퀴 한 바퀴 돌고 올게요','이 마을, 좋아요','도토리 하나만 맡아 줄래요?'];
 const SUF=[' 구해 주세요!',' 필요해요!',' 부탁해요!',' 있을까요?',' 가져다줄래요?'];
+/* 코인으로 에너지 +20: 50 → 100 → 200 …, 다음 날 처음 값으로 */
+const e20Cost=()=>{const b=st&&st.eBuy;const n=(b&&b.day===todayKey())?b.n:0;return SHOP_E20*Math.pow(2,Math.min(n,6));};
 const SHOP_E20=50, SHOP_BOX=40, SHOP_RAND=35, SHOP_SORT=10;
 
 /* stories: three chapters per resident. Chapter k opens after enough favors for that resident and enough decorated spots. */
@@ -1826,7 +1860,7 @@ let viewDay=1, dSel=null, dPick=0, dJust=null, dexSel=null, tk=0;
 
 /* ---------- derived values ---------- */
 const need=lv=>lv<5?[0,30,50,70,100][lv]:30*lv;
-const ordCap=()=>Math.min(3,(st.unlocked||[0]).length+1);
+const ordCap=()=>Math.min(4,(st.unlocked||[0]).length+1);
 const maxE=()=>Math.min(120,40+Math.floor((st.lv-1)/2)*10)+(st.bonusE||0)*10;
 const refillCost=()=>maxE()*2;
 /* ---------- 이웃 이사 = 이야기 진행 (이웃이 새 생성기를 선물로 가져와요) ---------- */
@@ -1971,7 +2005,7 @@ function fill(o){
   o.gu=o.gu||{};o.bonusE=o.bonusE||0;o.unlockN=o.unlockN||0;o.xp=o.xp||0;o.eAt=o.eAt||Date.now();
   if(!Array.isArray(o.unlocked))o.unlocked=[0];o.read=o.read||{};
   if(!Array.isArray(o.claimed)){o.claimed=[];for(let L=2;L<=Math.min(PASS_LAST,o.lv);L++)o.claimed.push(L);}
-  o.tq=o.tq||[];o.dec=o.dec||{};o.own=o.own||{};o.zoneDone=o.zoneDone||[];
+  o.tq=o.tq||[];o.stor=o.stor||[];o.storN=o.storN||4;o.dec=o.dec||{};o.own=o.own||{};o.zoneDone=o.zoneDone||[];
   if(!o.gOpen){o.gOpen={};const OLD={sw:2,dr:4,fr:8,ml:10,ic:12};if((o.lv||1)>1)KEYS.forEach(c=>{if(OLD[c]&&o.lv>=OLD[c])o.gOpen[c]=1;});}
   o.petWait=o.petWait||[];
   o.fmax=o.fmax||{};o.badges=o.badges||{};o.petName=o.petName||{};o.petHide=o.petHide||{};o.fed=o.fed||{};
@@ -2288,7 +2322,7 @@ function hearts(el){
 }
 
 /* ---------- sheets ---------- */
-const MAIN_SHEETS=['event','ebuy','shop','pass','quest','decor','dex','prof','snd','dev'].filter(id=>document.getElementById(id));
+const MAIN_SHEETS=['event','ebuy','stor','shop','pass','quest','decor','dex','prof','snd','dev'].filter(id=>document.getElementById(id));
 const TOP_SHEETS=['confirm','reward','chain'];
 function syncScrim(){$('#scrim').hidden=!Array.prototype.some.call(document.querySelectorAll('.sheet'),s=>!s.hidden);}
 /* 메뉴 창: 스크롤 없이 한눈에 보이도록 화면에 맞춰 살짝 줄여요 */
@@ -2421,7 +2455,7 @@ const EVENT={id:'acorn-2026',name:'가을 도토리 축제',start:'2026-10-15',e
    [{item:['tl',3]},{coins:500}],
    [{coins:300},{item:['en',4]}],
    [{box:1,boxG:3},{box:2,boxG:3}]],
-  missions:[{id:'deliver',n:'주민 50명 돕기',t:50,p:20,face:0},{id:'merge5',n:'5단계 재료 5개 만들기',t:5,p:20,face:1},{id:'xpget',n:'황금 도토리 10개 모으기',t:10,p:15,face:2},{id:'decor',n:'마을 꾸미기 3번 하기',t:3,p:15,face:3}]};
+  missions:[{id:'deliver',n:'주민 30명 돕기',t:30,p:20,face:0},{id:'merge5',n:'5단계 재료 5개 만들기',t:5,p:20,face:1},{id:'xpget',n:'황금 도토리 10개 모으기',t:10,p:15,face:2},{id:'decor',n:'마을 꾸미기 3번 하기',t:3,p:15,face:3}]};
 
 const evOn=()=>{const t=todayKey();return t>=EVENT.start&&t<=EVENT.end;};
 function evState(){st.ev=st.ev&&st.ev.id===EVENT.id?st.ev:{id:EVENT.id,pts:0,got:[],seen:0};const e=st.ev;e.gotF=e.gotF||[];e.gotG=e.gotG||[];return e;}
@@ -2545,6 +2579,38 @@ function renderQ(){
     if(q.length>qPrev&&qPrev>=0){el.classList.add('flash');setTimeout(()=>el.classList.remove('flash'),900);}
   }
   qPrev=q.length;
+  try{renderStorBtn();}catch(_){}
+}
+/* ---------- 보관함: 재료를 끌어다 넣고, 눌러서 꺼내요 ---------- */
+const STOR_MAX=12,storCost=()=>100*Math.pow(2,Math.max(0,(st.storN||4)-4));
+function renderStorBtn(){const n=$('#stN');if(n)n.textContent=(st.stor||[]).length+'/'+(st.storN||4);const b=$('#stBtn');if(b)b.classList.toggle('full',(st.stor||[]).length>=(st.storN||4));}
+function storeItem(i){
+  const it=st.cells[i];if(!it)return;
+  if(it.c==='bx'){toast('상자는 보관할 수 없어요. 눌러서 열어 주세요');sfx('err');return;}
+  if(st.stor.length>=st.storN){toast('보관함이 가득 찼어요');sfx('err');const b=$('#stBtn');if(b&&!reduce){b.classList.add('shake');setTimeout(()=>b.classList.remove('shake'),400);}return;}
+  st.stor.push(it);st.cells[i]=null;sel=null;hap&&hap(12);sfx('tap');
+  save();renderBoard();renderStorBtn();if(!$('#stor').hidden)renderStor();
+  const b=$('#stBtn');if(b){b.classList.add('flash');setTimeout(()=>b.classList.remove('flash'),700);}
+}
+function renderStor(){
+  $('#storHave').textContent='보드의 재료를 보관함 칸으로 끌어다 놓으면 넣어져요. 누르면 다시 꺼내요.';
+  let h='';
+  for(let k=0;k<STOR_MAX;k++){
+    if(k<st.storN){const it=st.stor[k];h+='<button type="button" class="stc'+(it?'':' emp')+'" data-k="'+k+'">'+(it?em(it.c,it.l):'')+'</button>';}
+    else if(k===st.storN){h+='<button type="button" class="stc buy" data-buy="1"'+(st.coins<storCost()?' disabled':'')+'><span>칸 늘리기</span><b>'+COIN+storCost()+'</b></button>';}
+    else h+='<div class="stc lockd">'+LOCK+'</div>';
+  }
+  $('#storGrid').innerHTML=h;renderStorBtn();
+}
+function storTake(k){
+  const it=st.stor[k];if(!it)return;
+  const empty=emptyCells();if(!empty.length){toast('보드에 빈 칸이 없어요');sfx('err');return;}
+  const j=empty[0];st.cells[j]=it;st.stor.splice(k,1);
+  save();renderBoard();pop(j);sfx('gen');renderStor();
+}
+function storBuy(){
+  const c=storCost();if(st.storN>=STOR_MAX||st.coins<c)return;
+  st.coins-=c;st.storN++;sfx('unlock');save();refresh();renderStor();toast('보관함이 한 칸 늘었어요');
 }
 function qPlace(){
   if(!st.tq.length||(drag&&drag.on))return;
@@ -2850,11 +2916,18 @@ function newOrder(tier,forceCu){
   lastKey=needs[0][0]+needs[0][1];
   return mkOrder(cu,needs,tier);
 }
+/* 주문 난이도 섞기: 4칸이면 쉬움 1 · 보통 2 · 어려움 1 (칸이 적을 땐 보통 → 쉬움 → 어려움 → 보통 순으로) */
+function nextTier(){
+  const want=['mid','easy','hard','mid'].slice(0,ordCap()),have={easy:0,mid:0,hard:0};
+  st.orders.forEach(o=>{if(o&&o.state!=='done'&&have[o.tier]!=null)have[o.tier]++;});
+  const need={easy:0,mid:0,hard:0};want.forEach(t=>need[t]++);
+  const lack=['easy','mid','hard'].filter(t=>have[t]<need[t]);
+  return lack.length?lack[rnd(lack.length)]:'mid';
+}
 function newBatch(){
-  const n=Math.min(ordCap(),1+rnd(3));
-  const T=n===1?['mid']:n===2?[Math.random()<.5?'easy':'hard','mid']:['easy','mid','hard'];
+  const n=Math.min(ordCap(),2+rnd(3));
   st.orders=[];
-  T.forEach(t=>st.orders.push(newOrder(t)));
+  for(let i=0;i<n;i++)st.orders.push(newOrder(nextTier()));
 }
 function ordFill0(){
   newBatch();st.oNext=st.orders.length<ordCap()?Date.now()+20000:null;save();renderOrders('all');
@@ -2881,7 +2954,7 @@ function ordTick(){
   if(!st.oNext){st.oNext=Date.now()+20000;save();}
   if(Date.now()>=st.oNext){
     const n=Math.min(1+rnd(2),ordCap()-c);
-    for(let i=0;i<n;i++){const t=['easy','mid','mid','hard'][rnd(4)];st.orders.push(newOrder(t));}
+    for(let i=0;i<n;i++){st.orders.push(newOrder(nextTier()));}
     st.oNext=st.orders.length<ordCap()?Date.now()+20000:null;
     save();renderOrders(Array.from({length:n},(_,i)=>c+i));return;
   }
@@ -3243,7 +3316,7 @@ window.addEventListener('pointermove',e=>{
   }
   drag.ghost.style.transform='translate('+(e.clientX-drag.size*.5)+'px,'+(e.clientY-drag.size*.5)+'px)';
   const el=document.elementFromPoint(e.clientX,e.clientY);
-  const tgt=el&&(el.closest('.order')||el.closest('.sell')||el.closest('.cell'));
+  const tgt=el&&(el.closest('.order')||el.closest('.sell')||el.closest('.stbtn')||el.closest('.cell'));
   setHover(tgt&&!(tgt.classList.contains('cell')&&(+tgt.dataset.i===drag.i||tgt.classList.contains('lock')||tgt.classList.contains('gencell')))?tgt:null);
 });
 function endDrag(e,cancel){
@@ -3254,8 +3327,9 @@ function endDrag(e,cancel){
   if(!d.on){if(!cancel)tap(d.i);return;}
   if(cancel){renderBoard();renderOrders();return;}
   const el=document.elementFromPoint(e.clientX,e.clientY);
-  const order=el&&el.closest('.order'),cell=el&&el.closest('.cell'),sz=el&&el.closest('.sell');
+  const order=el&&el.closest('.order'),cell=el&&el.closest('.cell'),sz=el&&el.closest('.sell'),stb=el&&el.closest('.stbtn');
   if(sz){renderBoard();sellItem(d.i);}
+  else if(stb){renderBoard();storeItem(d.i);}
   else if(order){renderBoard();toast('부탁 카드의 전하기 버튼을 눌러야 전해져요');}
   else if(cell){
     const ci=+cell.dataset.i;
@@ -3293,7 +3367,7 @@ function guDesc(t){
 function shopRows(){
   const rows=[];
   rows.push({sec:'에너지'});
-  rows.push({id:'e20',ico:BOLT,n:'에너지 +20',d:'에너지 20을 채워요 (최대 999까지)',p:SHOP_E20});
+  rows.push({id:'e20',ico:BOLT,n:'에너지 +20',d:'살 때마다 값이 두 배 · 매일 처음 값으로',p:e20Cost()});
   rows.push({id:'efull',ico:BOLT,n:'에너지 가득',d:'에너지를 최대치까지 채워요',p:refillCost()});
   rows.push({sec:'생성기 강화'});
   openChains().forEach(c=>{
@@ -3321,7 +3395,7 @@ function shopBuy(id){
   if(id==='e20'||id==='efull'){
     tickEnergy();const m=maxE();
     if(id==='efull'?st.e>=m:st.e>=999){toast(id==='efull'?'에너지가 이미 가득해요':'에너지는 최대 999까지 모을 수 있어요');return;}
-    pay(r.p);st.e=id==='efull'?m:Math.min(999,st.e+20);st.eAt=Date.now();toast('에너지를 채웠어요');
+    pay(r.p);st.e=id==='efull'?m:Math.min(999,st.e+20);st.eAt=Date.now();if(id==='e20'){const t=todayKey();st.eBuy=(st.eBuy&&st.eBuy.day===t)?{day:t,n:st.eBuy.n+1}:{day:t,n:1};}toast('에너지를 채웠어요');
   }else if(id.indexOf('gu')===0){
     const c=id.slice(2),lv=guLv(c),nx=GU[lv+1];
     if(!nx||st.coins<nx.cost)return;
@@ -3659,6 +3733,8 @@ $('#sell').addEventListener('click',()=>{
 });
 $('#sell').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$('#sell').click();}});
 $('#qslot').addEventListener('click',qPlace);
+$('#stBtn').addEventListener('click',()=>{if(drag&&drag.on)return;sfx('tap');renderStor();openSheet('stor');});
+$('#storGrid').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;if(b.dataset.buy)storBuy();else if(b.dataset.k!=null)storTake(+b.dataset.k);});
 $('#refill').addEventListener('click',()=>{shopBuy('efull');});
 $('#cOk').addEventListener('click',()=>{const f=cfn;closeConfirm();if(f)f();});
 $('#cNo').addEventListener('click',closeConfirm);
