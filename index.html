@@ -3515,7 +3515,7 @@ function renderDexTabs(){
 function renderDex(){
   renderDexTabs();renderMatDex();
   const open=st.unlocked.length;
-  $('#dexInfo').textContent=open+' / '+CUST.length+'명의 이웃을 만났어요. 이웃을 누르면 이야기를 읽을 수 있어요.';
+  $('#dexInfo').textContent=open+' / '+CUST.length+'명의 이웃을 만났어요.';
   $('#dexGrid').innerHTML=CUST.map((x,p)=>{
     const u=st.unlocked.indexOf(p)>=0,out=u&&st.petHide[p],rd=st.read[p]||0,nw=u&&rd<STORY[p].length&&chapterState(p,rd)==='ready';
     return '<div class="dcell'+(u?'':' lock')+(dexSel===p?' sel':'')+'"'+(u?' data-p="'+p+'" role="button" tabindex="0"':'')+'><span class="de">'+(u?face(p):'❔')+'</span><b>'+(u?escH(petName(p)):'???')+'</b>'+(u?(nw?'<small>새 이야기</small>':out?'<small>마을 밖</small>':'<small>'+rd+'/'+STORY[p].length+'편</small>'):'<small>'+x[2]+'</small>')+'</div>';
