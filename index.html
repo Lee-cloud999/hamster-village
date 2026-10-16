@@ -2946,7 +2946,7 @@ function deliver(i,k){
     const evN=evAdd(o);
     flyXp($('#orders').children[k],o.xp);
     setTimeout(()=>{gainXp(o.xp);refresh();save();},560);
-    if(tutXp){st.tut=5;setTimeout(()=>{if(st.tut===5){st.tut=7;save();tutDraw();}},3000);setTimeout(()=>{if(st.tut===7){st.tut=10;save();tutDraw();}},6200);}
+    if(tutXp){st.tut=5;setTimeout(()=>{if(st.tut===5||st.tut===7){st.tut=10;save();tutDraw();}},1800);}
     refresh();
     {const cd=$('#orders').children[k];if(cd){if(o.cu===1&&st.fed[1]===1)setEmo(cd,1,2);else if(st.nDeliv===1&&o.cu===0)setEmo(cd,0,4);}}sfx('done');
     setTimeout(()=>orderLeave(o),700);
@@ -3166,7 +3166,7 @@ function act(i,j){
 }
 function collectXp(i){
   const it=st.cells[i];if(!it||it.c!=='xp')return;
-  if(st.tut===6){st.tut=7;setTimeout(()=>{if(st.tut===7){st.tut=10;save();tutDraw();}},3200);}
+  if(st.tut===6){st.tut=7;setTimeout(()=>{if(st.tut===7){st.tut=10;save();tutDraw();}},1500);}
   const v=XPV[it.l];st.cells[i]=null;sel=null;track('xpget');
   const el=cellEl(i);if(el)floatAt(el,'+'+v+' 경험치');
   sfx('coin');renderBoard();gainXp(v);refresh();
@@ -3980,6 +3980,12 @@ function tutDraw(){
   }catch(e){}
 }
 setInterval(tutDraw,250);
+/* '이번엔 재료가 두 개예요!' 같은 말풍선 단계는 화면을 한 번 터치하면 바로 다음으로 */
+document.addEventListener('pointerdown',e=>{
+  if(!st||!$('#startScr').hidden||document.querySelector('.sheet:not([hidden])'))return;
+  if(st.tut===5||st.tut===7){st.tut=10;save();setTimeout(tutDraw,0);return;}
+  if(st.tut===10&&!(e.target.closest&&e.target.closest('.gencell'))){st.tut=11;save();setTimeout(tutDraw,0);}
+},true);
 /* '보리에게 침대를 사 줄까요?' 안내 중에는 꾸미기 버튼만 눌러져요 */
 function tutLockEl(){
   if(!st||!$('#startScr').hidden||document.querySelector('.sheet:not([hidden])'))return null;
