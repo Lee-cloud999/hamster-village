@@ -1381,6 +1381,11 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
 .lvup .lvbig{position:absolute;right:calc(50% - 112px);bottom:4px;width:62px;height:62px;font-size:30px;box-shadow:0 0 0 4px #fff,0 4px 10px rgba(240,125,104,.35)}
 .lvup .lvbig small{font-size:11px}
 @media (prefers-reduced-motion: no-preference){.lvup .lvimg{animation:lvPop .6s cubic-bezier(.3,1.7,.5,1) both}.lvup .lvbig{animation:lvPop .5s .25s cubic-bezier(.3,1.7,.5,1) both}}
+.s1g{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;justify-items:center;padding:4px 0 2px}
+.s1g .fc{width:62px;height:62px;display:grid;place-items:center}
+.s1g .fc img{width:100%;height:100%;object-fit:contain}
+.s1b{display:inline-block;padding:2px 9px;border-radius:999px;background:#ffad9e;color:#fff;font-weight:700;font-size:12px;margin-right:4px}
+#rwNote{white-space:pre-line}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -1897,6 +1902,7 @@ let st=null, sel=null, drag=null, combo=0, lastMergeAt=0, lastKey='', cfn=null, 
 let viewDay=1, dSel=null, dPick=0, dJust=null, dexSel=null, tk=0;
 
 /* ---------- derived values ---------- */
+const LV_MAX=30;
 const need=lv=>lv<5?[0,30,50,70,100][lv]:30*lv;
 const ordCap=()=>4;
 const maxE=()=>Math.min(120,40+Math.floor((st.lv-1)/2)*10)+(st.bonusE||0)*10;
@@ -2456,8 +2462,17 @@ function nextGoal(){
   if(!zoneDone(1))return {t:'콩이 부탁 들어주기 · 이웃 방 꾸미기',a:cnt(1),b:tot(1),act:'none',emo:1};
   if(!zoneDone(2)&&SPOTS.some(x=>x.zone===2&&spotOpen(x)))return {t:'마을 광장 꾸미기',a:cnt(2),b:tot(2),act:'decor',emo:2};
   if(!zoneDone(2))return {t:'새 이웃을 만나 마을 광장 넓히기',a:cnt(2),b:tot(2),act:'none',emo:1};
+  if(st.s1)return st.lv<LV_MAX?{t:'레벨 '+LV_MAX+'까지 물건 전해 주기',a:st.lv,b:LV_MAX,act:'none',emo:3}:{t:'시즌1 종료! 고마워요',act:'none',emo:3};
   return {t:'주민 이야기 모두 읽기',act:'dex',emo:2};
 }
+/* ---------- 시즌 1 완료: 주민 8명 + 이야기 24편 ---------- */
+function s1Done(){return PET_ORDER.every(p=>st.unlocked.indexOf(p)>=0&&(st.read[p]||0)>=STORY[p].length);}
+function seasonCheck(){if(!st||st.s1||!st.intro||inTut()||!s1Done())return false;st.s1=1;save();
+  const go=()=>{if(document.querySelector('.sheet:not([hidden])')){setTimeout(go,700);return;}
+    sfx('level');hap&&hap([30,60,30]);
+    showReward('시즌1 종료!','<div class="s1g">'+PET_ORDER.map(p=>faceE(p,3)).join('')+'</div>','게임은 계속할 수 있어요.\n레벨 '+LV_MAX+'까지 햄스터들에게 물건을 전해줘요.',()=>{try{renderDex();renderGoalChip();}catch(e){}},'좋아요');
+    fireworks();};
+  setTimeout(go,900);return true;}
 /* ---------- 출석 도장 (7일 반복, 빠져도 이어져요) ---------- */
 const ATT_RW=[{coins:30},{energy:20},{box:1},{coins:60},{energy:30},{box:1,boxG:2},{coins:150,box:1,boxG:3}];
 function attRwHTML(r){let h='';if(r.coins)h+=bi(COIN,r.coins,'코인');if(r.energy)h+=bi(BOLT,'+'+r.energy,'에너지');if(r.box)h+=bi(boxImg(r.boxG),BOXN[r.boxG||1]+(r.box>1?' ×'+r.box:''),'');return h;}
@@ -2569,8 +2584,8 @@ function renderTop(){
   showCoins();
   $('#lvl').textContent=st.lv;
   const n=need(st.lv);
-  $('#xpfill').style.width=Math.min(100,st.xp/n*100)+'%';
-  $('#xptxt').textContent=st.xp+'/'+n;
+  $('#xpfill').style.width=(st.lv>=LV_MAX?100:Math.min(100,st.xp/n*100))+'%';
+  $('#xptxt').textContent=st.lv>=LV_MAX?'MAX':st.xp+'/'+n;
   $('#ttlchip').textContent=curTitle();
   renderEnergy();
   setBadge('#bPass',claimable().length);
@@ -2955,8 +2970,9 @@ function openWalkAuto(){
   walkAuto=1;renderPass();openSheet('pass');requestAnimationFrame(renderPass);
 }
 function gainXp(n){
+  if(st.lv>=LV_MAX){st.xp=0;st.coins+=n;return;} /* 시즌 1은 레벨 30까지: 그 뒤 경험치는 코인으로 */
   st.xp+=n;const ups=[];
-  if(st.xp>=need(st.lv)){st.xp-=need(st.lv);st.lv++;ups.push(st.lv);}
+  if(st.xp>=need(st.lv)){st.xp-=need(st.lv);st.lv++;ups.push(st.lv);if(st.lv>=LV_MAX)st.xp=0;}
   if(!ups.length)return;
   tickEnergy();
   ups.filter(L=>L>PASS_LAST).forEach(L=>{const r=rewardOf(L);st.coins+=r.coins;st.claimed.push(L);if(r.box)spawnBox(r.boxG);if(r.item)qGive(r.item.c,r.item.l);});
@@ -3343,7 +3359,7 @@ function collectXp(i){
   const it=st.cells[i];if(!it||it.c!=='xp')return;
   if(st.tut===6){st.tut=7;setTimeout(()=>{if(st.tut===7){st.tut=10;save();tutDraw();}},1500);}
   const v=XPV[it.l];st.cells[i]=null;sel=null;track('xpget');
-  const el=cellEl(i);if(el)floatAt(el,'+'+v+' 경험치');
+  const el=cellEl(i);if(el)floatAt(el,'+'+v+(st.lv>=LV_MAX?' 코인':' 경험치'));
   sfx('coin');renderBoard();gainXp(v);refresh();
 }
 function dropXp(total,anchor){
@@ -3731,7 +3747,7 @@ function openStory(p,k){
     if(st.tut>=10&&st.tut<20){st.tut=8;st.guideDecor=2;save();setTimeout(()=>{closeSheet('dex');sfx('level');
       showReward('준비 끝!','<div class="bigrw gen">'+bi(faceE(0,3),'','')+'</div>','이제 마을을 자유롭게 가꿔 보세요!',()=>{setTimeout(()=>{try{if(!attCheck())evCheckStart();}catch(e){}},500);},'좋아요');},700);}
     if(p===0&&k===2&&!owned('run'))st.guideMsg='옆 빈 방에 쳇바퀴를 놓아 볼까요?';
-    save();
+    save();try{seasonCheck();}catch(e){}
   }:null);
 }
 let dexTab='res';
@@ -3757,7 +3773,7 @@ function renderDexTabs(){
 function renderDex(){
   renderDexTabs();renderMatDex();
   const open=st.unlocked.length;
-  $('#dexInfo').textContent=open+' / '+CUST.length+'명의 이웃을 만났어요.';
+  $('#dexInfo').innerHTML=(st.s1?'<span class="s1b">🏅 시즌1 종료</span> ':'')+open+' / '+CUST.length+'명의 이웃을 만났어요.';
   $('#dexGrid').innerHTML=CUST.map((x,p)=>{
     const u=st.unlocked.indexOf(p)>=0,out=u&&st.petHide[p],rd=st.read[p]||0,nw=u&&rd<STORY[p].length&&chapterState(p,rd)==='ready';
     let nn=0;if(u)for(let k=rd;k<STORY[p].length&&chapterState(p,k)==='ready';k++)nn++;
@@ -4027,7 +4043,7 @@ $('#startGo').addEventListener('click',()=>{
   try{sfx('tap');}catch(e){}
   $('#startScr').hidden=true;
   if(!st.intro)setTimeout(showIntro,400);
-  else setTimeout(()=>{try{checkGenUnlock();}catch(e){}try{if(!attCheck())evCheckStart();}catch(e){}},1500);
+  else setTimeout(()=>{try{checkGenUnlock();}catch(e){}try{if(!seasonCheck()&&!attCheck())evCheckStart();}catch(e){}},1500);
   wakeReq();
 });
 
@@ -4228,7 +4244,7 @@ let devInf=false;
     else if(a==='energy'){st.e=maxE();st.eAt=Date.now();}
     else if(a==='inf'){devInf=!devInf;try{localStorage.setItem('hv-dev-inf',devInf?'1':'0');}catch(e2){}st.e=maxE();}
     else if(a==='xp'){closeSheet('dev');gainXp(100);}
-    else if(a==='lv1'||a==='lv5'){closeSheet('dev');const k=a==='lv1'?1:5,ups=[];for(let i=0;i<k;i++){st.xp=0;st.lv++;ups.push(st.lv);}tickEnergy();const ip=ups.filter(L=>L<=PASS_LAST);ups.filter(L=>L>PASS_LAST).forEach(L=>{const r=rewardOf(L);st.coins+=r.coins;st.claimed.push(L);if(r.box)spawnBox(r.boxG);if(r.item)qGive(r.item.c,r.item.l);});setTimeout(()=>levelUpPopup(st.lv),320);}
+    else if(a==='lv1'||a==='lv5'){closeSheet('dev');const k=a==='lv1'?1:5,ups=[];for(let i=0;i<k;i++){if(st.lv>=LV_MAX)break;st.xp=0;st.lv++;ups.push(st.lv);}if(!ups.length){toast('시즌1 최고 레벨이에요');return;}tickEnergy();const ip=ups.filter(L=>L<=PASS_LAST);ups.filter(L=>L>PASS_LAST).forEach(L=>{const r=rewardOf(L);st.coins+=r.coins;st.claimed.push(L);if(r.box)spawnBox(r.boxG);if(r.item)qGive(r.item.c,r.item.l);});setTimeout(()=>levelUpPopup(st.lv),320);}
     else if(a==='box'){spawnBox(1);spawnBox(2);spawnBox(3);}
     else if(a==='orders'){st.orders=[];st.oNext=null;ordFill0();}
     else if(a==='pets'){for(let p=1;p<CUST.length;p++)if(st.unlocked.indexOf(p)<0)st.unlocked.push(p);}
