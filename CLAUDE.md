@@ -4,14 +4,14 @@
 
 - 배포: GitHub Pages — https://lee-cloud999.github.io/hamster-village/
 - 테스트 모드: `?test` (🛠 개발 도구·플레이 시간). PC 큰 화면에서는 `tester.html`의 휴대폰 틀(412×800)로 열림, `?test&pc`는 PC 배치 그대로
-- 대상 기기: 안드로이드 폰(세로 전용), 아이패드(가로 배치), PC
+- 대상 기기: 안드로이드 폰, 아이패드, PC — 모든 기기 세로 배치(가운데 휴대폰 폭 화면, 양옆은 배경)
 
 ## 파일 구조
 - `index.html` — 게임 전체(HTML·CSS·JS 한 파일). 그림은 대부분 base64 WebP 상수(IMG_B64, RES_B64, EXPR_B64, EVI_B64, BOXG_B64, STONE_B64, DEC_B64 …)를 blob URL로 바꿔 씀
 - `sw.js` — 서비스 워커. 화면 파일은 항상 새로 확인(no-cache), 나머지는 network-first. 캐시 이름 `hamster-village-vN` (오프라인 파일 목록을 바꾸면 N을 올림). `/bgm/`은 게임이 직접 캐시
 - `bg/` 배경(day, wide, walk, walk_mid, path) · `bgm/` 배경음 · `icons/` · `press/` 포트폴리오용 스크린샷 · `tester.html`
 - CSS 덮어쓰기는 `</head>` 뒤 첫 `</style>` 바로 앞에 덧붙이는 방식으로 쌓여 있음 (뒤에 있는 규칙이 이김)
-- 가로 배치 미디어쿼리: `(min-aspect-ratio:1/1) and (min-width:700px) and (min-height:540px)`
+- 가로 배치는 꺼 둠: 예전 가로 미디어쿼리를 `(min-width:100000px)`로 바꿔 절대 안 맞게 함 (되살리려면 `(min-aspect-ratio:1/1) and (min-width:700px) and (min-height:540px)`로 되돌리기)
 
 ## 게임 구조 요약
 - 보드 6×7, 맨 윗줄 생성기, 맨 아랫줄 잠긴 칸(25부터 두 배씩)
