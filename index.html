@@ -21,6 +21,16 @@ if(Math.min(screen.width,screen.height)<600||innerWidth<700)return;location.repl
 <style>[hidden]{display:none!important}html,body{margin:0}body{padding-top:env(safe-area-inset-top,0px)}</style>
 </head>
 <body>
+<!-- 새단장 안내: 일반 주소는 안내만, ?test 주소는 게임 그대로 -->
+<div id="renew" role="dialog" aria-modal="true" aria-labelledby="renewTitle" style="position:fixed;inset:0;z-index:2147483647;display:grid;place-items:center;padding:24px;background:#fdf1ec">
+<div style="width:min(340px,100%);background:#fff;color:#111;border-radius:24px;padding:28px 22px 24px;text-align:center;box-shadow:0 10px 30px rgba(120,80,60,.15);font-family:'Nanum Gothic',system-ui,sans-serif">
+<img src="icons/bori.png" alt="" width="112" height="112" style="display:block;margin:0 auto 10px;width:112px;height:112px;object-fit:contain">
+<span style="display:inline-block;padding:3px 12px;border-radius:999px;background:#ffad9e;color:#fff;font-weight:800;font-size:12px;letter-spacing:.04em">새단장 중</span>
+<h1 id="renewTitle" style="margin:12px 0 8px;font-size:22px;font-weight:800">햄스터 마을이<br>새단장 중이에요</h1>
+<p style="margin:0;font-size:15px;line-height:1.6">더 포근하고 귀여운 마을로 다시 찾아올게요.</p>
+<p style="margin:10px 0 0;font-size:13px;color:#e8806c">조금만 기다려 주세요 🐹</p>
+</div></div>
+<script>(function(){try{if(/[?&]test\b/.test(location.search)){var r=document.getElementById('renew');r&&r.remove();}else{document.title='햄스터 마을 · 새단장 중';}}catch(e){}})();</script>
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@700;800&display=swap">
 <style>
