@@ -2496,11 +2496,11 @@ function nextGoal(){
 /* ---------- 시즌 1 완료: 주민 8명 + 이야기 24편 ---------- */
 function s1Done(){return PET_ORDER.every(p=>st.unlocked.indexOf(p)>=0&&(st.read[p]||0)>=STORY[p].length);}
 function seasonCheck(){if(!st||st.s1||!st.intro||inTut()||!s1Done())return false;st.s1=1;save();
-  const go=()=>{if(document.querySelector('.sheet:not([hidden])')){setTimeout(go,700);return;}
+  const go=()=>{
     sfx('level');hap&&hap([30,60,30]);
     showReward('시즌1 종료!','<div class="s1g">'+PET_ORDER.map(p=>faceE(p,3)).join('')+'</div>','게임은 계속할 수 있어요.\n레벨 '+LV_MAX+'까지 햄스터들에게 물건을 전해줘요.',()=>{try{renderDex();renderGoalChip();}catch(e){}},'좋아요');
     fireworks();};
-  setTimeout(go,900);return true;}
+  whenFree(go,900);return true;}
 /* ---------- 출석 도장 (7일 반복, 빠져도 이어져요) ---------- */
 const ATT_RW=[{coins:30},{energy:20},{box:1},{coins:60},{energy:30},{box:1,boxG:2},{coins:150,box:1,boxG:3}];
 function attRwHTML(r){let h='';if(r.coins)h+=bi(COIN,r.coins,'코인');if(r.energy)h+=bi(BOLT,'+'+r.energy,'에너지');if(r.box)h+=bi(boxImg(r.boxG),BOXN[r.boxG||1]+(r.box>1?' ×'+r.box:''),'');return h;}
@@ -2511,7 +2511,7 @@ function attCheck(){
   const t=todayKey();if(st.att.last===t)return false;
   st.att.last=t;st.att.n=(st.att.n%7)+1;st.att.total=(st.att.total||0)+1;
   const r=ATT_RW[st.att.n-1];attGive(r);save();refresh();
-  setTimeout(()=>{sfx('done');showReward('출석 도장 '+st.att.n+'일차!','<div class="attrow pop">'+attStamps()+'</div><div class="bigrw">'+attRwHTML(r)+'</div>',(r.box?'상자는 임시 칸에 도착했어요. ':'')+(st.att.n===7?'7일 개근! 내일부터 1일차 도장이 다시 시작돼요.':'내일 또 오면 '+(st.att.n+1)+'일차 선물을 받아요.'),()=>{try{evCheckStart();}catch(e){}});},500);
+  whenFree(()=>{sfx('done');showReward('출석 도장 '+st.att.n+'일차!','<div class="attrow pop">'+attStamps()+'</div><div class="bigrw">'+attRwHTML(r)+'</div>',(r.box?'상자는 임시 칸에 도착했어요. ':'')+(st.att.n===7?'7일 개근! 내일부터 1일차 도장이 다시 시작돼요.':'내일 또 오면 '+(st.att.n+1)+'일차 선물을 받아요.'),()=>{try{evCheckStart();}catch(e){}});},500);
   return true;
 }
 function attStamps(){
@@ -2569,7 +2569,7 @@ function rwAmt(r){if(r.coins&&!r.item&&!r.box)return '×'+r.coins;if(r.energy)re
 function evDaysLeft(){const a=new Date(EVENT.end+'T23:59:59'),b=new Date();return Math.max(0,Math.ceil((a-b)/86400000));}
 function evCheckStart(){
   if(!evOn()||!st.intro||inTut())return;const e=evState();if(e.seen)return;e.seen=1;save();
-  setTimeout(()=>{sfx('level');showReward(EVENT.name+'!','<div class="bigrw">'+bi(evI('acorn',110),'축제 도토리','')+'</div>','부탁을 들어줄 때마다 축제 도토리를 받아요. 모으면 선물이 있어요! ('+EVENT.end.slice(5).replace('-','월 ')+'일까지)',null,'좋아요');},600);
+  whenFree(()=>{sfx('level');showReward(EVENT.name+'!','<div class="bigrw">'+bi(evI('acorn',110),'축제 도토리','')+'</div>','부탁을 들어줄 때마다 축제 도토리를 받아요. 모으면 선물이 있어요! ('+EVENT.end.slice(5).replace('-','월 ')+'일까지)',null,'좋아요');},600);
 }
 function renderEvent(){
   $('#evH').innerHTML=evI('evt',34)+' 이벤트';$('#attH').innerHTML=evI('cal',22)+' 출석 도장';
@@ -2956,14 +2956,15 @@ function openLevelUp(levels,passMode,after){
 /* 레벨이 오르면 보리의 산책길이 열리고, 반짝이는 돌을 직접 눌러 보상을 받아요 */
 let walkAuto=0;
 /* 레벨 달성 창 + 폭죽 */
+/* 창 차례 지키기: 다른 창이 떠 있으면 닫힐 때까지 기다렸다가 하나씩 띄워요 */
+let popLock=0;
+function whenFree(fn,d){const t=()=>{if(popLock>Date.now()||document.querySelector('.sheet:not([hidden])')){setTimeout(t,450);return;}popLock=Date.now()+700;fn();};setTimeout(t,d||0);}
 function levelUpPopup(L){
   const go=()=>{
-    if(document.querySelector('.sheet:not([hidden])')){setTimeout(go,700);return;}
     sfx('level');hap&&hap([30,60,30]);
     showReward('레벨 '+L+' 달성!','<div class="lvup"><img class="lvimg" alt="" src="'+blobUrl(LVUP_B64[rnd(LVUP_B64.length)])+'"></div>','보리의 산책길에 새 보상이 열렸어요!',()=>setTimeout(openWalkAuto,250),'보상 받으러 가기');
     fireworks();
-  };
-  go();
+  };whenFree(go);
 }
 function fireworks(){
   if(reduce&&!/[?&]test\b/.test(location.search))return;
@@ -3773,7 +3774,7 @@ function openStory(p,k){
   showReward(c.t,body,first?'이야기를 읽으면 코인 30개를 받아요.':'',first?()=>{
     st.read[p]=k+1;st.coins+=30;refresh();renderDex();sfx('badge');toast('코인 30개를 받았어요');
     if(st.tut>=10&&st.tut<20){st.tut=8;st.guideDecor=2;save();setTimeout(()=>{closeSheet('dex');sfx('level');
-      showReward('준비 끝!','<div class="bigrw gen">'+bi(faceE(0,3),'','')+'</div>','이제 마을을 자유롭게 가꿔 보세요!',()=>{setTimeout(()=>{try{if(!mapIntro()&&!attCheck())evCheckStart();}catch(e){}},500);},'좋아요');},700);}
+      showReward('준비 끝!','<div class="bigrw gen">'+bi(faceE(0,3),'','')+'</div>','이제 마을을 자유롭게 가꿔 보세요!',()=>{setTimeout(()=>{try{mapIntro();attCheck();evCheckStart();}catch(e){}},500);},'좋아요');},700);}
     if(p===0&&k===2&&!owned('run'))st.guideMsg='옆 빈 방에 쳇바퀴를 놓아 볼까요?';
     save();try{if(!seasonCheck())mapIntro();}catch(e){}
   }:null);
@@ -3822,9 +3823,9 @@ function renderMap(){
 }
 /* 보리 1편을 읽고 나면 지도가 열려요 (튜토리얼 끝난 뒤 한 번) */
 function mapIntro(){if(!st||st.mapOn||!st.intro||inTut()||(st.read[0]||0)<1)return false;st.mapOn=1;st.mapSeen=st.unlocked.length;save();
-  const go=()=>{if(document.querySelector('.sheet:not([hidden])')){setTimeout(go,700);return;}sfx('badge');
+  const go=()=>{sfx('badge');
     showReward('할머니의 지도','<div class="lvup"><img class="lvimg" alt="" src="'+blobUrl(MAP_BORI_B64)+'"></div>','보리가 할머니의 오래된 지도를 보여 줬어요.\n도감의 \'지도\'에서 볼 수 있어요.',()=>{dexTab='map';renderDex();openSheet('dex');},'지도 보기');};
-  setTimeout(go,600);return true;}
+  whenFree(go,600);return true;}
 function renderDex(){
   renderDexTabs();renderMatDex();
   const open=st.unlocked.length;
@@ -4098,7 +4099,7 @@ $('#startGo').addEventListener('click',()=>{
   try{sfx('tap');}catch(e){}
   $('#startScr').hidden=true;
   if(!st.intro)setTimeout(showIntro,400);
-  else setTimeout(()=>{try{checkGenUnlock();}catch(e){}try{if(!seasonCheck()&&!mapIntro()&&!attCheck())evCheckStart();}catch(e){}},1500);
+  else setTimeout(()=>{try{checkGenUnlock();}catch(e){}try{seasonCheck();mapIntro();attCheck();evCheckStart();}catch(e){}},1500);
   wakeReq();
 });
 
