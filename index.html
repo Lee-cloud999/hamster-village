@@ -3619,8 +3619,8 @@ function renderScene(){
     h+='</button>';
   });
   const guests=st.unlocked.filter(p=>!st.petHide[p]);
-  /* 땅 위 주민은 각자 어울리는 자리: 밤톨 건초 더미, 호두 흙집 계단, 솜 할머니 나무통 옆, 참깨 할배 꽃덤불, 별이 언덕, 두부 풀밭 */
-  const GP={0:[58,348],1:[38,527],2:[176,50,15],3:[40,62],4:[112,64],5:[12,104],6:[252,18,14],7:[222,86,16.5]},SURF=[[82,98],[304,134],[130,62],[180,58],[230,66],[196,340]];let si=0;
+  /* 땅 위 주민은 땅 경계선 바로 위 풀밭에 등장 순서대로 한 줄 */
+  const GP={0:[58,348],1:[38,527],2:[11,166,15],3:[63,166,15],5:[115,166,15],6:[167,166,15],4:[219,166,15],7:[271,166,15]},SURF=[[82,98],[304,134],[130,62],[180,58],[230,66],[196,340]];let si=0;
   h+='<span class="rlbl" style="left:35%;top:41.5%">'+escH(petName(0))+'네 방</span><span class="rlbl" style="left:39%;top:72%">'+(st.unlocked.indexOf(1)>=0?escH(petName(1))+'네 방':'빈 방')+'</span>';
   h+=guests.map((p,k)=>{const pos=GP[p]||SURF[(si++)%SURF.length];return '<button class="pg" type="button" data-pet="'+p+'" style="left:'+(pos[0]/3.8)+'%;top:'+(pos[1]/6.12)+'%;'+(pos[2]?'width:'+pos[2]+'%;':'')+'animation-delay:'+(-k*.45)+'s" aria-label="'+escH(petName(p))+'">'+face(p)+'</button>';}).join('');
   $('#dscene').innerHTML=h;
