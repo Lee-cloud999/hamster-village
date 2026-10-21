@@ -916,8 +916,10 @@ body{padding-inline:8px}
   .app>.stat .brandrow{grid-area:hb;justify-self:end;align-self:center;margin:0!important}
 }
 @media (min-width:100000px) /* 가로 배치 끔: 모든 기기 세로 배치 */{.app>.orwrap{margin-top:-108px!important;position:relative;z-index:1;pointer-events:none}.app>.orwrap>*{pointer-events:auto}.app>.stat{position:relative;z-index:2}}
-.app>.nav #navDex .ni{transform:translateY(9px) scale(1.08)}
-.app>.nav #navDex:active .ni{transform:translateY(9px) scale(.98)}
+.app>.nav #navDex .ni{transform:translateY(14px) scale(1.08)}
+.app>.nav #navDex:active .ni{transform:translateY(14px) scale(.98)}
+/* 모바일: 보드판을 화면 폭에 더 꽉 차게 (바깥 여백·나무 테두리·칸 간격 줄이기) */
+@media (max-width:520px){body{padding-inline:5px}.board{padding:20px 12px 14px!important;gap:3px!important}.bframe{border-width:13px;border-image-width:13px}}
 @media (min-width:100000px) /* 가로 배치 끔: 모든 기기 세로 배치 */{.app>.nav #navDex .ni{transform:scale(1.27)}}
 .app>.nav #navDex:active .ni{transform:scale(1.17)}
 #dex .mrow{gap:2px;padding:5px 7px}
@@ -1905,7 +1907,7 @@ function fitBoard(){
     for(const c of app.children){if(!c.getClientRects().length||getComputedStyle(c).position==='fixed')continue;n++;if(c!==sec)used+=c.offsetHeight;}
     const land=window.matchMedia&&matchMedia('(min-width:100000px) /* 가로 배치 끔: 모든 기기 세로 배치 */').matches;
     const aH=land?(innerHeight-24):app.clientHeight-(parseFloat(cs.paddingTop)||0)-(parseFloat(cs.paddingBottom)||0)-used-gap*Math.max(0,n-1);
-    const W0=Math.max(0,sec.clientWidth-10);if(aH<120||W0<120)return;
+    const W0=Math.max(0,sec.clientWidth-(innerWidth<=520?6:10));if(aH<120||W0<120)return;
     const mt=parseFloat(getComputedStyle(w).marginTop)||0;
     w.style.setProperty('--bw',W0+'px');const H0=w.offsetHeight+mt;
     const W1=Math.round(W0*.7);w.style.setProperty('--bw',W1+'px');const H1=w.offsetHeight+mt;
