@@ -1221,7 +1221,7 @@ body,.sheet,#tut .tut-b,.say,.toast,.float,#rwBody,#rwNote{word-break:keep-all;o
 .order{display:block!important;position:relative;height:104px;padding:0!important;container-type:inline-size;cursor:pointer;overflow:visible}
 .orders{margin-top:12px;grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-auto-flow:row;gap:4px!important}
 .order .subbtn,.order .rew,.order .otxt{display:none!important}
-.order .who{position:absolute!important;left:40%!important;top:auto!important;bottom:22px;transform:translateX(-50%)!important;margin:0!important;z-index:1;pointer-events:none}
+.order .who{position:absolute!important;left:44%!important;top:auto!important;bottom:22px;transform:translateX(-50%)!important;margin:0!important;z-index:1;pointer-events:none}
 .order .who .face{clip-path:none!important;display:block;line-height:0}
 .order .who .face img,.order .who .face .im,.order .who .face .rim{width:min(100px,86cqw)!important;height:min(100px,86cqw)!important}
 .order .orw{position:absolute!important;left:auto!important;right:3px!important;top:6px!important;display:flex!important;flex-direction:column;align-items:flex-end;gap:2px!important;z-index:3}
@@ -1345,7 +1345,7 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
 }
 
 /* 주문판: 3개까지 보이고 나머지는 옆으로 밀어서 보기 (스크롤바 숨김) */
-.orwrap .orders,.orders{display:grid!important;grid-template-columns:none!important;grid-auto-flow:column!important;grid-auto-columns:calc((100% - 8px)/3)!important;gap:4px!important;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior-x:contain;padding-top:28px;margin-top:-16px!important}
+.orwrap .orders,.orders{display:grid!important;grid-template-columns:none!important;grid-auto-flow:column!important;grid-auto-columns:calc((100% - 8px)/3)!important;gap:4px!important;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior-x:contain;padding-top:28px;margin-top:-16px!important;padding-left:6px;scroll-padding-left:6px}
 .orders::-webkit-scrollbar{display:none}
 .orders>.order{scroll-snap-align:start}
 
