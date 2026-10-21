@@ -1,5 +1,5 @@
 // 햄스터 마을 service worker: network-first so new versions show up right away; cache is the offline fallback.
-const CACHE='hamster-village-v5';
+const CACHE='hamster-village-v6';
 const KEEP=['hamster-bgm']; // BGM은 게임이 직접 버전별로 캐시해요
 const CORE=['./','./index.html','./manifest.webmanifest','./bg/day.webp','./bg/wide.webp','./bg/walk.webp','./bg/walk_mid.webp','./bg/path.webp','./icons/bori.png','./icons/icon-192.png','./icons/icon-512.png','./icons/apple-touch-icon.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()));});
