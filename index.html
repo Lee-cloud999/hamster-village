@@ -3607,6 +3607,7 @@ const SPOT_GATE={
 function spotOpen(sp){return !owned(sp.id)&&sp.zone<=curZone()&&(!SPOT_GATE[sp.id]||SPOT_GATE[sp.id].ok());}
 function decorAffordable(){return SPOTS.some(x=>spotOpen(x)&&st.coins>=x.cost);}
 function spotHTML(id,k){return decImg(id,k);}
+let sceneOut=null;
 function renderScene(){
   let h='';
   SPOTS.forEach(sp=>{
@@ -3618,10 +3619,18 @@ function renderScene(){
     else h+='<span class="pc lk">'+LOCK+'</span>';
     h+='</button>';
   });
-  const guests=st.unlocked.filter(p=>!st.petHide[p]);
-  const GP={0:[58,348],1:[38,527]},SURF=[[82,98],[304,134],[130,62],[180,58],[230,66],[196,340]];let si=0;
+  /* 땅 위에는 꾸미기를 열 때마다 2~3명만 놀러 나옴 (왼쪽·가운데·오른쪽 자리에서 한 명씩) */
+  const out=st.unlocked.filter(p=>!st.petHide[p]&&p>1);
+  if(!sceneOut||sceneOut.some(p=>out.indexOf(p)<0)||(!sceneOut.length&&out.length)){
+    const zones=[[3,5],[4,2],[6,7]].map(z=>z.filter(p=>out.indexOf(p)>=0)).filter(z=>z.length);
+    zones.sort(()=>Math.random()-.5);
+    const n=Math.min(zones.length,2+(Math.random()<.5?1:0));
+    sceneOut=zones.slice(0,n).map(z=>z[Math.floor(Math.random()*z.length)]);
+  }
+  const guests=st.unlocked.filter(p=>!st.petHide[p]&&(p<=1||sceneOut.indexOf(p)>=0));
+  const GP={0:[58,348],1:[38,527],2:[176,50,15],3:[40,62],4:[112,64],5:[22,96],6:[252,18,14],7:[222,86,16.5]},SURF=[[82,98],[304,134],[130,62],[180,58],[230,66],[196,340]];let si=0;
   h+='<span class="rlbl" style="left:35%;top:41.5%">'+escH(petName(0))+'네 방</span><span class="rlbl" style="left:39%;top:72%">'+(st.unlocked.indexOf(1)>=0?escH(petName(1))+'네 방':'빈 방')+'</span>';
-  h+=guests.map((p,k)=>{const pos=GP[p]||SURF[(si++)%SURF.length];return '<button class="pg" type="button" data-pet="'+p+'" style="left:'+(pos[0]/3.8)+'%;top:'+(pos[1]/6.12)+'%;animation-delay:'+(-k*.45)+'s" aria-label="'+escH(petName(p))+'">'+face(p)+'</button>';}).join('');
+  h+=guests.map((p,k)=>{const pos=GP[p]||SURF[(si++)%SURF.length];return '<button class="pg" type="button" data-pet="'+p+'" style="left:'+(pos[0]/3.8)+'%;top:'+(pos[1]/6.12)+'%;'+(pos[2]?'width:'+pos[2]+'%;':'')+'animation-delay:'+(-k*.45)+'s" aria-label="'+escH(petName(p))+'">'+face(p)+'</button>';}).join('');
   $('#dscene').innerHTML=h;
   dJust=null;
 }
@@ -3966,7 +3975,7 @@ $('#navShop').addEventListener('click',()=>{renderShop();openSheet('shop');});
 $('#navPass').addEventListener('click',()=>{walkAuto=0;renderPass();openSheet('pass');requestAnimationFrame(renderPass);});
 addEventListener('resize',()=>{if(!$('#pass').hidden)renderPass();});
 $('#navQuest').addEventListener('click',()=>{questSync();viewDay=Math.min(7,curDay());renderQuests();openSheet('quest');});
-$('#navDecor').addEventListener('click',()=>{if(st.tut===14){st.tut=15;st.guideDecor=2;save();}if(st.guideDecor===1){st.guideDecor=2;save();}if(st.guideMsg){st.guideMsg='';save();}dSel=null;renderDecor();openSheet('decor');});
+$('#navDecor').addEventListener('click',()=>{if(st.tut===14){st.tut=15;st.guideDecor=2;save();}if(st.guideDecor===1){st.guideDecor=2;save();}if(st.guideMsg){st.guideMsg='';save();}dSel=null;sceneOut=null;renderDecor();openSheet('decor');});
 $('#navDex').addEventListener('click',()=>{dexSel=null;renderDex();openSheet('dex');});
 $('#navEv').addEventListener('click',()=>{renderEvent();openSheet('event');sfx('tap');});
 $('#evList').addEventListener('click',ev=>{
