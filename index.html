@@ -3164,7 +3164,7 @@ function renderOrders(fresh){
     const cls='order'+(o.state==='done'?' done':'')+(rd?' ready':'')+(wants(k)?' wants':'')+
       ((fresh==='all'||fresh===k||(Array.isArray(fresh)&&fresh.indexOf(k)>=0))?' enter':'');
     return '<article class="'+cls+'" data-k="'+k+'">'+ordRw(o)+
-      '<div class="who"><span class="face">'+faceE(o.cu,o.state==='done'?2:rd?3:0)+'</span><b>'+escH(petName(o.cu))+'</b>'+(o.tier==='hard'?'<i class="tier">★</i>':'')+'</div>'+
+      '<div class="who"><span class="face">'+faceE(o.cu,o.state==='done'?2:rd?3:(o.cu===0?1:0))+'</span><b>'+escH(petName(o.cu))+'</b>'+(o.tier==='hard'?'<i class="tier">★</i>':'')+'</div>'+
       '<div class="otxt">'+orderLabel(o)+'</div>'+
       '<div class="plate">'+o.needs.map(n=>'<span class="need c-'+n.c+(n.done?' done':'')+'" data-c="'+n.c+'" data-l="'+n.l+'" role="button" aria-label="'+nm(n.c,n.l)+' '+n.l+'단계">'+em(n.c,n.l)+(n.done?'<u class="ck">✓</u>':'')+'</span>').join('')+'</div>'+
       '<div class="rew">'+COIN+'<b>'+o.coins+'</b></div>'+
