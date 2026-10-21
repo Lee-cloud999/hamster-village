@@ -3619,7 +3619,7 @@ function renderScene(){
     h+='</button>';
   });
   const guests=st.unlocked.filter(p=>!st.petHide[p]);
-  const GP={0:[58,348],1:[20,527]},SURF=[[82,98],[304,134],[130,62],[180,58],[230,66],[196,340]];let si=0;
+  const GP={0:[58,348],1:[38,527]},SURF=[[82,98],[304,134],[130,62],[180,58],[230,66],[196,340]];let si=0;
   h+='<span class="rlbl" style="left:35%;top:41.5%">'+escH(petName(0))+'네 방</span><span class="rlbl" style="left:39%;top:72%">'+(st.unlocked.indexOf(1)>=0?escH(petName(1))+'네 방':'빈 방')+'</span>';
   h+=guests.map((p,k)=>{const pos=GP[p]||SURF[(si++)%SURF.length];return '<button class="pg" type="button" data-pet="'+p+'" style="left:'+(pos[0]/3.8)+'%;top:'+(pos[1]/6.12)+'%;animation-delay:'+(-k*.45)+'s" aria-label="'+escH(petName(p))+'">'+face(p)+'</button>';}).join('');
   $('#dscene').innerHTML=h;
