@@ -3704,7 +3704,7 @@ function buyDecor(){
   if(st.coins<sp.cost+extra){toast('코인이 부족해요');sfx('err');return;}
   st.coins-=sp.cost+extra;st.dec[sp.id]=dPick;track('decor');
   if(extra){st.own[sp.id]=st.own[sp.id]||[];st.own[sp.id].push(dPick);}
-  dJust=sp.id;
+  dJust=sp.id;dSel=null; /* 설치하면 선택 창을 닫고 큰 화면으로 */
   refresh();renderDecor();sfx('done');
   const g=Array.prototype.slice.call(document.querySelectorAll('.pg'));
   g.forEach((b,k)=>setTimeout(()=>{b.classList.remove('jump');void b.offsetWidth;b.classList.add('jump');},200+k*60));
@@ -3722,7 +3722,7 @@ function restyle(){
     if(st.coins<pr){toast('코인이 부족해요');sfx('err');return;}
     st.coins-=pr;(st.own[dSel]=st.own[dSel]||[]).push(dPick);refresh();
   }
-  st.dec[dSel]=dPick;dJust=dSel;track('decor');save();renderDecor();sfx('unlock');
+  st.dec[dSel]=dPick;dJust=dSel;dSel=null;track('decor');save();renderDecor();sfx('unlock');
   toast('적용했어요!');
 }
 
