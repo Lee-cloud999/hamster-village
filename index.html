@@ -3928,9 +3928,9 @@ function storyStep(){
   if(stQ.typing){clearInterval(stQ.typing);stQ.typing=null;stQ.cur.textContent=stQ.full;stQ.cur.classList.remove('typing');return true;}
   if(!stQ.list.length){stQ=null;return false;}
   const p=stQ.list.shift();
-  if(stQ.cur&&stQ.cur.closest('.dlg'))stQ.cur.hidden=true;
+  if(stQ.cur)stQ.cur.hidden=true; /* 이야기는 단락마다 한 장씩 넘김 */
   p.hidden=false;
-  try{const nb=document.querySelector('#rwBody .who2 b');if(nb&&p.dataset.nm&&nb.textContent!==p.dataset.nm){nb.textContent=p.dataset.nm;const w=nb.parentNode;w.classList.remove('swap');void w.offsetWidth;w.classList.add('swap');}}catch(e){}
+  try{const nb=document.querySelector('#rwBody .who2 b');if(nb){if(p.dataset.nm)nb.textContent=p.dataset.nm;const w=nb.parentNode;w.classList.remove('swap');void w.offsetWidth;w.classList.add('swap');}}catch(e){}
   try{if(p.dataset.pet!=null&&p.dataset.pet!==''){const fi=document.querySelector('#rwBody .who2 img.rim');if(fi)fi.src=emoU(+p.dataset.pet,+p.dataset.emo||0);}}catch(e){}
   const full=p.textContent;p.textContent='';p.classList.add('typing');
   stQ.cur=p;stQ.full=full;let i=0;
