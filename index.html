@@ -1410,6 +1410,10 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
 .vm-spot .fc{width:min(56px,15vw)!important;height:min(56px,15vw)!important}
 .vm-mark{font-size:44px!important;color:#c0402c!important;opacity:.85;font-family:var(--f-display),sans-serif}
 .vm-mark{width:15%;aspect-ratio:1}.vm-mark img{width:100%;height:100%;object-fit:contain;display:block;opacity:.9}
+/* 대화형 이야기: 말하는 주민이 바뀔 때 얼굴·이름이 살짝 떠오름 */
+@keyframes whoSwap{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+#rwBody .story .who2.swap{animation:whoSwap .28s ease}
+.dstory{display:grid;gap:6px;margin:6px 0 4px}.dstory .dsr{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.dstory .dsr b{font-weight:400;min-width:64px;font-size:13px}.dstory .btn{padding:6px 10px;font-size:12px}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png" alt=""></div>
@@ -1574,6 +1578,9 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
     <button class="btn" data-dev="story">이야기 조건 채우기</button>
     <button class="btn" data-dev="day">퀘스트 하루 넘기기</button>
   </div>
+  <h3 class="qsec">📖 이야기 미리 보기</h3>
+  <p class="have" style="margin:0">조건과 상관없이 읽어 볼 수 있어요. 기록·보상에는 남지 않아요.</p>
+  <div class="dstory" id="devStory"></div>
   <h3 class="qsec">🔊 오디오 점검</h3>
   <pre class="have" id="audInfo" style="white-space:pre-wrap;margin:0;font-size:12px;line-height:1.5"></pre>
   <div class="devg">
@@ -3767,10 +3774,18 @@ function showIntro(){
     '<p data-emo="6" data-pet="0"><i>꼬르륵—</i></p><p data-emo="6" data-pet="0">"앗… 초면에 죄송해요. 급히 오느라 아무것도 못 먹어서요…"</p></div>';
   showReward('햄스터 마을에 어서 오세요',body,'너무 귀여운 햄스터다!\n우선 해바라기씨부터 만들어 줄까?',()=>{st.intro=1;if(st.tut==null&&!st.nDeliv)st.tut=1;save();tutDraw();});
 }
+/* 이야기 본문. 대사 한 줄은 '문장' 또는 [말하는 주민 번호, '문장'] (예: [0,'…'] = 보리) */
+function storyBody(p,k){
+  const c=STORY[p][k],em=((STORY_EMO[p]||[])[k]||[]);
+  const L=c.l.map(x=>Array.isArray(x)?{s:x[0],t:x[1]}:{s:p,t:x});
+  const dlg=L.some(o=>o.s!==p);
+  return '<div class="story'+(dlg?' dlg':'')+'"><div class="who2">'+face(L[0].s)+'<b>'+escH(petName(L[0].s))+'</b></div>'+L.map((o,i)=>'<p data-emo="'+(em[i]||'')+'" data-pet="'+o.s+'" data-nm="'+escH(petName(o.s))+'">'+escH(o.t)+'</p>').join('')+'</div>';
+}
+function previewStory(p,k){showReward(STORY[p][k].t+' (미리 보기)',storyBody(p,k),'미리 보기라 기록·보상에 남지 않아요',null);}
 function openStory(p,k){
   if(chapterState(p,k)==='lock')return;
   const c=STORY[p][k],first=(st.read[p]||0)===k;
-  const body='<div class="story"><div class="who2">'+face(p)+'<b>'+escH(petName(p))+'</b></div>'+c.l.map((x,i)=>'<p data-emo="'+(((STORY_EMO[p]||[])[k]||[])[i]||'')+'" data-pet="'+p+'">'+escH(x)+'</p>').join('')+'</div>';
+  const body=storyBody(p,k);
   showReward(c.t,body,first?'이야기를 읽으면 코인 30개를 받아요.':'',first?()=>{
     st.read[p]=k+1;st.coins+=30;refresh();renderDex();sfx('badge');toast('코인 30개를 받았어요');
     if(st.tut>=10&&st.tut<20){st.tut=8;st.guideDecor=2;save();setTimeout(()=>{closeSheet('dex');sfx('level');
@@ -3912,7 +3927,10 @@ function storyStep(){
   if(!stQ)return false;
   if(stQ.typing){clearInterval(stQ.typing);stQ.typing=null;stQ.cur.textContent=stQ.full;stQ.cur.classList.remove('typing');return true;}
   if(!stQ.list.length){stQ=null;return false;}
-  const p=stQ.list.shift();p.hidden=false;
+  const p=stQ.list.shift();
+  if(stQ.cur&&stQ.cur.closest('.dlg'))stQ.cur.hidden=true;
+  p.hidden=false;
+  try{const nb=document.querySelector('#rwBody .who2 b');if(nb&&p.dataset.nm&&nb.textContent!==p.dataset.nm){nb.textContent=p.dataset.nm;const w=nb.parentNode;w.classList.remove('swap');void w.offsetWidth;w.classList.add('swap');}}catch(e){}
   try{if(p.dataset.pet!=null&&p.dataset.pet!==''){const fi=document.querySelector('#rwBody .who2 img.rim');if(fi)fi.src=emoU(+p.dataset.pet,+p.dataset.emo||0);}}catch(e){}
   const full=p.textContent;p.textContent='';p.classList.add('typing');
   stQ.cur=p;stQ.full=full;let i=0;
@@ -4294,7 +4312,9 @@ let devInf=false;
     else if(a==='reset'){clipN=0;peakMax=0;sfxDrop=0;}
     else if(a==='recache'){try{caches.delete(BGM_CACHE).then(()=>toast('BGM 캐시를 지웠어요. 새로고침하면 다시 받아요',true));}catch(_){}}
   });
+  try{$('#devStory').innerHTML=PET_ORDER.map(p=>'<div class="dsr"><b>'+escH(petName(p))+'</b>'+STORY[p].map((c,k)=>'<button class="btn" type="button" data-sp="'+p+'" data-sk="'+k+'">'+(k+1)+'편 '+escH(c.t)+'</button>').join('')+'</div>').join('');}catch(e){}
   $('#dev').addEventListener('click',e=>{
+    const sb=e.target.closest('[data-sp]');if(sb){closeSheet('dev');sfx('tap');previewStory(+sb.dataset.sp,+sb.dataset.sk);return;}
     const t=e.target.closest('[data-dev]');if(!t)return;const a=t.dataset.dev;
     if(a==='coin')st.coins+=1000;
     else if(a==='energy'){st.e=maxE();st.eAt=Date.now();}
