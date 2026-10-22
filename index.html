@@ -1434,6 +1434,23 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
 #rwBody .story{column-gap:8px}
 #rwBody .story .who2 .fc .rim{width:100px!important;height:100px!important}
 #rwBody .story p{text-wrap:pretty}
+/* 끌기 손맛: 누르면 1.08배, 놓을 칸 은은하게, 합칠 칸은 살짝 들썩, 안착·머지 효과 */
+.ghost{will-change:transform;transition:none}
+.ghost,.ghost[class]{filter:drop-shadow(0 12px 14px rgba(60,40,10,.26))}
+.cell.drop::after{opacity:.5}
+@media (prefers-reduced-motion: no-preference){
+  #board .cell .item{transition:transform .1s ease-out}
+  #board .cell.hold .item{transform:scale(1.08)}
+  #board .cell.lift .item{transition:none}
+  .cell.can .item{animation:canbob .42s ease-in-out infinite alternate}
+  .cell.settle .item{animation:settle .16s ease-out}
+  .cell.mland .item{animation:mland .24s cubic-bezier(.3,1.5,.5,1)}
+  .cell.mlandbig .item{animation:mlandbig .38s cubic-bezier(.3,1.6,.5,1)}
+  @keyframes canbob{from{transform:scale(1)}to{transform:scale(1.06)}}
+  @keyframes settle{0%{transform:scale(1.06)}100%{transform:scale(1)}}
+  @keyframes mland{0%{transform:scale(1)}50%{transform:scale(1.16)}100%{transform:scale(1)}}
+  @keyframes mlandbig{0%{transform:scale(1)}45%{transform:scale(1.3) rotate(4deg)}100%{transform:none}}
+}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png?v=7" alt=""></div>
@@ -3401,7 +3418,7 @@ function generate(c){
 function act(i,j){
   const a=st.cells[i],b=st.cells[j];
   if(i===j||!a||isLocked(j)||isGen(j))return;
-  if(!b){st.cells[j]=a;st.cells[i]=null;sel=null;renderBoard();pop(j);refresh();sfx('move');return;}
+  if(!b){st.cells[j]=a;st.cells[i]=null;sel=null;renderBoard();if(softLand)settle(cellEl(j));else pop(j);refresh();sfx('move');return;}
   if(a.c==='tl'&&!isSpecial(b.c)){useTool(i,j);return;}
   if(canMerge(i,j)){
     const nl=a.l+1,now=Date.now();
@@ -3411,7 +3428,7 @@ function act(i,j){
     track('merge');if(nl>=3)track('merge3');if(nl>=5)track('merge5');
     let bonus=0;if(combo>=3){bonus=combo-1;st.coins+=bonus;}
     let bj=null;
-    renderBoard();pop(j);fxAt(j,nl,combo);refresh();sfx('merge',nl,combo);juiceMerge(j,nl);
+    renderBoard();if(softLand)landPop(j,nl);else pop(j);fxAt(j,nl,combo);refresh();sfx('merge',nl,combo);if(!softLand)juiceMerge(j,nl);else if(nl>=5&&!reduce){const b=$('#board');b.classList.remove('shake2');void b.offsetWidth;b.classList.add('shake2');setTimeout(()=>b.classList.remove('shake2'),420);}
     if(combo>=2)showCombo(combo);
     if(bonus)floatAt(cellEl(j),'+'+bonus+' 코인');
     if(nl>=4&&!isSpecial(a.c))bigText(nm(a.c,nl)+' 완성!',nl===MAXLV);
@@ -3421,7 +3438,7 @@ function act(i,j){
     if(bj!=null){pop(bj);toast('합치기 보너스! 재료가 하나 더 나왔어요');}
     return;
   }
-  st.cells[i]=b;st.cells[j]=a;sel=null;renderBoard();refresh();sfx('move');
+  st.cells[i]=b;st.cells[j]=a;sel=null;renderBoard();if(softLand){settle(cellEl(j));settle(cellEl(i));}refresh();sfx('move');
 }
 function collectXp(i){
   const it=st.cells[i];if(!it||it.c!=='xp')return;
@@ -3475,11 +3492,35 @@ function setHover(el){
   }
 }
 $('#board').addEventListener('click',e=>{const cell=e.target.closest('.cell.lock');if(!cell)return;const i=+cell.dataset.i;if(isLocked(i)&&$('#confirm').hidden)askUnlock(i);});
+/* ---------- 끌기 손맛 ----------
+   누르면 바로 1.08배(hold) → 12px 넘게 움직이면 손가락보다 LIFT만큼 위에서 따라오는 그림(ghost, rAF로 이동)
+   → 놓으면 목표 칸으로 미끄러지듯 안착한 뒤 원래 규칙(act)대로 처리, 잘못 놓으면 원래 자리로 미끄러져 돌아가요 */
+const LIFT=26,GHOST_SCALE=1.12,LAND_MS=150,BACK_MS=170;
+let landing=null,dragRaf=0,softLand=0;
+function ghostPos(g,x,y,s){g.style.transform='translate3d('+(x-g._w/2)+'px,'+(y-g._w/2)+'px,0) scale('+s+')';}
+function finishLanding(){if(landing){const L=landing;landing=null;clearTimeout(L.t);L.done();}}
+function glideGhost(g,x,y,s,ms,done){
+  finishLanding();
+  if(reduce||!ms){g.remove();done();return;}
+  g.style.transition='transform '+ms+'ms cubic-bezier(.2,.8,.3,1)';void g.offsetWidth;ghostPos(g,x,y,s);
+  landing={t:setTimeout(finishLanding,ms+20),done:()=>{g.remove();done();}};
+}
+function settle(el){if(!el||reduce)return;el.classList.remove('settle');void el.offsetWidth;el.classList.add('settle');setTimeout(()=>el.classList.remove('settle'),200);}
+function landPop(j,nl){const el=cellEl(j);if(!el||reduce)return;const k=nl>=3?'mlandbig':'mland';el.classList.add(k);setTimeout(()=>el.classList.remove(k),420);}
+function dragFrame(){
+  dragRaf=0;const d=drag;if(!d||!d.on||!d.ghost)return;
+  const x=d.px,y=d.py-LIFT;
+  ghostPos(d.ghost,x,y,1);
+  const el=document.elementFromPoint(x,y);
+  const tgt=(el&&(el.closest('.order')||el.closest('.sell')||el.closest('.stbtn')))||cellPick(x,y,d.i);
+  setHover(tgt&&!(tgt.classList.contains('cell')&&(+tgt.dataset.i===d.i||tgt.classList.contains('lock')||tgt.classList.contains('gencell')))?tgt:null);
+}
 $('#board').addEventListener('pointerdown',e=>{
   if(e.button>0)return;
-  if(drag){drag=null;}
-  const cell=e.target.closest('.cell')||cellPick(e.clientX,e.clientY);if(!cell)return;
-  const i=+cell.dataset.i;
+  if(drag){if(drag.on&&e.pointerId!==drag.id)return; /* 끄는 중에 다른 손가락이 닿으면 무시 */ drag=null;}
+  finishLanding(); /* 빠르게 연달아 만지면 앞의 안착을 바로 끝내고 시작 */
+  const c0=e.target.closest('.cell')||cellPick(e.clientX,e.clientY);if(!c0)return;
+  const i=+c0.dataset.i;
   if(isLocked(i)){e.preventDefault();return;} /* 잠긴 칸은 click에서 열기 창을 띄워요(누르자마자 열리면 손을 뗄 때 바깥 터치로 바로 닫혀요) */
   if(isGen(i)){
     sel=null;
@@ -3491,51 +3532,71 @@ $('#board').addEventListener('pointerdown',e=>{
     if(sel!=null){const s=sel;sel=null;act(s,i);renderOrders();}
     return;
   }
+  const cell=cellEl(i)||c0;
   try{$('#board').setPointerCapture(e.pointerId);}catch(_){}
-  drag={i:i,x:e.clientX,y:e.clientY,id:e.pointerId,on:false,ghost:null,hover:null,size:cell.getBoundingClientRect().width,far:0};
+  cell.classList.add('hold');
+  drag={i:i,x:e.clientX,y:e.clientY,px:e.clientX,py:e.clientY,id:e.pointerId,on:false,ghost:null,hover:null,cw:cell.getBoundingClientRect().width,far:0};
   e.preventDefault();
 });
 window.addEventListener('pointermove',e=>{
   if(!drag||e.pointerId!==drag.id)return;
+  drag.px=e.clientX;drag.py=e.clientY;
   drag.far=Math.max(drag.far,Math.hypot(e.clientX-drag.x,e.clientY-drag.y));
   if(!drag.on){
     if(drag.far<TAP_SLOP)return;
+    const it=st.cells[drag.i];if(!it){drag=null;return;}
     drag.on=true;sel=null;hap(10);
-    const it=st.cells[drag.i];
+    $('#board').querySelectorAll('.sel,.match').forEach(c=>c.classList.remove('sel','match'));
+    const ce=cellEl(drag.i);if(ce){ce.classList.remove('hold');ce.classList.add('lift');}
     const g=document.createElement('div');g.className='ghost c-'+it.c;
-    g.style.width=g.style.height=(drag.size*1.2)+'px';g.innerHTML=em(it.c,it.l);
-    document.body.appendChild(g);drag.ghost=g;drag.size*=1.2;
-    cellEl(drag.i).classList.add('lift');
-    renderOrders();
+    g._w=drag.cw*GHOST_SCALE;g.style.width=g.style.height=g._w+'px';g.innerHTML=em(it.c,it.l);
+    document.body.appendChild(g);drag.ghost=g;
+    dragFrame(); /* 첫 프레임부터 손가락 위에 */
+    requestAnimationFrame(()=>{if(drag&&drag.on)renderOrders();}); /* 주문판은 한 프레임 뒤에 (첫 움직임이 걸리지 않게) */
+    return;
   }
-  drag.ghost.style.transform='translate('+(e.clientX-drag.size*.5)+'px,'+(e.clientY-drag.size*.5)+'px)';
-  const el=document.elementFromPoint(e.clientX,e.clientY);
-  const tgt=(el&&(el.closest('.order')||el.closest('.sell')||el.closest('.stbtn')))||cellPick(e.clientX,e.clientY,drag.i);
-  setHover(tgt&&!(tgt.classList.contains('cell')&&(+tgt.dataset.i===drag.i||tgt.classList.contains('lock')||tgt.classList.contains('gencell')))?tgt:null);
+  if(!dragRaf)dragRaf=requestAnimationFrame(dragFrame);
 });
 function endDrag(e,cancel){
   if(!drag||(e&&e.pointerId!==drag.id))return;
   const d=drag;drag=null;
+  if(dragRaf){cancelAnimationFrame(dragRaf);dragRaf=0;}
   if(d.hover)d.hover.classList.remove('drop','can');
-  if(d.ghost)d.ghost.remove();
+  const c0=cellEl(d.i);if(c0)c0.classList.remove('hold');
   if(!d.on){if(!cancel)tap(d.i);return;}
-  if(cancel){renderBoard();renderOrders();return;}
-  const el=document.elementFromPoint(e.clientX,e.clientY);
+  const g=d.ghost;
+  const back=()=>{ /* 원래 자리로 미끄러져 돌아가기 (보드를 다시 그리지 않아요) */
+    const c=cellEl(d.i),r=c&&c.getBoundingClientRect();
+    if(!r||!r.width){g.remove();renderBoard();renderOrders();return;}
+    glideGhost(g,r.left+r.width/2,r.top+r.height/2,r.width/g._w,BACK_MS,()=>{const c2=cellEl(d.i);if(c2){c2.classList.remove('lift');settle(c2);}renderOrders();});
+  };
+  if(cancel||!e){back();return;}
+  const x=e.clientX,y=e.clientY-LIFT;
+  const el=document.elementFromPoint(x,y);
   const order=el&&el.closest('.order'),sz=el&&el.closest('.sell'),stb=el&&el.closest('.stbtn');
-  const cell=(order||sz||stb)?null:cellPick(e.clientX,e.clientY,d.i);
-  /* 살짝 끌다가 제자리에 놓았으면 누른 걸로 봐요 */
-  if(cell&&+cell.dataset.i===d.i&&d.far<d.size*.5){renderBoard();tap(d.i);renderOrders();return;}
-  if(sz){renderBoard();sellItem(d.i);}
-  else if(stb){renderBoard();storeItem(d.i);}
-  else if(order){renderBoard();toast('부탁 카드의 전하기 버튼을 눌러야 전해져요');}
-  else if(cell){
-    const ci=+cell.dataset.i;
-    if(isLocked(ci)||isGen(ci))renderBoard();else act(d.i,ci);
-  }else renderBoard();
-  renderOrders();
+  if(sz){g.remove();renderBoard();sellItem(d.i);renderOrders();return;}
+  if(stb){g.remove();renderBoard();storeItem(d.i);renderOrders();return;}
+  if(order){back();toast('부탁 카드의 전하기 버튼을 눌러야 전해져요');return;}
+  const cell=cellPick(x,y,d.i);
+  if(!cell){back();return;}
+  const ci=+cell.dataset.i;
+  if(ci===d.i){ /* 살짝 끌다가 제자리에 놓았으면 누른 걸로 봐요 */
+    if(d.far<d.cw*.6){g.remove();const c=cellEl(d.i);if(c)c.classList.remove('lift');tap(d.i);renderOrders();return;}
+    back();return;
+  }
+  if(isLocked(ci)||isGen(ci)){back();return;}
+  const r=cell.getBoundingClientRect();
+  glideGhost(g,r.left+r.width/2,r.top+r.height/2,r.width/g._w,LAND_MS,()=>{
+    softLand=1;try{act(d.i,ci);}finally{softLand=0;}
+    const c=cellEl(d.i);if(c&&c.classList.contains('lift'))renderBoard(); /* 그사이 칸이 바뀌어 아무 일도 없었으면 원래대로 */
+    renderOrders();
+  });
 }
 window.addEventListener('pointerup',e=>endDrag(e,false));
 window.addEventListener('pointercancel',e=>endDrag(e,true));
+$('#board').addEventListener('lostpointercapture',e=>{if(drag&&e.pointerId===drag.id)endDrag(e,true);});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&drag)endDrag(null,true);});
+window.addEventListener('blur',()=>{if(drag)endDrag(null,true);});
 window.addEventListener('contextmenu',e=>{if(e.target.closest&&e.target.closest('.board'))e.preventDefault();});
 
 /* ---------- chain recipe ---------- */
