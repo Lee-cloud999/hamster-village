@@ -2104,13 +2104,20 @@ function fill(o){
   return o;
 }
 function load(){
+  let r=null;
   try{
-    const r=localStorage.getItem(KEY);
+    r=localStorage.getItem(KEY);
     if(r){
       const o=JSON.parse(r);
-      if(o&&Array.isArray(o.cells)&&o.cells.length===N&&Array.isArray(o.orders)&&o.orders.length<=3&&Array.isArray(o.locks)&&typeof o.coins==='number'&&typeof o.lv==='number')return fill(o);
+      /* 주문은 한 번에 최대 ordCap()개(지금 4개)까지 뜰 수 있어요. 예전엔 3개로 막혀 있어서 주문이 4개일 때 껐다 켜면 처음부터 시작됐어요 */
+      if(o&&Array.isArray(o.cells)&&o.cells.length===N&&Array.isArray(o.orders)&&Array.isArray(o.locks)&&typeof o.coins==='number'&&typeof o.lv==='number'){
+        if(o.orders.length>ordCap())o.orders=o.orders.slice(0,ordCap());
+        return fill(o);
+      }
     }
   }catch(e){}
+  /* 불러오기에 실패해도 기록을 지우지 않고 따로 보관해 둬요 (새 게임이 덮어쓰기 전에) */
+  if(r){try{localStorage.setItem(KEY+'-backup-'+Date.now(),r);}catch(e){}}
   return seed();
 }
 let resetting=false;
