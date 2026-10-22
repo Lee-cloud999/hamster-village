@@ -3747,7 +3747,10 @@ function zoneCnt(z){return SPOTS.filter(x=>x.zone===z&&owned(x.id)).length;}
 const CH_SPECIAL={
   0:[null,
      ()=>{const a=zoneCnt(0);return {ok:zoneDone(0),sub:'침대·간식 선반 마련 '+Math.min(2,a)+'/2'};},
-     ()=>{const a=st.fed[0]||0;return {ok:a>=8,sub:petName(0)+' 부탁 '+Math.min(8,a)+'/8'};}]
+     ()=>{const a=st.fed[0]||0;return {ok:a>=8,sub:petName(0)+' 부탁 '+Math.min(8,a)+'/8'};}],
+  /* 콩이 3편: 밤톨이 오기 전에는 장식이 5곳(침대·간식 선반·해먹·쳇바퀴·간식 그릇)뿐이라 6개를 요구하면 막혀요 */
+  1:[null,null,
+     ()=>{const a=st.fed[1]||0,dc=decoCount();return {ok:a>=7&&dc>=5,sub:'부탁 '+Math.min(7,a)+'/7 · 마을 장식 '+Math.min(5,dc)+'/5'};}]
 };
 function chReq(p,k){
   const sp=CH_SPECIAL[p]&&CH_SPECIAL[p][k];
