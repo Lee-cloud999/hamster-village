@@ -3453,6 +3453,19 @@ function tap(i){
 }
 
 /* ---------- pointer handling ---------- */
+/* 손가락이 칸 가장자리나 칸 사이 틈에 닿아도 알아듣게: 칸 둘레를 HIT_PAD만큼 넓혀서 찾고, 끌고 있을 땐 합칠 수 있는 칸을 먼저 골라요 */
+const HIT_PAD=10,TAP_SLOP=12;
+function cellPick(x,y,from){
+  let best=null,bd=1e9,merge=null,md=1e9;
+  document.querySelectorAll('#board .cell').forEach(c=>{
+    const r=c.getBoundingClientRect();
+    if(x<r.left-HIT_PAD||x>r.right+HIT_PAD||y<r.top-HIT_PAD||y>r.bottom+HIT_PAD)return;
+    const d=Math.hypot(x-(r.left+r.width/2),y-(r.top+r.height/2)),i=+c.dataset.i;
+    if(d<bd){bd=d;best=c;}
+    if(from!=null&&i!==from&&canMerge(from,i)&&d<md){md=d;merge=c;}
+  });
+  return merge||best;
+}
 function setHover(el){
   if(drag.hover&&drag.hover!==el)drag.hover.classList.remove('drop','can');
   drag.hover=el;
@@ -3465,7 +3478,7 @@ $('#board').addEventListener('click',e=>{const cell=e.target.closest('.cell.lock
 $('#board').addEventListener('pointerdown',e=>{
   if(e.button>0)return;
   if(drag){drag=null;}
-  const cell=e.target.closest('.cell');if(!cell)return;
+  const cell=e.target.closest('.cell')||cellPick(e.clientX,e.clientY);if(!cell)return;
   const i=+cell.dataset.i;
   if(isLocked(i)){e.preventDefault();return;} /* 잠긴 칸은 click에서 열기 창을 띄워요(누르자마자 열리면 손을 뗄 때 바깥 터치로 바로 닫혀요) */
   if(isGen(i)){
@@ -3479,13 +3492,14 @@ $('#board').addEventListener('pointerdown',e=>{
     return;
   }
   try{$('#board').setPointerCapture(e.pointerId);}catch(_){}
-  drag={i:i,x:e.clientX,y:e.clientY,id:e.pointerId,on:false,ghost:null,hover:null,size:cell.getBoundingClientRect().width};
+  drag={i:i,x:e.clientX,y:e.clientY,id:e.pointerId,on:false,ghost:null,hover:null,size:cell.getBoundingClientRect().width,far:0};
   e.preventDefault();
 });
 window.addEventListener('pointermove',e=>{
   if(!drag||e.pointerId!==drag.id)return;
+  drag.far=Math.max(drag.far,Math.hypot(e.clientX-drag.x,e.clientY-drag.y));
   if(!drag.on){
-    if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<7)return;
+    if(drag.far<TAP_SLOP)return;
     drag.on=true;sel=null;hap(10);
     const it=st.cells[drag.i];
     const g=document.createElement('div');g.className='ghost c-'+it.c;
@@ -3496,7 +3510,7 @@ window.addEventListener('pointermove',e=>{
   }
   drag.ghost.style.transform='translate('+(e.clientX-drag.size*.5)+'px,'+(e.clientY-drag.size*.5)+'px)';
   const el=document.elementFromPoint(e.clientX,e.clientY);
-  const tgt=el&&(el.closest('.order')||el.closest('.sell')||el.closest('.stbtn')||el.closest('.cell'));
+  const tgt=(el&&(el.closest('.order')||el.closest('.sell')||el.closest('.stbtn')))||cellPick(e.clientX,e.clientY,drag.i);
   setHover(tgt&&!(tgt.classList.contains('cell')&&(+tgt.dataset.i===drag.i||tgt.classList.contains('lock')||tgt.classList.contains('gencell')))?tgt:null);
 });
 function endDrag(e,cancel){
@@ -3507,7 +3521,10 @@ function endDrag(e,cancel){
   if(!d.on){if(!cancel)tap(d.i);return;}
   if(cancel){renderBoard();renderOrders();return;}
   const el=document.elementFromPoint(e.clientX,e.clientY);
-  const order=el&&el.closest('.order'),cell=el&&el.closest('.cell'),sz=el&&el.closest('.sell'),stb=el&&el.closest('.stbtn');
+  const order=el&&el.closest('.order'),sz=el&&el.closest('.sell'),stb=el&&el.closest('.stbtn');
+  const cell=(order||sz||stb)?null:cellPick(e.clientX,e.clientY,d.i);
+  /* 살짝 끌다가 제자리에 놓았으면 누른 걸로 봐요 */
+  if(cell&&+cell.dataset.i===d.i&&d.far<d.size*.5){renderBoard();tap(d.i);renderOrders();return;}
   if(sz){renderBoard();sellItem(d.i);}
   else if(stb){renderBoard();storeItem(d.i);}
   else if(order){renderBoard();toast('부탁 카드의 전하기 버튼을 눌러야 전해져요');}
