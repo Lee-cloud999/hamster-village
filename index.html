@@ -2308,10 +2308,11 @@ function bgmStop(){
 function bgmRestart(){bgmStop();if(bgmWanted)bgmStart();}
 
 /* ---------- 시작 화면: BGM 미리 받기 (캐시 우선, 진행률 표시, 실패해도 시작 가능) ---------- */
-let gameReady=false,bgmReady=false;
+let gameReady=false,bgmReady=false,imgReady=false;
 function ldSet(p,msg){try{const v=Math.max(0,Math.min(100,Math.round(p)));$('#ldFill').style.width=v+'%';$('#ldPct').textContent=v+'%';if(msg)$('#ldMsg').textContent=msg;}catch(e){}}
 function startReadyCheck(){
-  if(!gameReady||!bgmReady)return;
+  if(gameReady&&bgmReady&&!imgReady){ldSet(100,'산책길 그림을 준비하고 있어요');return;}
+  if(!gameReady||!bgmReady||!imgReady)return;
   try{$('#ldWrap').hidden=true;const g=$('#startGo');g.hidden=false;g.disabled=false;}catch(e){}
 }
 async function bgmFetch(onProg){
@@ -2361,6 +2362,19 @@ async function bgmPreload(){
   bgmReady=true;startReadyCheck();
 }
 bgmPreload();
+/* 보리의 산책길 그림(세로로 아주 긴 그림)을 시작 화면에서 미리 받아 풀어 둬요. 들어갈 때 기다리지 않게 */
+const PRE_IMGS=['bg/walk.webp?v=3','bg/walk_mid.webp?v=3','bg/path.webp?v=4'],preImgs=[];
+(function imgPreload(){
+  let left=PRE_IMGS.length,done=false;
+  const fin=()=>{if(done)return;done=true;imgReady=true;startReadyCheck();};
+  const cap=setTimeout(fin,10000); /* 인터넷이 느리면 10초 뒤엔 그냥 시작 (그림은 뒤에서 계속 받아요) */
+  const one=()=>{if(--left<=0){clearTimeout(cap);fin();}};
+  PRE_IMGS.forEach(u=>{
+    const im=new Image();preImgs.push(im);
+    im.onload=()=>{(im.decode?im.decode():Promise.resolve()).catch(()=>{}).then(one);};
+    im.onerror=one;im.src=u;
+  });
+})();
 
 /* ---------- small effects ---------- */
 function toast(msg,light){
