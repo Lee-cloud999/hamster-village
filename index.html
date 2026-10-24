@@ -1515,11 +1515,12 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
 @media (prefers-reduced-motion: reduce){.vm-fog.lift{animation:none;opacity:0}}
 .fogi{display:block;margin-top:3px;font-size:12px;color:#d9735c}
 .fogshot{width:150px;height:150px;margin:0 auto;border-radius:50%;background-repeat:no-repeat;box-shadow:0 0 0 5px #fff,0 0 0 8px #ffd9cf,0 8px 20px rgba(150,100,40,.3)}
-/* 윗줄: 좁은 폰에서도 오른쪽 톱니바퀴(설정)가 화면 밖으로 밀려나지 않게 — 경험치 바가 먼저 줄어들고, 칸 사이도 조금 좁게 */
+/* 윗줄: 좁은 폰에서도 오른쪽 톱니바퀴(설정)가 화면 밖으로 밀려나지 않게 — 경험치 바는 폭 고정, 남는 자리는 칸 사이로 */
 .stat{gap:5px!important}
-.stat .xp{min-width:24px!important;flex:1 1 0!important}
+.stat{justify-content:space-between}
+.stat .xp{flex:0 0 84px!important;width:84px!important;min-width:84px!important} /* 경험치 바는 폭 고정 */
 .stat .erow,.stat .pill,.stat .lvchip,.stat .brandrow{flex-shrink:0}
-@media (max-width:390px){.stat .erow{padding:2px 7px 2px 5px!important}.stat .erow .en{font-size:17px!important}.stat .pill{padding:2px 8px!important}.stat .pill b{font-size:17px!important}.stat .lvchip{padding:0 8px!important}}
+@media (max-width:390px){.stat{gap:3px!important}.stat .erow{padding:2px 5px 2px 4px!important;gap:2px!important}.stat .erow .en{font-size:17px!important}.stat .erow .et{font-size:9px!important}.stat .pill{padding:2px 6px!important}.stat .pill b{font-size:17px!important}.stat .lvchip{padding:0 7px!important}}
 /* 최종 단계 재료: 칸 테두리 위에 금색 선을 덧칠하지 않고, 칸 안쪽에 은은한 금빛만 (별 표시는 그대로) */
 .item.max{box-shadow:none}
 .item.max>img,.item.max>.im{filter:drop-shadow(0 0 5px rgba(255,232,80,.95)) drop-shadow(0 0 2px rgba(255,250,170,.95))}
@@ -2590,7 +2591,7 @@ function renderEnergy(){
   const m=maxE();
   $('#enbox').innerHTML=BOLT+'<span>'+st.e+'/'+m+'</span>';
   const left=Math.max(0,Math.ceil((REGEN-(Date.now()-st.eAt))/1000));
-  $('#eT').textContent=st.e>=m?'':Math.floor(left/60)+':'+String(left%60).padStart(2,'0');$('#eT').hidden=st.e>=m; /* 가득 찼을 땐 시계 글씨를 숨겨 윗줄 자리를 아껴요 (오른쪽 톱니바퀴가 밀려나지 않게) */
+  $('#eT').textContent=st.e>=m?'':Math.floor(left/60)+':'+String(left%60).padStart(2,'0');$('#eT').hidden=st.e>=m; /* 가득 찼을 땐 시계 글씨 없음 */
   const rf=$('#refill');rf.textContent='가득 충전 '+refillCost();rf.disabled=st.e>=m||st.coins<refillCost();
 }
 function setBadge(id,n){const e=$(id);e.hidden=!n;e.textContent=n||'';}
