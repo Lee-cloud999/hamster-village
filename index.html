@@ -3944,7 +3944,7 @@ function storyBody(p,k){
   const dlg=L.some(o=>o.s!==p);
   return '<div class="story'+(dlg?' dlg':'')+'"><div class="who2">'+face(L[0].s)+'<b>'+escH(petName(L[0].s))+'</b></div>'+L.map((o,i)=>'<p data-emo="'+(em[i]||'')+'" data-pet="'+o.s+'" data-nm="'+escH(petName(o.s))+'">'+escH(o.t)+'</p>').join('')+'</div>';
 }
-function previewStory(p,k){showReward(STORY[p][k].t+' (미리 보기)',storyBody(p,k),'미리 보기라 기록·보상에 남지 않아요',null);}
+function previewStory(p,k,cb){showReward(STORY[p][k].t+' (미리 보기)',storyBody(p,k),'미리 보기라 기록·보상에 남지 않아요',cb||null);}
 function openStory(p,k){
   if(chapterState(p,k)==='lock')return;
   const c=STORY[p][k],first=(st.read[p]||0)===k;
@@ -4484,7 +4484,9 @@ let devInf=false;
   });
   try{$('#devStory').innerHTML=PET_ORDER.map(p=>'<div class="dsr"><div class="dsn">'+face(p)+'<b>'+escH(petName(p))+'</b></div>'+STORY[p].map((c,k)=>'<button class="dsb" type="button" data-sp="'+p+'" data-sk="'+k+'"><i>'+(k+1)+'편</i><span>'+escH(c.t)+'</span></button>').join('')+'</div>').join('');}catch(e){}
   $('#dev').addEventListener('click',e=>{
-    const sb=e.target.closest('[data-sp]');if(sb){closeSheet('dev');sfx('tap');previewStory(+sb.dataset.sp,+sb.dataset.sk);return;}
+    const sb=e.target.closest('[data-sp]');if(sb){const dv=$('#dev'),sc=dv.scrollTop;closeSheet('dev');sfx('tap');
+      /* 미리 보기를 닫으면 테스트 모드 창이 같은 자리로 다시 열려요 */
+      previewStory(+sb.dataset.sp,+sb.dataset.sk,()=>{openSheet('dev');try{info();}catch(_){}requestAnimationFrame(()=>{dv.scrollTop=sc;});});return;}
     const t=e.target.closest('[data-dev]');if(!t)return;const a=t.dataset.dev;
     if(a==='coin')st.coins+=1000;
     else if(a==='energy'){st.e=maxE();st.eAt=Date.now();}
