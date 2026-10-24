@@ -3167,14 +3167,17 @@ function newOrder(tier,forceCu){
   const shown={};cur.forEach(o=>o.needs.forEach(n=>{shown[n.c+n.l]=1;}));
   const needs=[],chosen={};
   for(let n=0;n<count;n++){
-    const cand=[];
+    /* 재료마다 지금까지 만든 최고 단계 +2까지만 부탁해요 (막 얻은 생성기로 곧장 5·6단계를 부탁해서 막히지 않게) */
+    const capL=c=>Math.max(3,((st.fmax&&st.fmax[c])||1)+2);
+    let cand=[];
     openChains().forEach(c=>{
-      for(let l=lo;l<=hi;l++){
+      for(let l=lo;l<=Math.min(hi,capL(c));l++){
         if((c==='ml'||c==='ic')&&l>4)continue;
         if(l>=6&&Math.random()>.25)continue;
         cand.push({c:c,l:l,key:c+l});
       }
     });
+    if(!cand.length)openChains().forEach(c=>{for(let l=Math.min(lo,3);l<=Math.min(hi,capL(c),(c==='ml'||c==='ic')?4:9);l++)cand.push({c:c,l:l,key:c+l});});
     let f=cand.filter(x=>!shown[x.key]&&!chosen[x.key]&&x.key!==lastKey);
     if(!f.length)f=cand.filter(x=>!chosen[x.key]);
     if(!f.length)f=cand;
@@ -3223,14 +3226,15 @@ function ordTick(){
   if(stuck.length){stuck.forEach(o=>{o.leaving=0;orderLeave(o);});return;}
   const c=st.orders.length;
   if(c===0){ordFill0();return;}
-  /* 주문은 묶음으로: 모두 전하면 2~4개가 한꺼번에 새로 와요 (중간에 하나씩 채우지 않음) */
-  if(st.oNext){st.oNext=null;save();}renderWait();return;
-  if(c>=ordCap()){if(st.oNext){st.oNext=null;save();}renderWait();return;}
-  if(!st.oNext){st.oNext=Date.now()+20000;save();}
+  /* 주문은 묶음으로: 모두 전하면 2~4개가 한꺼번에 새로 와요.
+     단, 어려운 부탁 하나만 남아 막히지 않게 하나만 남으면 45초 뒤 1~2개가 더 와요 */
+  const act=st.orders.filter(o=>o.state!=='done').length;
+  if(act>1||c>=ordCap()){if(st.oNext){st.oNext=null;save();}renderWait();return;}
+  if(!st.oNext){st.oNext=Date.now()+45000;save();}
   if(Date.now()>=st.oNext){
     const n=Math.min(1+rnd(2),ordCap()-c);
     for(let i=0;i<n;i++){st.orders.push(newOrder(nextTier()));}
-    st.oNext=st.orders.length<ordCap()?Date.now()+20000:null;
+    st.oNext=null;
     save();renderOrders(Array.from({length:n},(_,i)=>c+i));return;
   }
   renderWait();
