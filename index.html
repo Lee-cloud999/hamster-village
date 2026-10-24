@@ -1485,6 +1485,12 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
 
 /* 테스트 모드 창: 좌우로 조금 더 넓게 (화면 맞춤 축소 없이 스크롤) */
 #dev.sheet{width:calc(100% - 24px)!important;max-width:420px!important}
+.vm-fish img{opacity:1}
+.vm-fish{opacity:.5!important;width:17%!important}
+.s1map{margin:2px auto 0;max-width:340px}
+@keyframes fishIn{0%{opacity:0;transform:translate(-50%,-50%) scale(.85)}60%{opacity:.62}100%{opacity:.5;transform:translate(-50%,-50%) scale(1)}}
+.vm-fish.fishin{animation:fishIn 2.6s 1s ease-out both}
+@media (prefers-reduced-motion: reduce){.vm-fish.fishin{animation:none}}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png?v=7" alt=""></div>
@@ -1648,6 +1654,7 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
     <button class="btn" data-dev="pets"><em>🏡</em>주민 모두 이사</button>
     <button class="btn" data-dev="decor"><em>🌼</em>마을 꾸미기 다음 구역 완성</button>
     <button class="btn" data-dev="story"><em>💌</em>이야기 조건 채우기</button>
+    <button class="btn" data-dev="s1fx"><em>🐟</em>시즌1 끝 연출 보기</button>
     <button class="btn" data-dev="day"><em>📅</em>퀘스트 하루 넘기기</button>
   </div>
   <h3 class="qsec">📖 이야기 미리 보기</h3>
@@ -1746,7 +1753,7 @@ const SHOP_E20=50, SHOP_BOX=40, SHOP_RAND=35, SHOP_SORT=10;
 
 /* stories: three chapters per resident. Chapter k opens after enough favors for that resident and enough decorated spots. */
 /* 이야기 문단별 표정 (EMO_N 번호, 없으면 기본) */
-const STORY_EMO={0:[[1,6,4],[1,5,7],[5,5,1,3,6]],1:[[1,1,8,6,2],[1,1,8,4,6],[1,1,1,5,1,5,2]],2:[[7,7,5,5,2,1,2],[2,7,5,8,1,1,5,1,7],[1,1,5,1,6,3,1,2]],3:[[5,5,2,5,1,8,5,3],[5,6,5,8,1,1,3,5,2,1,1],[5,2,3,2,8,1,6,4]],5:[[5,2,1,2,3,1,2,2],[2,1,1,2,1,3,1,4],[1,3,5,1,1,2,4,2]],6:[[3,7,2,2,3,5,1,5,2,1,3],[5,3,5,2,1,2,5,2,3],[1,5,1,2,8,2,3,2,2,3,3,2,5,3,4]],4:[[2,2,3,3,2,4,3,2,2,3],[2,6,5,2,4,1,4,4,1,2],[1,8,4]],7:[[2,1,2],[7,1,2],[1,3,4]]};
+const STORY_EMO={0:[[1,6,4],[1,5,7],[5,5,1,3,6]],1:[[1,1,8,6,2],[1,1,8,4,6],[1,1,1,5,1,5,2]],2:[[7,7,5,5,2,1,2],[2,7,5,8,1,1,5,1,7],[1,1,5,1,6,3,1,2]],3:[[5,5,2,5,1,8,5,3],[5,6,5,8,1,1,3,5,2,1,1],[5,2,3,2,8,1,6,4]],5:[[5,2,1,2,3,1,2,2],[2,1,1,2,1,3,1,4],[1,3,5,1,1,2,4,2]],6:[[3,7,2,2,3,5,1,5,2,1,3],[5,3,5,2,1,2,5,2,3],[1,5,1,2,8,2,3,2,2,3,3,2,5,3,4]],4:[[2,2,3,3,2,4,3,2,2,3],[2,6,5,2,4,1,4,4,1,2],[1,8,4]],7:[[2,1,2],[7,1,2],[2,6,5,2,1,8,1,8,8,1,2,4,2,3,1,2,5,1]]};
 const CH_REQ=[{f:0,d:0},{f:3,d:3},{f:7,d:6}];
 const STORY=[
  [{t:'이사 온 날',l:['볼주머니에 이삿짐을\n가득 넣고 왔어.\n작은 베개 하나, 분말 수프 한 봉지,\n그리고 할머니가 주셨던\n지도 한 장.','지도에 그려진 길을 따라\n사흘을 걸어왔어.\n중간에 두 번 길을 잃었지만.','할머니는 이 마을을\n어떻게 아셨을까?\n언젠가 꼭 알아낼 거야.']},
@@ -1772,7 +1779,7 @@ const STORY=[
   {t:'엄청 큰 콩이 별',l:[[1,'밤톨.\n너 요새 밤마다 어디 가?'],[2,'깜짝이야!\n나 따라온거야?'],[1,'낮에 맨날 잠만 자는 이유가\n있었구만.'],[2,'그게, 내가 새로 알게 된\n친구가 있거든.\n별이라고, 저기 보이지?\n엄청 귀여운 애야.'],[1,'나보다 귀여워?'],[2,'...당연히 콩이가 더 귀엽지.\n그나저나 따라와 봐.\n소개해 줄게.'],'얘들아, 안녕!\n너~무 좋은 밤이야.\n별들도 반짝반짝\n너~무 예쁘고.',[2,'별아 안녕~\n얘는 콩이라고 해.\n얘는 별이야.'],'마침 내가 밤톨이 너랑 닮은\n별을 찾았거든.\n저기 희미하게 빛나는 애\n보이지?',"'밤톨이 별'이야~!",[1,'아하하하!\n진짜 밤톨이 닮았다!\n별이 꾸벅꾸벅 조는 것 같아.'],'그리고 저~기 저 별 보이지?\n저건 콩이 별이야.',[1,'어디?'],"풀네임은\n'엄청 큰 콩이 별'!\n빵빵한 너의 볼을 보니\n딱 너랑 어울린다 싶었어!",[1,'뭐얏?! 흥!!\n그래도 예쁘긴 하네.']]}],
  [{t:'마음 조각 두부',l:['안녕! 나는 두부야. 안고 있는 건 마음 조각이래.','누가 기운이 없어 보이면 조금씩 나눠 줘. 신기하게도 나눌수록 줄지 않아.','너한테도 하나 줄까?']},
   {t:'말랑한 하루',l:['오늘은 아무것도 안 하고 햇볕 아래서 말랑말랑하게 있었어.','이런 하루도 꽤 쓸모 있더라. 마음 조각이 가득 차거든.','너도 가끔은 말랑해져도 괜찮아.']},
-  {t:'모두의 하트',l:['이 마을에 오고 나서 마음 조각이 하나둘 늘었어.','보리의 떨림, 콩이의 달리기, 별이의 소원까지 전부 내 품 안에 들어 있어.','그래서 이 하트는 이제 나만의 게 아니야. 우리 모두의 거야.']}]
+  {t:'불 켜진 마을',l:[[1,'(주변을 두리번거리고)\n아무도 없지?\n…오늘도 반짝반짝하네,\n내 별.'],'(마음 조각을 꼭 쥔 채)\n아, 미안.\n일부러 들은 건 아니야.\n…근데 내 별?',[1,'깜짝이야!\n너, 너 언제부터\n거기 있었어?!'],'처음부터 다 들었어.\n내 별, 반짝반짝, 다.',[1,'(헛기침) 흠흠.\n이 시간에 혼자 나와 있는\n너도 수상하거든?'],'이거 주려고 나왔는데…\n줄 친구가 없더라.\n(마음 조각을 보여 준다)',[1,'그냥 아무한테나\n주면 되잖아.\n다들 좋아할걸.'],'낮에 다들 깔깔 웃는 소리가\n우리 집까지 들렸어.\n나도 끼고 싶었는데,\n어떻게 끼는지 모르겠더라.','…사실 부러워.\n다들 친한 거.',[1,'바보.\n다들 친해진 지\n얼마 안 됐거든?\n나도 보리 처음 왔을 때\n엄청 쌀쌀맞았어.'],[1,'(작은 별을 가리키며)\n저기, 내 별 옆에\n쪼끄만 거 보이지?\n저건 두부 별 하자.'],'…두부 별.\n(한참 올려다본다)\n내 별이 생겼어.\n(마음 조각을 내밀며)\n그럼 이거 받아.\n첫 번째로 주는 거야.',[1,'첫 번째?\n…흥, 그럼 받아 줄게.\n너 내일 아침에 나랑\n쳇바퀴나 돌리자.\n우리 집 앞으로 와.'],'응!\n(웃으며 언덕 아래를\n내려다본다)\n…어, 마을에 불이\n엄청 많이 켜져 있다.',[1,'(한참 내려다보다가)\n보리 처음 왔을 땐,\n불 켜진 집이\n우리 집밖에 없었어.'],[1,'지금은 보리네, 밤톨이네,\n호두네, 참깨 할아버지네,\n별이네, 솜 할머니네…\n그리고 두부, 너네 집.'],'(마을 끝을 가리키며)\n어? 저기는 왜\n불이 꺼져 있어?',[1,'(잠깐 말이 없다가)\n…저긴 아직\n아무도 안 살아.']]}]
 ];
 
 /* titles + badges */
@@ -2573,11 +2580,18 @@ function nextGoal(){
 /* ---------- 시즌 1 완료: 주민 8명 + 이야기 24편 ---------- */
 function s1Done(){return PET_ORDER.every(p=>st.unlocked.indexOf(p)>=0&&(st.read[p]||0)>=STORY[p].length);}
 function seasonCheck(){if(!st||st.s1||!st.intro||inTut()||!s1Done())return false;st.s1=1;save();
+  whenFree(()=>s1Finale(),900);return true;}
+/* 두부 3편 「불 켜진 마을」 뒤: 할머니 지도 → 맨 아래 빈 집터에 물고기가 희미하게 떠오름 → 시즌1 종료 창 (test=true면 기록 없이 미리 보기) */
+function s1Finale(test,cb){
+  sfx('badge');
+  showReward('할머니의 지도','<div class="vmap s1map">'+mapInner(true)+'</div>','맨 아래 빈 집터에 물고기 표시가 떠올랐어요.',()=>setTimeout(()=>s1End(test,cb),350),'다음');
+}
+function s1End(test,cb){
   const go=()=>{
     sfx('level');hap&&hap([30,60,30]);
-    showReward('시즌1 종료!','<div class="s1g">'+PET_ORDER.map(p=>faceE(p,3)).join('')+'</div>','게임은 계속할 수 있어요.\n레벨 '+LV_MAX+'까지 햄스터들에게 물건을 전해줘요.',()=>{try{renderDex();renderGoalChip();}catch(e){}},'좋아요');
+    showReward('시즌1 종료!','<div class="s1g">'+PET_ORDER.map(p=>faceE(p,3)).join('')+'</div>','게임은 계속할 수 있어요.\n레벨 '+LV_MAX+'까지 햄스터들에게 물건을 전해줘요.',()=>{try{renderDex();renderGoalChip();}catch(e){}if(cb)cb();},'좋아요');
     fireworks();};
-  whenFree(go,900);return true;}
+  go();}
 /* ---------- 출석 도장 (7일 반복, 빠져도 이어져요) ---------- */
 const ATT_RW=[{coins:30},{energy:20},{box:1},{coins:60},{energy:30},{box:1,boxG:2},{coins:150,box:1,boxG:3}];
 function attRwHTML(r){let h='';if(r.coins)h+=bi(COIN,r.coins,'코인');if(r.energy)h+=bi(BOLT,'+'+r.energy,'에너지');if(r.box)h+=bi(boxImg(r.boxG),BOXN[r.boxG||1]+(r.box>1?' ×'+r.box:''),'');return h;}
@@ -3987,17 +4001,22 @@ const MAP_BORI_B64='UklGRribAABXRUJQVlA4WAoAAAAQAAAAZwEAZwEAQUxQSGAYAAAB8Mf//2op
 /* 지도 그림의 집터 자리(%) — 가운데 큰 터는 보리네, 맨 아래 터는 아직 비밀(시즌1 종료 뒤 ✕) */
 const MAP_SPOT={0:[49,48.6],1:[17.9,52.2],2:[26.3,27.9],3:[48.4,16.3],5:[71.8,27.9],6:[80.5,52.2],4:[27.9,71],7:[70.2,72.2]};
 const MAP_MYST=[48.4,82.1];
+/* 시즌1 뒤 비밀 집터에 떠오르는 물고기 표시 (밤톨 꿈·할머니 지도·솜 할머니 편지와 같은 물고기). 직접 그린 그림으로 바꾸려면 이 값만 교체 */
+const MAP_FISH_URL='data:image/svg+xml,'+encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 120'><filter id='r'><feTurbulence type='fractalNoise' baseFrequency='.05' numOctaves='2' seed='4'/><feDisplacementMap in='SourceGraphic' scale='5'/></filter><g filter='url(#r)' fill='none' stroke='#c0402c' stroke-linecap='round' stroke-linejoin='round'><path d='M18 60 C40 22 92 20 118 60 C92 100 40 98 18 60 Z' stroke-width='9'/><path d='M116 60 L148 30 L142 60 L148 90 Z' stroke-width='9'/><path d='M60 38 C66 52 66 68 60 82' stroke-width='5'/></g><circle cx='40' cy='54' r='6' fill='#c0402c'/></svg>");
 const mapNew=()=>st&&st.mapOn?Math.max(0,st.unlocked.length-(st.mapSeen||0)):0;
-function renderMap(){
-  const n=st.unlocked.length;
-  $('#dexMapInfo').textContent='할머니가 주신 오래된 지도예요. 이웃이 올 때마다 빈 집이 채워져요. ('+n+'/'+PET_ORDER.length+')';
+function mapInner(fishIn){
   if(!MAP_URL)MAP_URL=blobUrl(MAP_IMG_B64);
   const svg='<img class="vm-bg" src="'+MAP_URL+'" alt="" draggable="false">';
   let h='';
   PET_ORDER.forEach(p=>{const xy=MAP_SPOT[p],u=st.unlocked.indexOf(p)>=0;
     h+='<div class="vm-spot'+(u?' on':'')+'" style="left:'+xy[0]+'%;top:'+xy[1]+'%">'+(u?face(p)+'<b>'+escH(petName(p))+'네</b>':'<span class="vm-q">?</span>')+'</div>';});
-  if(st.s1)h+='<div class="vm-mark" style="left:'+MAP_MYST[0]+'%;top:'+MAP_MYST[1]+'%" title="아무도 모르는 표시"><img src="'+blobUrl(MAP_X_B64)+'" alt="✕"></div>';
-  $('#vmap').innerHTML=svg+h;
+  if(st.s1||fishIn)h+='<div class="vm-mark vm-fish'+(fishIn?' fishin':'')+'" style="left:'+MAP_MYST[0]+'%;top:'+MAP_MYST[1]+'%" title="물고기 표시"><img src="'+MAP_FISH_URL+'" alt="물고기"></div>';
+  return svg+h;
+}
+function renderMap(){
+  const n=st.unlocked.length;
+  $('#dexMapInfo').textContent='할머니가 주신 오래된 지도예요. 이웃이 올 때마다 빈 집이 채워져요. ('+n+'/'+PET_ORDER.length+')';
+  $('#vmap').innerHTML=mapInner(false);
 }
 /* 보리 1편을 읽고 나면 지도가 열려요 (튜토리얼 끝난 뒤 한 번) */
 function mapIntro(){if(!st||st.mapOn||!st.intro||inTut()||(st.read[0]||0)<1)return false;st.mapOn=1;st.mapSeen=st.unlocked.length;save();
@@ -4497,6 +4516,7 @@ let devInf=false;
     else if(a==='orders'){st.orders=[];st.oNext=null;ordFill0();}
     else if(a==='pets'){for(let p=1;p<CUST.length;p++)if(st.unlocked.indexOf(p)<0)st.unlocked.push(p);}
     else if(a==='decor'){const z=curZone();if(z<DZ.length){SPOTS.filter(x=>x.zone===z&&!owned(x.id)).forEach(x=>{st.dec[x.id]=0;});closeSheet('dev');grantZone(z);}}
+    else if(a==='s1fx'){const dv=$('#dev'),sc=dv.scrollTop;closeSheet('dev');s1Finale(true,()=>{openSheet('dev');requestAnimationFrame(()=>{dv.scrollTop=sc;});});return;}
     else if(a==='story'){st.unlocked.forEach(p=>{st.fed[p]=Math.max(st.fed[p]||0,7);});SPOTS.forEach(x=>{if(!owned(x.id))st.dec[x.id]=0;});}
     else if(a==='day'){try{const d=new Date(st.q.start+'T00:00:00');d.setDate(d.getDate()-1);st.q.start=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}catch(e2){}questSync();}
     save();refresh();renderBoard();renderOrders('all');renderQ();if(!$('#dev').hidden)info();
