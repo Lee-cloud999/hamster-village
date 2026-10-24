@@ -2036,21 +2036,8 @@ const isLocked=i=>st.locks.indexOf(i)>=0;
 const isGen=i=>GENS[i]!=null;
 const guLv=c=>(st.gu&&st.gu[c])||0;
 const unlockCost=()=>25*Math.pow(2,Math.min(st.unlockN||0,10)); /* 25 → 50 → 100 → 200 → 400 → 800 */
-const petName=p=>(st.petName&&st.petName[p])||CUST[p][0];
-/* 주민 이름을 바꾸면 안내·이야기 속 기본 이름도 새 이름으로 (조사도 맞춰요) */
-function rn(str){
-  try{
-    if(!st||!st.petName||typeof str!=='string')return str;
-    Object.keys(st.petName).forEach(k=>{
-      const def=CUST[k]&&CUST[k][0],nw=petName(+k);if(!def||!nw||nw===def)return;
-      const c=nw.charCodeAt(nw.length-1)-44032,bt=c>=0&&c<11172&&c%28>0;
-      const P={'을':'을를','를':'을를','은':'은는','는':'은는','과':'과와','와':'과와','이':'이가','가':'이가','아':'아야','야':'아야'};
-      const re=new RegExp(def+'(을|를|은|는|과|와|아|야|가|이(?=[\\s.,!?…"]))?','g');
-      str=str.replace(re,(m,j)=>nw+(j?P[j][bt?0:1]:''));
-    });
-  }catch(e){}
-  return str;
-}
+const petName=p=>CUST[p][0]; /* 이름 짓기 기능은 뺐어요: 항상 기본 이름 */
+function rn(str){return str;} /* 예전 이름 바꾸기용 자리 (이제는 그대로 돌려줘요) */
 function emptyCells(){const r=[];st.cells.forEach((x,i)=>{if(!x&&!isLocked(i)&&!isGen(i))r.push(i);});return r;}
 const ENV=[0,5,12,25,50,100],ENMAX=5;
 const isSpecial=c=>c==='xp'||c==='en'||c==='tl'||c==='tg'||c==='bx';
@@ -2114,7 +2101,7 @@ function fill(o){
   o.tq=o.tq||[];o.stor=o.stor||[];o.storN=o.storN||4;o.dec=o.dec||{};o.own=o.own||{};o.zoneDone=o.zoneDone||[];
   if(!o.gOpen){o.gOpen={};const OLD={sw:2,dr:4,fr:8,ml:10,ic:12};if((o.lv||1)>1)KEYS.forEach(c=>{if(OLD[c]&&o.lv>=OLD[c])o.gOpen[c]=1;});}
   o.petWait=o.petWait||[];
-  o.fmax=o.fmax||{};o.badges=o.badges||{};o.petName=o.petName||{};o.petHide=o.petHide||{};o.fed=o.fed||{};
+  o.fmax=o.fmax||{};o.badges=o.badges||{};o.petName={};o.petHide=o.petHide||{};o.fed=o.fed||{};
   o.nMerge=o.nMerge||0;o.nDeliv=o.nDeliv||0;o.maxCombo=o.maxCombo||0;o.playMs=o.playMs||0;o.nGift=o.nGift||0;
   if(!o.q||!o.q.start)o.q={cycle:0,start:todayKey(),days:{}};
   o.orders.forEach(x=>{if(o.unlocked.indexOf(x.cu)<0)o.unlocked.push(x.cu);});
@@ -3995,7 +3982,7 @@ function renderDex(){
   if(dexSel==null||st.unlocked.indexOf(dexSel)<0){
     dexSel=null;
     const shown=st.unlocked.filter(p=>!st.petHide[p]).length;
-    M.innerHTML='<div class="dp-t"><b>이웃 이야기</b><small>이웃을 눌러 이야기를 읽거나 이름을 바꿀 수 있어요.<br><span style="display:block;margin-top:4px">지금 마을에 있는 주민 '+shown+'명</span></small></div>';
+    M.innerHTML='<div class="dp-t"><b>이웃 이야기</b><small>이웃을 눌러 이야기를 읽을 수 있어요.<br><span style="display:block;margin-top:4px">지금 마을에 있는 주민 '+shown+'명</span></small></div>';
     return;
   }
   const p=dexSel,hide=!!st.petHide[p],dc=decoCount();
@@ -4005,8 +3992,6 @@ function renderDex(){
     return '<div class="prow'+(s==='read'?' got':'')+'"><div class="sico">'+(s==='read'?'📖':s==='ready'?'✉️':'🔒')+'</div><div class="prw"><b>'+(s==='lock'?'???':escH(c.t))+'</b><span>'+sub+'</span></div><button class="btn'+(s==='ready'?' main':'')+'" type="button" data-a="story" data-p="'+p+'" data-k="'+k+'"'+(s==='lock'?' disabled':'')+'>'+(s==='read'?'다시 읽기':s==='ready'?'읽기':'잠김')+'</button></div>';
   }).join('');
   M.innerHTML='<div class="dp-t"><b>'+escH(petName(p))+'의 이야기</b><small>읽은 이야기 '+Math.min(STORY[p].length,st.read[p]||0)+'/'+STORY[p].length+'</small></div>'+rows+
-    '<div class="dm-row"><input id="pmInp" type="text" maxlength="8" value="'+escH(petName(p))+'" aria-label="이름"><button class="btn main" type="button" data-a="save" data-p="'+p+'">이름 저장</button></div>'+
-    '<small class="have">'+(st.petName[p]?'기본 이름: '+CUST[p][0]:'이름을 지어 줄 수 있어요 (최대 8글자)')+'</small>'+
     '<button class="btn" type="button" data-a="toggle" data-p="'+p+'">'+(hide?'마을에 두기':'마을에서 빼기')+'</button>';
 }
 
@@ -4156,11 +4141,7 @@ $('#dexMgr').addEventListener('click',e=>{
   const b=e.target.closest('button[data-a]');if(!b||b.disabled)return;
   const p=+b.dataset.p;
   if(b.dataset.a==='story'){sfx('tap');openStory(p,+b.dataset.k);}
-  else if(b.dataset.a==='save'){
-    const v=($('#pmInp').value||'').trim().slice(0,8);
-    if(!v||v===CUST[p][0])delete st.petName[p];else st.petName[p]=v;
-    save();renderDex();renderOrders();toast('이름을 저장했어요');
-  }else{
+  else if(b.dataset.a==='toggle'){
     if(st.petHide[p])delete st.petHide[p];else st.petHide[p]=1;
     save();renderDex();
   }
