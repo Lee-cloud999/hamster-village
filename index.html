@@ -1444,8 +1444,8 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
   #board .cell.lift .item{transition:none}
   .cell.can .item{animation:canbob .42s ease-in-out infinite alternate}
   .cell.settle .item{animation:settle .16s ease-out}
-  .cell.mland .item{animation:mland .24s cubic-bezier(.3,1.5,.5,1)}
-  .cell.mlandbig .item{animation:mlandbig .38s cubic-bezier(.3,1.6,.5,1)}
+  .cell.mland .item{animation:mland .2s cubic-bezier(.3,1.5,.5,1)}
+  .cell.mlandbig .item{animation:mlandbig .3s cubic-bezier(.3,1.6,.5,1)}
   @keyframes canbob{from{transform:scale(1)}to{transform:scale(1.06)}}
   @keyframes settle{0%{transform:scale(1.06)}100%{transform:scale(1)}}
   @keyframes mland{0%{transform:scale(1)}50%{transform:scale(1.16)}100%{transform:scale(1)}}
@@ -2416,10 +2416,10 @@ function floatAt(el,txt){
   document.body.appendChild(f);setTimeout(()=>f.remove(),950);
 }
 const cellEl=i=>$('#board').children[i];
-function fxAt(j,l,combo,kind){
+function fxAt(j,l,combo,kind,rr){
   if(reduce)return;
-  const el=cellEl(j);if(!el)return;
-  const r=el.getBoundingClientRect();
+  const el=cellEl(j);if(!el&&!rr)return;
+  const r=rr||el.getBoundingClientRect();
   const mk=(k,sc)=>{const im=new Image();im.src=FXU[k];im.className='fxp';im.alt='';
     im.style.left=(r.left+r.width/2)+'px';im.style.top=(r.top+r.height/2)+'px';im.style.width=(r.width*(sc||1.7))+'px';
     document.body.appendChild(im);setTimeout(()=>im.remove(),800);};
@@ -3313,13 +3313,12 @@ function noteFound(){
   st.cells.forEach(it=>{if(it&&(st.fmax[it.c]||0)<it.l)st.fmax[it.c]=it.l;});
   checkGenUnlock();
 }
-function renderBoard(){
-  noteFound();
+/* 칸 하나의 HTML (renderBoard·patchCells가 같이 씀) */
+function cellHTML(i){
   let h='';
-  for(let i=0;i<N;i++){
     if(isLocked(i)){
-      h+='<div class="cell lock" data-i="'+i+'" role="button" aria-label="잠긴 칸, 코인 '+unlockCost()+'으로 열기"><span class="lk">'+LOCK+unlockCost()+'</span></div>';
-      continue;
+      h='<div class="cell lock" data-i="'+i+'" role="button" aria-label="잠긴 칸, 코인 '+unlockCost()+'으로 열기"><span class="lk">'+LOCK+unlockCost()+'</span></div>';
+      return h;
     }
     if(isGen(i)){
       const c=GENS[i];
@@ -3328,7 +3327,7 @@ function renderBoard(){
       }else{
         h+='<div class="cell gencell c-'+c+'" data-i="'+i+'" role="button" aria-label="'+GEN_NAME[c]+' (에너지 1)"><div class="item">'+gem(c)+'</div><span class="gtag">'+BOLT+'1</span>'+(guLv(c)?'<span class="gust">'+'★'.repeat(guLv(c))+'</span>':'')+'</div>';
       }
-      continue;
+      return h;
     }
     const it=st.cells[i];
     let cls='cell'+(((i%COLS)+Math.floor(i/COLS))%2?' b':'');
@@ -3337,10 +3336,27 @@ function renderBoard(){
     h+='<div class="'+cls+'" data-i="'+i+'"'+(it?' aria-label="'+nm(it.c,it.l)+' '+it.l+'단계"':'')+'>'+
       (it?'<div class="item c-'+it.c+(it.l===MAXLV?' max':'')+'">'+em(it.c,it.l)+(it.l===MAXLV&&!isSpecial(it.c)?'<span class="star">★</span>':'')+(it.c==='tg'?'<span class="tgn">'+(it.n==null?10:it.n)+'</span>':'')+(it.c==='bx'?'<span class="tgn">'+(it.q?it.q.length:[0,3,5,6][it.l])+'</span>':'')+'</div>':'')+
       '</div>';
-  }
+  return h;
+}
+function renderBoard(){
+  noteFound();
+  let h='';
+  for(let i=0;i<N;i++)h+=cellHTML(i);
   $('#board').innerHTML=h;
   renderSell();renderQ();
 }
+/* 바뀐 칸만 새로 그리기 (합치기·옮기기·생성이 빨라져요). 고른 칸(sel)이 있었으면 전체를 다시 그려요 */
+function patchCells(list){
+  const bd=$('#board');
+  if(!bd||bd.children.length!==N||$('#board .sel,#board .match')){renderBoard();return;}
+  noteFound();
+  const t=document.createElement('template');
+  list.forEach(i=>{if(i==null)return;const old=bd.children[i];if(!old)return;t.innerHTML=cellHTML(i);const nw=t.content.firstChild;if(nw)old.replaceWith(nw);});
+  renderSell();renderQ();
+}
+/* 화면이 먼저 바뀌고 나서 나머지(저장·위쪽 숫자·주문판) 처리 */
+let refreshT=0;
+function refreshSoon(){if(refreshT)return;refreshT=1;requestAnimationFrame(()=>setTimeout(()=>{refreshT=0;refresh();},0));}
 function renderSell(){
   const el=$('#sell'),it=sel!=null?st.cells[sel]:null;
   el.classList.toggle('on',!!it);
@@ -3406,7 +3422,8 @@ function generate(c){
     const em2=emptyCells();
     if(em2.length){j2=em2[rnd(em2.length)];st.cells[j2]={c:c,l:genRoll(c)};}
   }
-  renderBoard();fxAt(j,0,0,3);refresh();sfx('gen');
+  const rj=!reduce&&cellEl(j)?cellEl(j).getBoundingClientRect():null;
+  sfx('gen');patchCells([j,j2]);fxAt(j,0,0,3,rj);refreshSoon();
   const ge=document.querySelector('.gencell[data-i="'+GENPOS[c]+'"]');
   juiceGen(ge,j);if(j2!=null)juiceGen(null,j2);
   if(saved&&ge)floatAt(ge,'에너지 절약!');
@@ -3418,7 +3435,7 @@ function generate(c){
 function act(i,j){
   const a=st.cells[i],b=st.cells[j];
   if(i===j||!a||isLocked(j)||isGen(j))return;
-  if(!b){st.cells[j]=a;st.cells[i]=null;sel=null;renderBoard();if(softLand)settle(cellEl(j));else pop(j);refresh();sfx('move');return;}
+  if(!b){st.cells[j]=a;st.cells[i]=null;sel=null;sfx('move');patchCells([i,j]);if(softLand)settle(cellEl(j));else pop(j);refreshSoon();return;}
   if(a.c==='tl'&&!isSpecial(b.c)){useTool(i,j);return;}
   if(canMerge(i,j)){
     const nl=a.l+1,now=Date.now();
@@ -3428,7 +3445,8 @@ function act(i,j){
     track('merge');if(nl>=3)track('merge3');if(nl>=5)track('merge5');
     let bonus=0;if(combo>=3){bonus=combo-1;st.coins+=bonus;}
     let bj=null;
-    renderBoard();if(softLand)landPop(j,nl);else pop(j);fxAt(j,nl,combo);refresh();sfx('merge',nl,combo);if(!softLand)juiceMerge(j,nl);else if(nl>=5&&!reduce){const b=$('#board');b.classList.remove('shake2');void b.offsetWidth;b.classList.add('shake2');setTimeout(()=>b.classList.remove('shake2'),420);}
+    const rj=!reduce&&cellEl(j)?cellEl(j).getBoundingClientRect():null; /* 칸을 바꾸기 전에 재서 강제 레이아웃을 피해요 */
+    sfx('merge',nl,combo);patchCells([i,j]);if(softLand)landPop(j,nl);else pop(j);fxAt(j,nl,combo,null,rj);refreshSoon();if(!softLand)juiceMerge(j,nl);else if(nl>=5&&!reduce){const b=$('#board');b.classList.remove('shake2');void b.offsetWidth;b.classList.add('shake2');setTimeout(()=>b.classList.remove('shake2'),420);}
     if(combo>=2)showCombo(combo);
     if(bonus)floatAt(cellEl(j),'+'+bonus+' 코인');
     if(nl>=4&&!isSpecial(a.c))bigText(nm(a.c,nl)+' 완성!',nl===MAXLV);
@@ -3438,7 +3456,7 @@ function act(i,j){
     if(bj!=null){pop(bj);toast('합치기 보너스! 재료가 하나 더 나왔어요');}
     return;
   }
-  st.cells[i]=b;st.cells[j]=a;sel=null;renderBoard();if(softLand){settle(cellEl(j));settle(cellEl(i));}refresh();sfx('move');
+  st.cells[i]=b;st.cells[j]=a;sel=null;sfx('move');patchCells([i,j]);if(softLand){settle(cellEl(j));settle(cellEl(i));}refreshSoon();
 }
 function collectXp(i){
   const it=st.cells[i];if(!it||it.c!=='xp')return;
@@ -3495,7 +3513,7 @@ $('#board').addEventListener('click',e=>{const cell=e.target.closest('.cell.lock
 /* ---------- 끌기 손맛 ----------
    누르면 바로 1.08배(hold) → 12px 넘게 움직이면 손가락보다 LIFT만큼 위에서 따라오는 그림(ghost, rAF로 이동)
    → 놓으면 목표 칸으로 미끄러지듯 안착한 뒤 원래 규칙(act)대로 처리, 잘못 놓으면 원래 자리로 미끄러져 돌아가요 */
-const LIFT=26,GHOST_SCALE=1.12,LAND_MS=150,BACK_MS=170;
+const LIFT=26,GHOST_SCALE=1.12,LAND_MS=100,MERGE_MS=70,BACK_MS=130;
 let landing=null,dragRaf=0,softLand=0;
 function ghostPos(g,x,y,s){g.style.transform='translate3d('+(x-g._w/2)+'px,'+(y-g._w/2)+'px,0) scale('+s+')';}
 function finishLanding(){if(landing){const L=landing;landing=null;clearTimeout(L.t);L.done();}}
@@ -3503,7 +3521,8 @@ function glideGhost(g,x,y,s,ms,done){
   finishLanding();
   if(reduce||!ms){g.remove();done();return;}
   g.style.transition='transform '+ms+'ms cubic-bezier(.2,.8,.3,1)';void g.offsetWidth;ghostPos(g,x,y,s);
-  landing={t:setTimeout(finishLanding,ms+20),done:()=>{g.remove();done();}};
+  landing={t:setTimeout(finishLanding,ms+40),done:()=>{g.remove();done();}};
+  const L=landing;g.addEventListener('transitionend',()=>{if(landing===L)finishLanding();},{once:true}); /* 도착하자마자 바로 처리 */
 }
 function settle(el){if(!el||reduce)return;el.classList.remove('settle');void el.offsetWidth;el.classList.add('settle');setTimeout(()=>el.classList.remove('settle'),200);}
 function landPop(j,nl){const el=cellEl(j);if(!el||reduce)return;const k=nl>=3?'mlandbig':'mland';el.classList.add(k);setTimeout(()=>el.classList.remove(k),420);}
@@ -3586,10 +3605,10 @@ function endDrag(e,cancel){
   }
   if(isLocked(ci)||isGen(ci)){back();return;}
   const r=cell.getBoundingClientRect();
-  glideGhost(g,r.left+r.width/2,r.top+r.height/2,r.width/g._w,LAND_MS,()=>{
+  glideGhost(g,r.left+r.width/2,r.top+r.height/2,r.width/g._w,canMerge(d.i,ci)?MERGE_MS:LAND_MS,()=>{
     softLand=1;try{act(d.i,ci);}finally{softLand=0;}
     const c=cellEl(d.i);if(c&&c.classList.contains('lift'))renderBoard(); /* 그사이 칸이 바뀌어 아무 일도 없었으면 원래대로 */
-    renderOrders();
+    refreshSoon();
   });
 }
 window.addEventListener('pointerup',e=>endDrag(e,false));
