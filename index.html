@@ -1510,6 +1510,9 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
   -webkit-backdrop-filter:blur(9px) sepia(.4);backdrop-filter:blur(9px) sepia(.4);-webkit-mask:radial-gradient(closest-side,#000 70%,transparent 100%);mask:radial-gradient(closest-side,#000 70%,transparent 100%)}
 .vm-fog span{font-family:var(--f-display);font-size:15px;color:#e3a796}
 .vm-fogn{position:absolute;transform:translate(-50%,-50%);font-size:10.5px;line-height:1.2;color:#7a5634;background:rgba(255,250,240,.88);padding:1px 6px;border-radius:99px;white-space:nowrap;pointer-events:none}
+@keyframes fogLift{0%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.25)}}
+.vm-fog.lift{animation:fogLift 1.3s .3s ease-out both}
+@media (prefers-reduced-motion: reduce){.vm-fog.lift{animation:none;opacity:0}}
 .fogi{display:block;margin-top:3px;font-size:12px;color:#d9735c}
 .fogshot{width:150px;height:150px;margin:0 auto;border-radius:50%;background-repeat:no-repeat;box-shadow:0 0 0 5px #fff,0 0 0 8px #ffd9cf,0 8px 20px rgba(150,100,40,.3)}
 /* 부탁 카드 보상 알약: 작게 줄여서 주민 얼굴을 덜 가리게 (얼굴도 살짝 왼쪽으로) */
@@ -2077,6 +2080,7 @@ function checkGenUnlock(){ /* 이름은 그대로: 보드 그릴 때마다 이�
 }
 function arrivePet(p,after){ /* 이사 + 선물 + 첫 주문 */
   if(st.unlocked.indexOf(p)<0)st.unlocked.push(p);
+  setTimeout(()=>{try{fogTry();}catch(e){}},2500);
   const g=PET_GEN[p];if(g)st.gOpen[g]=1;
   if(p===4){spawnBox();spawnBox();}
   if(p===7)st.coins+=300;
@@ -2609,12 +2613,12 @@ function nextGoal(){
 }
 /* ---------- 시즌 1 완료: 주민 8명 + 이야기 24편 ---------- */
 function s1Done(){return PET_ORDER.every(p=>st.unlocked.indexOf(p)>=0&&(st.read[p]||0)>=STORY[p].length);}
-function seasonCheck(){if(!st||st.s1||!st.intro||inTut()||!s1Done())return false;st.s1=1;save();
+function seasonCheck(){if(!st||st.s1||!st.intro||inTut()||!s1Done())return false;st.s1=1;st.fogOpen=st.fogOpen||[];if(st.fogOpen.indexOf('mouth')<0)st.fogOpen.push('mouth');save();
   whenFree(()=>s1Finale(),900);return true;}
-/* 두부 3편 「불 켜진 마을」 뒤: 할머니 지도 → 맨 아래 빈 집터에 물고기가 희미하게 떠오름 → 시즌1 종료 창 (test=true면 기록 없이 미리 보기) */
+/* 두부 3편 「불 켜진 마을」 뒤: 할머니 지도 → 개울 끝 안개가 걷히고 물고기가 처음 나타남(맨 아래 비밀 집터는 계속 비어 있음) → 시즌1 종료 창 (test=true면 기록 없이 미리 보기) */
 function s1Finale(test,cb){
   sfx('badge');
-  showReward('할머니의 지도','<div class="vmap s1map">'+mapInner(true)+'</div>','맨 아래 빈 집터에 물고기 표시가 떠올랐어요.',()=>setTimeout(()=>s1End(test,cb),350),'다음');
+  showReward('할머니의 지도','<div class="vmap s1map">'+mapInner(true)+'</div>','개울 끝 안개가 걷히고 물고기 표시가 나타났어요.',()=>setTimeout(()=>s1End(test,cb),350),'다음');
 }
 /* 시즌1 종료 창 표정: 보리 신남(지도 번쩍), 콩이 기본(팔짱 새침), 밤톨 졸림, 호두 감동(책 읽기), 참깨 신남(해바라기), 별이 놀람(별 보기), 솜 신남(수프 냄비), 두부 놀람(하트) */
 const S1_EMO={0:3,1:1,2:7,3:4,5:3,6:5,4:3,7:5};
@@ -4039,6 +4043,8 @@ const MAP_BORI_B64='UklGRribAABXRUJQVlA4WAoAAAAQAAAAZwEAZwEAQUxQSGAYAAAB8Mf//2op
 /* 지도 그림의 집터 자리(%) — 가운데 큰 터는 보리네, 맨 아래 터는 아직 비밀(시즌1 종료 뒤 ✕) */
 const MAP_SPOT={0:[49,48.6],1:[17.9,52.2],2:[26.3,27.9],3:[48.4,16.3],5:[71.8,27.9],6:[80.5,52.2],4:[27.9,71],7:[70.2,72.2]};
 const MAP_MYST=[48.4,82.1];
+/* 물고기 표시는 개울 끝(지도 오른쪽 아래, 개울이 지도 밖 바다 쪽으로 흘러가는 곳)에서 처음 나타나요 */
+const MAP_FISH_XY=[80,89];
 /* 시즌1 뒤 비밀 집터에 떠오르는 물고기 표시 (밤톨 꿈·할머니 지도·솜 할머니 편지와 같은 물고기). 직접 그린 그림으로 바꾸려면 이 값만 교체 */
 const MAP_FISH_URL='data:image/svg+xml,'+encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 120'><filter id='r'><feTurbulence type='fractalNoise' baseFrequency='.05' numOctaves='2' seed='4'/><feDisplacementMap in='SourceGraphic' scale='5'/></filter><g filter='url(#r)' fill='none' stroke='#c0402c' stroke-linecap='round' stroke-linejoin='round'><path d='M18 60 C40 22 92 20 118 60 C92 100 40 98 18 60 Z' stroke-width='9'/><path d='M116 60 L148 30 L142 60 L148 90 Z' stroke-width='9'/><path d='M60 38 C66 52 66 68 60 82' stroke-width='5'/></g><circle cx='40' cy='54' r='6' fill='#c0402c'/></svg>");
 const mapNew=()=>st&&st.mapOn?Math.max(0,st.unlocked.length-(st.mapSeen||0)):0;
@@ -4048,8 +4054,8 @@ function mapInner(fishIn){
   let h='';
   PET_ORDER.forEach(p=>{const xy=MAP_SPOT[p],u=st.unlocked.indexOf(p)>=0;
     h+='<div class="vm-spot'+(u?' on':'')+'" style="left:'+xy[0]+'%;top:'+xy[1]+'%">'+(u?face(p)+'<b>'+escH(petName(p))+'네</b>':'<span class="vm-q">?</span>')+'</div>';});
-  h+=fogHTML();
-  if(st.s1||fishIn)h+='<div class="vm-mark vm-fish'+(fishIn?' fishin':'')+'" style="left:'+MAP_MYST[0]+'%;top:'+MAP_MYST[1]+'%" title="물고기 표시"><img src="'+MAP_FISH_URL+'" alt="물고기"></div>';
+  h+=fogHTML(fishIn);
+  if(st.s1||fishIn)h+='<div class="vm-mark vm-fish'+(fishIn?' fishin':'')+'" style="left:'+MAP_FISH_XY[0]+'%;top:'+MAP_FISH_XY[1]+'%" title="물고기 표시"><img src="'+MAP_FISH_URL+'" alt="물고기"></div>';
   return svg+h;
 }
 function renderMap(){
@@ -4087,13 +4093,22 @@ const MAP_FOG=[
   {id:'mouth',n:'개울 끝',x:80,y:90,r:22}];
 const MAP_PER=3;
 const fogOpenN=()=>(st.fogOpen||[]).length;
+/* 마지막 '개울 끝'은 조각으로 안 열려요: 시즌 1 마지막 연출에서 물고기와 함께 열려요.
+   나머지 5곳도 이야기 속도에 맞춰 이웃 한 명이 올 때마다 한 곳씩만 밝힐 수 있어요 (콩이 1곳, 밤톨 2곳 …) */
+const FOG_PIECE_N=MAP_FOG.length-1;
+const fogCap=()=>Math.min(FOG_PIECE_N,Math.max(0,st.unlocked.length-1));
 function mapPieceAdd(p){
-  if(p!==0||!st.mapOn||(st.read[0]||0)<STORY[0].length||fogOpenN()>=MAP_FOG.length)return false;
-  st.mp=(st.mp||0)+1;
-  if(st.mp>=MAP_PER){
-    st.mp=0;st.fogOpen=st.fogOpen||[];const f=MAP_FOG[st.fogOpen.length];st.fogOpen.push(f.id);
-    whenFree(()=>{sfx('badge');showReward('지도의 흐릿한 곳이 밝혀졌어요!','<div class="lvup">'+fogShot(f)+'</div>','보리와 함께 「'+f.n+'」'+josa(f.n,'을','를')+' 찾았어요.\n도감의 \'지도\'에서 볼 수 있어요.',()=>{dexTab='map';renderDex();openSheet('dex');},'지도 보기');},1700);
-  }
+  if(p!==0||!st.mapOn||(st.read[0]||0)<STORY[0].length||fogOpenN()>=FOG_PIECE_N)return false;
+  const full=(st.mp||0)>=MAP_PER;
+  if(!full)st.mp=(st.mp||0)+1;
+  fogTry();
+  return !full;
+}
+/* 조각이 다 모였고 밝힐 수 있는 자리가 있으면 한 곳 밝히기 (새 이웃이 왔을 때도 확인) */
+function fogTry(){
+  if(!st.mapOn||(st.mp||0)<MAP_PER||fogOpenN()>=fogCap())return false;
+  st.mp=0;st.fogOpen=st.fogOpen||[];const f=MAP_FOG[st.fogOpen.length];st.fogOpen.push(f.id);save();
+  whenFree(()=>{sfx('badge');showReward('지도의 흐릿한 곳이 밝혀졌어요!','<div class="lvup">'+fogShot(f)+'</div>','보리와 함께 「'+f.n+'」'+josa(f.n,'을','를')+' 찾았어요.\n도감의 \'지도\'에서 볼 수 있어요.',()=>{dexTab='map';renderDex();openSheet('dex');},'지도 보기');},1700);
   return true;
 }
 function fogShot(f){
@@ -4101,14 +4116,16 @@ function fogShot(f){
   const z=f.r*1.3,px=Math.max(0,Math.min(100,(f.x-z/2)/(100-z)*100)),py=Math.max(0,Math.min(100,(f.y-z/2)/(100-z)*100));
   return '<div class="fogshot" style="background-image:url('+MAP_URL+');background-size:'+(10000/z).toFixed(1)+'%;background-position:'+px.toFixed(1)+'% '+py.toFixed(1)+'%"></div>';
 }
-function fogHTML(){
-  const op=st.fogOpen||[];
-  return MAP_FOG.map(f=>op.indexOf(f.id)>=0?'<span class="vm-fogn" style="left:'+f.x+'%;top:'+Math.min(96,f.y+f.r*0.32)+'%">'+escH(f.n)+'</span>':'<div class="vm-fog" style="left:'+f.x+'%;top:'+f.y+'%;width:'+f.r+'%"><span>?</span></div>').join('');
+function fogHTML(fishIn){
+  const op=(st.fogOpen||[]).slice();if(st.s1&&op.indexOf('mouth')<0)op.push('mouth');
+  return MAP_FOG.map(f=>(fishIn&&f.id==='mouth')?'<div class="vm-fog lift" style="left:'+f.x+'%;top:'+f.y+'%;width:'+f.r+'%"><span>?</span></div>':op.indexOf(f.id)>=0?'<span class="vm-fogn" style="left:'+f.x+'%;top:'+Math.min(96,f.y+f.r*0.32)+'%">'+escH(f.n)+'</span>':'<div class="vm-fog" style="left:'+f.x+'%;top:'+f.y+'%;width:'+f.r+'%"><span>?</span></div>').join('');
 }
 function fogInfo(){
   const o=fogOpenN();
   if(o>=MAP_FOG.length)return '흐릿한 곳을 모두 밝혔어요!';
   if((st.read[0]||0)<STORY[0].length)return '흐릿한 곳은 보리 이야기를 다 읽으면 밝힐 수 있어요.';
+  if(o>=FOG_PIECE_N)return '개울 끝은 아직 너무 흐려서 안 보여요.';
+  if((st.mp||0)>=MAP_PER&&o>=fogCap())return '지도 조각 '+MAP_PER+'/'+MAP_PER+' · 새 이웃이 오면 다음 곳을 밝힐 수 있어요';
   return '지도 조각 '+(st.mp||0)+'/'+MAP_PER+' · 밝힌 곳 '+o+'/'+MAP_FOG.length+' (보리 부탁으로 모아요)';
 }
 /* 보리 1편을 읽고 나면 지도가 열려요 (튜토리얼 끝난 뒤 한 번) */
