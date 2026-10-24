@@ -2030,8 +2030,8 @@ const petPrev=p=>PET_ORDER[PET_ORDER.indexOf(p)-1];
 function petNeed(p){ /* 아직 못 채운 조건 하나 (없으면 null) */
   const pv=petPrev(p);
   if(p!==1&&!PET_COND[p]())return null; /* 재료 조건은 기존 안내가 맡아요 */
-  if(st.lv<(PET_LV[p]||0))return {t:'레벨 '+PET_LV[p]+' 달성 · 새 이웃',a:st.lv,b:PET_LV[p],act:'pass'};
-  if(pv!=null&&pv!==0&&(st.read[pv]||0)<STORY[pv].length)return {t:petName(pv)+' 이야기 모두 읽기 · 새 이웃',a:st.read[pv]||0,b:STORY[pv].length,act:'dex'};
+  if(st.lv<(PET_LV[p]||0))return {t:'레벨 '+PET_LV[p]+' 되면 새 이웃!',a:st.lv,b:PET_LV[p],act:'pass'};
+  if(pv!=null&&pv!==0&&(st.read[pv]||0)<STORY[pv].length)return {t:petName(pv)+' '+STORY[pv].length+'편 읽으면 새 이웃!',a:st.read[pv]||0,b:STORY[pv].length,act:'dex'};
   return null;
 }
 const PET_HINT={1:'빈 방에 쳇바퀴를 놓으면',2:'해바라기씨를 6단계까지 키우면',3:'도토리를 6단계까지 키우면',5:'잠자리 재료를 6단계까지 키우면',6:'집짓기 재료를 6단계까지 키우면',4:'텃밭 재료를 6단계까지 키우면',7:'놀이 재료를 6단계까지 키우고 광장을 꾸미면'};
@@ -2048,6 +2048,9 @@ function checkGenUnlock(){ /* 이름은 그대로: 보드 그릴 때마다 이�
     const prev=PET_ORDER[PET_ORDER.indexOf(p)-1];
     if(prev!=null&&st.unlocked.indexOf(prev)<0)break;
     if(PET_COND[p]&&PET_COND[p]()&&!petNeed(p)&&arriveQ.indexOf(p)<0){arriveQ.push(p);setTimeout(runArrive,700);}
+    /* 재료는 다 키웠는데 레벨·이야기가 남아 이웃이 기다리는 중이면 한 번만 알려 줘요 */
+    else if(p!==1&&PET_COND[p]&&PET_COND[p]()){const nd=petNeed(p);st.pnote=st.pnote||{};
+      if(nd&&!st.pnote[p]){st.pnote[p]=1;save();setTimeout(()=>toast(nd.t.replace('새 이웃!','새 이웃이 이사 와요!')),900);}}
     break;
   }
 }
