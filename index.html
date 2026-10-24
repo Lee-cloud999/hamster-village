@@ -3113,9 +3113,14 @@ function gainXp(n){
 /* ---------- orders ---------- */
 function newOrder(tier,forceCu){
   const cur=st.orders.filter(Boolean),used=cur.map(o=>o.cu);
-  const unl=st.unlocked;let pool=unl.filter(i=>used.indexOf(i)<0);
-  if(!pool.length)pool=unl.slice();
-  const cu=forceCu!=null?forceCu:pool[rnd(pool.length)];
+  /* 손님 고르기: 아직 읽을 이야기가 남은 주민이 3배 더 자주 와요 (이야기를 다 읽은 주민은 가끔).
+     같은 묶음에 이미 온 주민은 조금 덜 오게 해서 한 명만 줄줄이 오지는 않게 */
+  const unl=st.unlocked;let cu=forceCu;
+  if(cu==null){
+    const wt=p=>((st.read[p]||0)<(STORY[p]||[]).length?3:1)/(1+used.filter(x=>x===p).length);
+    const tot=unl.reduce((t,p)=>t+wt(p),0);let r=Math.random()*tot;cu=unl[0];
+    for(let k=0;k<unl.length;k++){r-=wt(unl[k]);if(r<=0){cu=unl[k];break;}}
+  }
   /* 주문 단계: 1단계는 거의 없이 2~4단계 위주, 레벨이 오르면 5·6단계도 */
   const top=Math.min(MAXLV,4+Math.floor((st.lv-1)/3));
   const low=st.lv<2?1:2;
