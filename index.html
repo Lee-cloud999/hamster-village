@@ -1566,7 +1566,7 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
 #dscene .s-snack{left:47.6%!important;top:50.4%!important}
 #dscene .s-hammock{left:22.7%!important;top:80.9%!important}
 #dscene .s-bowl{left:57.2%!important;top:84.4%!important}
-#dscene .s-wheel{left:66.7%!important;top:2%!important;width:33%!important;height:21%!important;z-index:0}
+#dscene .s-wheel.own,#dscene .s-wheel.pv{left:66.7%!important;top:2%!important;width:33%!important;height:21%!important;z-index:0}
 /* 최종 단계 재료: 칸 테두리 위에 금색 선을 덧칠하지 않고, 칸 안쪽에 은은한 금빛만 (별 표시는 그대로) */
 .item.max{box-shadow:none}
 .item.max>img,.item.max>.im{filter:drop-shadow(1.5px 0 0 #ffd84a) drop-shadow(-1.5px 0 0 #ffd84a) drop-shadow(0 1.5px 0 #ffd84a) drop-shadow(0 -1.5px 0 #ffd84a)} /* 그림 모양을 따라 얇은 노란 테두리 */
@@ -3905,7 +3905,7 @@ function renderScene(){
   let h='';
   SPOTS.forEach(sp=>{
     const showIt=owned(sp.id)||dSel===sp.id||(decEdit&&DE_TEST);
-    const cls='slot s-'+sp.id+(dSel===sp.id?' on':'')+(owned(sp.id)?'':(showIt?' pv':' empty'))+(dJust===sp.id?' popin':'');
+    const cls='slot s-'+sp.id+(dSel===sp.id?' on':'')+(owned(sp.id)?' own':(showIt?' pv':' empty'))+(dJust===sp.id?' popin':'');
     h+='<button class="'+cls+'" type="button" data-spot="'+sp.id+'" aria-label="'+sp.n+'">';
     if(showIt)h+=spotHTML(sp.id,shownStyle(sp.id)??0);
     else if(spotOpen(sp))h+='<span>'+sp.n+'</span><span class="pc">'+COIN+sp.cost+'</span>';
