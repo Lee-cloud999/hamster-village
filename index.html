@@ -1562,6 +1562,11 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
 #deOut{width:100%;height:120px;font-size:11px;border-radius:12px;border:1.5px solid #ffad9e;padding:6px;box-sizing:border-box;background:#fff;color:#222}
 .de-test{background:#fff0ec}.de-test span{font-size:12px;color:#d9735c;flex:1}
 #decor.edit #dscene .slot.pv{opacity:1}
+/* 기본 배치 (2026-10-25 사용자가 테스트 모드에서 옮긴 자리) */
+#dscene .s-snack{left:47.6%!important;top:50.4%!important}
+#dscene .s-hammock{left:22.7%!important;top:80.9%!important}
+#dscene .s-bowl{left:57.2%!important;top:84.4%!important}
+#dscene .s-wheel{left:66.7%!important;top:2%!important;width:33%!important;height:21%!important;z-index:0}
 /* 최종 단계 재료: 칸 테두리 위에 금색 선을 덧칠하지 않고, 칸 안쪽에 은은한 금빛만 (별 표시는 그대로) */
 .item.max{box-shadow:none}
 .item.max>img,.item.max>.im{filter:drop-shadow(1.5px 0 0 #ffd84a) drop-shadow(-1.5px 0 0 #ffd84a) drop-shadow(0 1.5px 0 #ffd84a) drop-shadow(0 -1.5px 0 #ffd84a)} /* 그림 모양을 따라 얇은 노란 테두리 */
@@ -3917,7 +3922,7 @@ function renderScene(){
   }
   const lay=st.lay||{};
   const guests=(decEdit&&DE_TEST)?PET_ORDER.slice():st.unlocked.filter(p=>!st.petHide[p]&&(p<=1||sceneOut.indexOf(p)>=0||lay['p'+p]||decEdit));
-  const GP={0:[58,340],1:[38,527],2:[170,104,15],3:[40,62],4:[112,64],5:[22,96],6:[288,78,14],7:[222,86,16.5]},SURF=[[82,98],[304,134],[130,62],[180,58],[230,66],[196,340]];let si=0;
+  const GP={0:[58,340],1:[38,527],2:[171,78,15],3:[68,72],4:[113,94],5:[22,96],6:[296,132,16.8],7:[223,97,16.5]},SURF=[[82,98],[304,134],[130,62],[180,58],[230,66],[196,340]];let si=0;
   h+='<span class="rlbl" style="left:35%;top:41.5%">'+escH(petName(0))+'네 방</span><span class="rlbl" style="left:39%;top:72%">'+(st.unlocked.indexOf(1)>=0?escH(petName(1))+'네 방':'빈 방')+'</span>';
   h+=guests.map((p,k)=>{const pos=GP[p]||SURF[(si++)%SURF.length];return '<button class="pg" type="button" data-pet="'+p+'" style="left:'+(pos[0]/3.8)+'%;top:'+(pos[1]/6.12)+'%;'+(pos[2]?'width:'+pos[2]+'%;':'')+'animation-delay:'+(-k*.45)+'s" aria-label="'+escH(petName(p))+'">'+petFace(p)+'</button>';}).join('');
   $('#dscene').innerHTML=h;
