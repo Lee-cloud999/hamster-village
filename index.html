@@ -4281,7 +4281,7 @@ function storyStep(){
   stQ.cur=p;stQ.full=full;let i=0;
   const red=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
   if(red){p.textContent=full;p.classList.remove('typing');}
-  else{const ch=[...full];const draw=()=>{p.innerHTML=escH(ch.slice(0,i).join(''))+'<span class="trest">'+escH(ch.slice(i).join(''))+'</span>';};draw();stQ.typing=setInterval(()=>{i+=1;draw();if(i>=ch.length){clearInterval(stQ.typing);stQ.typing=null;p.textContent=full;p.classList.remove('typing');}},40);}
+  else{const ch=[...full];const draw=()=>{p.innerHTML=escH(ch.slice(0,i).join(''))+'<span class="trest">'+escH(ch.slice(i).join(''))+'</span>';};draw();const tm=setInterval(()=>{if(!stQ||stQ.cur!==p){clearInterval(tm);return;} /* 이야기 창이 먼저 닫혔으면 조용히 멈춤 */ i+=1;draw();if(i>=ch.length){clearInterval(tm);stQ.typing=null;p.textContent=full;p.classList.remove('typing');}},40);stQ.typing=tm;}
   if(!stQ.list.length){$('#rwOk').textContent=stQ.ok;$('#rwNote').hidden=false;}
   return true;
 }
