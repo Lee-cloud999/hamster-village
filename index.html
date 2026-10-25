@@ -3557,7 +3557,7 @@ function act(i,j){
     st.cells[i]=null;st.cells[j]={c:a.c,l:nl};sel=null;
     st.nMerge++;if(st.tut===3)st.tut=4;if(combo>st.maxCombo)st.maxCombo=combo;
     track('merge');if(nl>=3)track('merge3');if(nl>=5)track('merge5');
-    let bonus=0;if(combo>=3){bonus=combo-1;st.coins+=bonus;}
+    let bonus=0;if(combo>=3){bonus=Math.min(9,combo-1);st.coins+=bonus;} /* 연속 합치기 보너스는 최대 9코인 (끝없이 커지지 않게) */
     let bj=null;
     const rj=!reduce&&cellEl(j)?cellEl(j).getBoundingClientRect():null; /* 칸을 바꾸기 전에 재서 강제 레이아웃을 피해요 */
     sfx('merge',nl,combo);patchCells([i,j]);if(softLand)landPop(j,nl);else pop(j);fxAt(j,nl,combo,null,rj);refreshSoon();if(!softLand)juiceMerge(j,nl);else if(nl>=5&&!reduce){const b=$('#board');b.classList.remove('shake2');void b.offsetWidth;b.classList.add('shake2');setTimeout(()=>b.classList.remove('shake2'),420);}
