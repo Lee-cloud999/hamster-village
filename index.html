@@ -1586,6 +1586,8 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
 .sw::after{transition:transform .2s ease,background-color .2s ease}
 @media (hover:hover){.sheet .btn:not(:disabled):not(.on):not(.main):hover,.dtab:not(.on):hover,.sheet .x:hover{background-color:#fff3ef;border-color:#ffcfc4}}
 @media (prefers-reduced-motion: reduce){.sheet .btn,.sheet .x,.dtab,.sw,.sw::after,.de-emo button{transition:none}}
+/* 상자 여는 중 타이머 */
+.item .bxt{position:absolute;left:50%;bottom:2px;transform:translateX(-50%);font-size:11px;font-weight:800;color:#fff;background:rgba(107,68,42,.82);border-radius:8px;padding:0 5px;line-height:1.35;white-space:nowrap;font-variant-numeric:tabular-nums}
 /* 최종 단계 재료: 칸 테두리 위에 금색 선을 덧칠하지 않고, 칸 안쪽에 은은한 금빛만 (별 표시는 그대로) */
 .item.max{box-shadow:none}
 .item.max>img,.item.max>.im{filter:drop-shadow(1.5px 0 0 #ffd84a) drop-shadow(-1.5px 0 0 #ffd84a) drop-shadow(0 1.5px 0 #ffd84a) drop-shadow(0 -1.5px 0 #ffd84a)} /* 그림 모양을 따라 얇은 노란 테두리 */
@@ -2194,7 +2196,7 @@ function emptyCells(){const r=[];st.cells.forEach((x,i)=>{if(!x&&!isLocked(i)&&!
 const ENV=[0,5,12,25,50,100],ENMAX=5;
 const isSpecial=c=>c==='xp'||c==='en'||c==='tl'||c==='tg'||c==='bx';
 const TOOL_TIP=['','가위: 재료 위에 놓으면 한 단계 아래 두 개로 나눠요','반짝 가루: 재료 위에 놓으면 한 단계 올라가요','거울: 재료 위에 놓으면 똑같은 재료가 하나 더 생겨요'];
-function canMerge(a,b){const x=st.cells[a],y=st.cells[b];return a!==b&&!!x&&!!y&&x.c===y.c&&x.l===y.l&&x.l<(x.c==='xp'?XPMAX:x.c==='en'?ENMAX:(x.c==='tl'||x.c==='tg'||x.c==='bx')?0:MAXLV);}
+function canMerge(a,b){const x=st.cells[a],y=st.cells[b];return a!==b&&!!x&&!!y&&x.c===y.c&&x.l===y.l&&x.l<(x.c==='xp'?XPMAX:x.c==='en'?ENMAX:x.c==='bx'?((x.q||x.t||y.q||y.t)?0:3):(x.c==='tl'||x.c==='tg')?0:MAXLV);}
 function giveEn(n){for(let k=0;k<(n||1);k++){const e2=emptyCells();if(e2.length){const j=e2[rnd(e2.length)];st.cells[j]={c:'en',l:1};renderBoard();pop(j);}else qGive('en',1);}
   save();}
 function useTool(i,j){
@@ -2856,17 +2858,21 @@ const boxImg=g=>(g===2||g===3)?'<img class="ui" src="'+BOXGU[g]+'" alt="" dragga
 const randTool=()=>{const r=Math.random();return r<.45?1:r<.8?2:3;};
 function boxContents(g){
   const keys=openChains(),pick=()=>keys[rnd(keys.length)],q=[];
+  /* 상자 합치기: 나무 2개 → 은(7개), 은 2개 → 금(12개) — 합칠수록 이득. 도구는 귀하게(나무 4%, 은 20%, 금 40%) */
   if(g===1){
     for(let k=0;k<3;k++){
-      if(k===2&&Math.random()<.12){q.push(['tl',randTool()]);continue;}
-      if(k===2&&Math.random()<.3){q.push(['en',Math.random()<.75?1:2]);continue;}
+      const r=Math.random();
+      if(k===2&&r<.04){q.push(['tl',randTool()]);continue;}
+      if(k===2&&r<.3){q.push(['en',Math.random()<.75?1:2]);continue;}
       q.push([pick(),Math.random()<.7?2:3]);}
   }else if(g===2){
-    for(let k=0;k<3;k++)q.push([pick(),Math.random()<.6?3:2]);
-    q.push(['en',2]);q.push(Math.random()<.6?['tl',randTool()]:['tg',1]);
+    for(let k=0;k<5;k++)q.push([pick(),Math.random()<.6?3:2]);
+    q.push(['en',2]);
+    const r=Math.random();q.push(r<.2?['tl',randTool()]:r<.6?['tg',1]:[pick(),3]);
   }else{
-    for(let k=0;k<3;k++)q.push([pick(),Math.random()<.6?4:3]);
-    q.push(['en',3]);q.push(['tl',randTool()]);q.push(['tg',1]);
+    for(let k=0;k<9;k++)q.push([pick(),Math.random()<.6?4:3]);
+    q.push(['en',3]);q.push(['tg',1]);
+    q.push(Math.random()<.4?['tl',randTool()]:[pick(),4]);
   }
   for(let k=q.length-1;k>0;k--){const r=rnd(k+1);[q[k],q[r]]=[q[r],q[k]];}
   return q;
@@ -2877,8 +2883,14 @@ function nearEmpty(i){
   const r0=Math.floor(i/COLS),c0=i%COLS;
   return emptyCells().sort((a,b)=>{const da=Math.abs(Math.floor(a/COLS)-r0)+Math.abs(a%COLS-c0),db=Math.abs(Math.floor(b/COLS)-r0)+Math.abs(b%COLS-c0);return da-db||Math.abs(a%COLS-c0)-Math.abs(b%COLS-c0);});
 }
+const BOX_MS=[0,60e3,5*60e3,15*60e3]; /* 상자 여는 시간: 나무 1분, 은 5분, 금 15분 */
+const boxLeft=b=>b&&b.c==='bx'&&b.t?Math.max(0,b.t-Date.now()):0;
+const fmtMS=ms=>{const t=Math.ceil(ms/1000),m=Math.floor(t/60),s2=t%60;return m+':'+String(s2).padStart(2,'0');};
 function openBoxStep(i){
   const b=st.cells[i];if(!b||b.c!=='bx')return;
+  if(!b.q&&!b.t){b.t=Date.now()+BOX_MS[b.l];sel=null;patchCells([i]);pop(i);sfx('tap');save();
+    toast(BOXN[b.l]+'을(를) 열기 시작했어요 · '+fmtMS(BOX_MS[b.l])+' 뒤에 열려요');return;}
+  if(boxLeft(b)>0){toast(fmtMS(boxLeft(b))+' 뒤에 열려요');sfx('err');return;}
   if(!b.q)b.q=boxContents(b.l);
   if(b.q.length===1){const x=b.q.shift();st.cells[i]={c:x[0],l:x[1]};sel=null;renderBoard();pop(i);fxAt(i,0,0,3);sfx('gen');refresh();save();toast(BOXN[b.l]+'을(를) 다 열었어요!');return;}
   const e=nearEmpty(i);if(!e.length){toast('상자 옆에 빈 칸이 없어요');sfx('err');return;}
@@ -2937,7 +2949,7 @@ function qPlace(){
   if(!empty.length){toast('보드에 빈 칸이 없어요. 재료를 합치거나 팔아서 자리를 만들어 보세요');sfx('err');return;}
   const j=empty[rnd(empty.length)];
   sel=null;st.cells[j]={c:e.c,l:e.l};st.tq.shift();tipDone('box');
-  if(e.c==='bx'&&!st.bxTip){st.bxTip=1;setTimeout(()=>toast('상자를 누를 때마다 하나씩 나와요!'),400);}
+  if(e.c==='bx'&&!st.bxTip){st.bxTip=1;setTimeout(()=>toast('상자를 누르면 열기 시작해요. 같은 상자끼리 합치면 더 좋은 상자가 돼요'),400);}
   save();renderBoard();pop(j);fxAt(j,0,0,3);sfx('gen');refresh();
 }
 
@@ -3525,7 +3537,7 @@ function cellHTML(i){
     if(sel===i&&it)cls+=' sel';
     else if(sel!=null&&canMerge(sel,i))cls+=' match';
     h+='<div class="'+cls+'" data-i="'+i+'"'+(it?' aria-label="'+nm(it.c,it.l)+' '+it.l+'단계"':'')+'>'+
-      (it?'<div class="item c-'+it.c+(it.l===MAXLV?' max':'')+'">'+em(it.c,it.l)+(it.l===MAXLV&&!isSpecial(it.c)?'<span class="star">★</span>':'')+(it.c==='tg'?'<span class="tgn">'+(it.n==null?10:it.n)+'</span>':'')+(it.c==='bx'?'<span class="tgn">'+(it.q?it.q.length:[0,3,5,6][it.l])+'</span>':'')+'</div>':'')+
+      (it?'<div class="item c-'+it.c+(it.l===MAXLV?' max':'')+'">'+em(it.c,it.l)+(it.l===MAXLV&&!isSpecial(it.c)?'<span class="star">★</span>':'')+(it.c==='tg'?'<span class="tgn">'+(it.n==null?10:it.n)+'</span>':'')+(it.c==='bx'?(boxLeft(it)>0?'<span class="bxt">'+fmtMS(boxLeft(it))+'</span>':'<span class="tgn">'+(it.q?it.q.length:[0,3,7,12][it.l])+'</span>'+(!it.q&&!it.t?'':'')):'')+'</div>':'')+
       '</div>';
   return h;
 }
@@ -3644,7 +3656,7 @@ function act(i,j){
     if(bonus)floatAt(cellEl(j),'+'+bonus+' 코인');
     if(nl>=4&&!isSpecial(a.c))bigText(nm(a.c,nl)+' 완성!',nl===MAXLV);
     if(nl>=4&&!isSpecial(a.c)&&Math.random()<.15)setTimeout(()=>giveEn(1),350);
-    if(nl===MAXLV&&!isSpecial(a.c)&&Math.random()<.25)setTimeout(()=>{qGive('tl',randTool());toast('🎁 깜짝 선물! 임시 칸에 도구가 왔어요');},600);
+    if(nl===MAXLV&&!isSpecial(a.c)&&Math.random()<.08)setTimeout(()=>{qGive('tl',randTool());toast('🎁 깜짝 선물! 임시 칸에 도구가 왔어요');},600);
     if(nl===5&&!isSpecial(a.c)&&Math.random()<.25)setTimeout(()=>{const e2=emptyCells();if(e2.length){const j2=e2[rnd(e2.length)];st.cells[j2]={c:'xp',l:1};renderBoard();pop(j2);}else qGive('xp',1);if(!st.xpTip){st.xpTip=1;setTimeout(()=>toast('황금 도토리가 나왔어요! 두 번 누르면 경험치, 합치면 더 커져요'),500);}save();},300);
     if(bj!=null){pop(bj);toast('합치기 보너스! 재료가 하나 더 나왔어요');}
     return;
@@ -4603,6 +4615,7 @@ document.addEventListener('pointerdown',()=>{
 /* ---------- boot ---------- */
 function tick(){
   if(!st)return;
+  {const bi=[];st.cells.forEach((c,k)=>{if(c&&c.c==='bx'&&c.t&&!c.q&&(c.t-Date.now())>-1500)bi.push(k);});if(bi.length&&!document.hidden){try{patchCells(bi);}catch(_){}}}
   if(devInf&&st.e<maxE()){st.e=maxE();renderEnergy();}
   tk++;
   if(!document.hidden)st.playMs+=1000;
