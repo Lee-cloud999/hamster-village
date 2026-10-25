@@ -2566,7 +2566,7 @@ const MAIN_SHEETS=['event','ebuy','stor','shop','pass','quest','decor','dex','pr
 const TOP_SHEETS=['confirm','reward','chain'];
 function syncScrim(){$('#scrim').hidden=!Array.prototype.some.call(document.querySelectorAll('.sheet'),s=>!s.hidden);}
 /* 메뉴 창: 스크롤 없이 한눈에 보이도록 화면에 맞춰 살짝 줄여요 */
-const NOFIT=['decor','pass','event','dev']; /* 테스트 모드 창은 줄이지 않고 스크롤 */
+const NOFIT=['decor','pass','event','dev','dex']; /* 도감은 내용이 길어져도 줄이지 않고 안에서 스크롤 */ /* 테스트 모드 창은 줄이지 않고 스크롤 */
 function fitSheet(el){
   if(!el||el.hidden||NOFIT.indexOf(el.id)>=0)return;
   const land=matchMedia('(min-width:100000px) /* 가로 배치 끔: 모든 기기 세로 배치 */').matches;
