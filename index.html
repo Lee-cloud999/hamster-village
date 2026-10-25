@@ -1521,6 +1521,10 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
 .stat .xp{flex:0 0 84px!important;width:84px!important;min-width:84px!important} /* 경험치 바는 폭 고정 */
 .stat .erow,.stat .pill,.stat .lvchip,.stat .brandrow{flex-shrink:0}
 @media (max-width:390px){.stat{gap:3px!important}.stat .erow{padding:2px 5px 2px 4px!important;gap:2px!important}.stat .erow .en{font-size:17px!important}.stat .erow .et{font-size:9px!important}.stat .pill{padding:2px 6px!important}.stat .pill b{font-size:17px!important}.stat .lvchip{padding:0 7px!important}}
+/* 부탁 바꾸기 버튼 (카드 왼쪽 위) */
+.order .oswap{position:absolute;left:2px;top:4px;z-index:4;width:24px;height:24px;padding:0;border-radius:50%;border:1px solid rgba(107,74,34,.25);background:rgba(255,255,255,.92);color:#b07a55;font-size:14px;font-weight:800;line-height:22px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.15);pointer-events:auto}
+.order .oswap:active{transform:scale(.92)}
+.hrt small.hab{color:#8a6a3a}
 /* 최종 단계 재료: 칸 테두리 위에 금색 선을 덧칠하지 않고, 칸 안쪽에 은은한 금빛만 (별 표시는 그대로) */
 .item.max{box-shadow:none}
 .item.max>img,.item.max>.im{filter:drop-shadow(1.5px 0 0 #ffd84a) drop-shadow(-1.5px 0 0 #ffd84a) drop-shadow(0 1.5px 0 #ffd84a) drop-shadow(0 -1.5px 0 #ffd84a)} /* 그림 모양을 따라 얇은 노란 테두리 */
@@ -3284,12 +3288,27 @@ function ordRw(o){
   let n=0;try{if(evOn())n=o.needs.length+(o.tier==='hard'?1:0);}catch(e){}
   return '<span class="orw"><i>'+COIN+'<b>+'+o.coins+'</b></i><i class="ox">⭐<b>+'+o.xp+'</b></i>'+(n?'<i class="oe">'+evI('acorn',14)+'<b>+'+n+'</b></i>':'')+'</span>';
 }
+/* 부탁 바꾸기: 마음에 안 드는 부탁은 코인을 조금 내고 다른 부탁으로 (일부 전한 부탁은 안 돼요) */
+const swapCost=()=>20+st.lv*5;
+function swapOrder(k){
+  const o=st.orders[k];if(!o||o.state==='done')return;
+  if(o.needs.some(n=>n.done)){toast('이미 일부 전한 부탁은 바꿀 수 없어요');sfx('err');return;}
+  const c=swapCost();sfx('tap');
+  askConfirm(petName(o.cu)+'의 부탁을 다른 부탁으로 바꿀까요? · 코인 '+c,'바꾸기',()=>{
+    const i=st.orders.indexOf(o);if(i<0||o.state==='done')return;
+    if(st.coins<c){toast('코인이 부족해요');sfx('err');return;}
+    st.coins-=c;st.orders.splice(i,1);
+    const n=newOrder(o.tier);st.orders.splice(i,0,n);
+    save();refresh();renderOrders(i);renderBoard();sfx('coin');toast('새 부탁이 왔어요');
+  });
+}
 function renderOrders(fresh){
   $('#orders').innerHTML=st.orders.map((o,k)=>{
     const cu=CUST[o.cu],rd=o.state!=='done'&&findMatches(k).length>0;
     const cls='order'+(o.state==='done'?' done':'')+(rd?' ready':'')+(wants(k)?' wants':'')+
       ((fresh==='all'||fresh===k||(Array.isArray(fresh)&&fresh.indexOf(k)>=0))?' enter':'');
-    return '<article class="'+cls+'" data-k="'+k+'">'+ordRw(o)+
+    const canSw=o.state!=='done'&&!inTut()&&st.tut>=20&&!o.needs.some(n=>n.done);
+    return '<article class="'+cls+'" data-k="'+k+'">'+ordRw(o)+(canSw?'<button class="oswap" type="button" aria-label="다른 부탁으로 바꾸기">↻</button>':'')+
       '<div class="who"><span class="face">'+faceE(o.cu,o.state==='done'?2:rd?3:(o.cu===0?1:0))+'</span><b>'+escH(petName(o.cu))+'</b>'+(o.tier==='hard'?'<i class="tier">★</i>':'')+'</div>'+
       '<div class="otxt">'+orderLabel(o)+'</div>'+
       '<div class="plate">'+o.needs.map(n=>'<span class="need c-'+n.c+(n.done?' done':'')+'" data-c="'+n.c+'" data-l="'+n.l+'" role="button" aria-label="'+nm(n.c,n.l)+' '+n.l+'단계">'+em(n.c,n.l)+(n.done?'<u class="ck">✓</u>':'')+'</span>').join('')+'</div>'+
@@ -3307,10 +3326,11 @@ function deliver(i,k){
   if(it.l>=4)track('hi');
   if(o.needs.every(n=>n.done)){
     const tutXp=st.tut===4;
-    o.state='done';o.doneAt=Date.now();st.coins+=o.coins;st.nDeliv++;st.fed[o.cu]=(st.fed[o.cu]||0)+1;
+    const cb=Math.round(o.coins*abilPct(4)/100);
+    o.state='done';o.doneAt=Date.now();st.coins+=o.coins+cb;st.nDeliv++;st.fed[o.cu]=(st.fed[o.cu]||0)+1;
     heartAdd(o.cu,$('#orders').children[k]);
     track('deliver');track('coin',o.coins);
-    flyCoins($('#orders').children[k],o.coins,false);
+    flyCoins($('#orders').children[k],o.coins+cb,false);
     const evN=evAdd(o);
     flyXp($('#orders').children[k],o.xp);
     setTimeout(()=>{gainXp(o.xp);refresh();save();},560);
@@ -3503,8 +3523,10 @@ function generate(c){
   const empty=emptyCells();
   if(!empty.length){toast('보드가 가득 찼어요. 재료를 합치거나 전해 주거나 팔아 보세요');sfx('err');return;}
   const t=GU[guLv(c)];
-  const j=empty[rnd(empty.length)],l=genRoll(c);
-  const saved=t.sv>0&&Math.random()<t.sv;
+  const j=empty[rnd(empty.length)];let l=genRoll(c);
+  const own=genOwner(c);let helped=false;
+  if(l===1&&own!=null&&abilPct(own)&&!inTut()&&Math.random()*100<abilPct(own)){l=2;helped=true;}
+  const saved=(t.sv>0&&Math.random()<t.sv)||(!inTut()&&abilPct(7)>0&&Math.random()*100<abilPct(7));
   st.cells[j]={c:c,l:l};
   if(!saved)st.e-=1;
   track('gen');
@@ -3519,7 +3541,7 @@ function generate(c){
   const ge=document.querySelector('.gencell[data-i="'+GENPOS[c]+'"]');
   juiceGen(ge,j);if(j2!=null)juiceGen(null,j2);
   if(saved&&ge)floatAt(ge,'에너지 절약!');
-  if(l>=2)floatAt(cellEl(j),l+'단계!');
+  if(helped)floatAt(cellEl(j),petName(own)+' 덕분에 2단계!');else if(l>=2)floatAt(cellEl(j),l+'단계!');
   if(j2!=null){floatAt(cellEl(j2),'더블!');}
 }
 
@@ -3961,13 +3983,16 @@ const CH_SPECIAL={
      ()=>{const a=st.fed[0]||0;return {ok:a>=8,sub:petName(0)+' 부탁 '+Math.min(8,a)+'/8'};}],
   /* 콩이 3편: 밤톨이 오기 전에는 장식이 5곳(침대·간식 선반·해먹·쳇바퀴·간식 그릇)뿐이라 6개를 요구하면 막혀요 */
   1:[null,null,
-     ()=>{const a=st.fed[1]||0,dc=decoCount();return {ok:a>=7&&dc>=5,sub:'부탁 '+Math.min(7,a)+'/7 · 마을 장식 '+Math.min(5,dc)+'/5'};}]
+     ()=>{const a=st.fed[1]||0,dc=decoCount();return {ok:(a>=7&&dc>=5)||a>=10,sub:'부탁 '+Math.min(7,a)+'/7 · 장식 '+Math.min(5,dc)+'/5 (또는 부탁 10번)'};}]
 };
 function chReq(p,k){
   const sp=CH_SPECIAL[p]&&CH_SPECIAL[p][k];
   if(sp)return sp();
   const q=CH_REQ[k]||CH_REQ[CH_REQ.length-1],dc=decoCount();
-  return {ok:(st.fed[p]||0)>=q.f&&dc>=q.d,sub:'부탁 '+Math.min(q.f,st.fed[p]||0)+'/'+q.f+' · 마을 장식 '+Math.min(q.d,dc)+'/'+q.d};
+  /* 장식 대신 부탁을 3번 더 들어줘도 열려요 (꾸미기와 부탁 중 편한 쪽으로) */
+  const a=st.fed[p]||0;
+  if(!q.d)return {ok:a>=q.f,sub:'부탁 '+Math.min(q.f,a)+'/'+q.f};
+  return {ok:(a>=q.f&&dc>=q.d)||a>=q.f+3,sub:'부탁 '+Math.min(q.f,a)+'/'+q.f+' · 장식 '+Math.min(q.d,dc)+'/'+q.d+' (또는 부탁 '+(q.f+3)+'번)'};
 }
 function storyReady(){
   let n=0;
@@ -4079,10 +4104,25 @@ function renderMap(){
 }
 /* ---------- 마음 게이지: 부탁을 들어줄 때마다 그 주민의 마음이 하나씩 차요. 가득 차면 선물 (이야기를 다 읽은 주민도 챙길 이유) ---------- */
 const HEART_MAX=5;
+/* 마음 능력: 마음 선물을 받을수록(st.hlv) 그 주민이 일을 덜어 줘요.
+   보리·콩이·밤톨·호두·참깨 할배·별이 → 자기 생성기에서 가끔 2단계가 바로 나옴 (선물 1번당 5%, 최대 25%)
+   솜 할머니 → 부탁 코인 보너스 (5%씩, 최대 25%) · 두부 → 생성기 누를 때 에너지 절약 (3%씩, 최대 15%) */
+const ABIL_GEN={0:'br',1:'sw',2:'dr',3:'ml',5:'fr',6:'ic'};
+const hlvOf=p=>(st&&st.hlv&&st.hlv[p])||0;
+function abilPct(p){const n=hlvOf(p);if(!n||!st||st.unlocked.indexOf(p)<0)return 0;return p===7?Math.min(15,n*3):Math.min(25,n*5);}
+function abilTxt(p,pct){
+  if(ABIL_GEN[p])return CH[ABIL_GEN[p]].t+' 생성기에서 가끔 2단계가 나와요'+(pct!=null?' ('+pct+'%)':'');
+  if(p===4)return '부탁 코인을 더 받아요'+(pct!=null?' (+'+pct+'%)':'');
+  if(p===7)return '생성기 에너지를 가끔 아껴 줘요'+(pct!=null?' ('+pct+'%)':'');
+  return '';
+}
+const genOwner=c=>{for(const k in ABIL_GEN)if(ABIL_GEN[k]===c)return +k;return null;};
 function heartRow(p){
   const h=(st.heart&&st.heart[p])||0,n=(st.hlv&&st.hlv[p])||0;
   let d='';for(let i=0;i<HEART_MAX;i++)d+='<i class="'+(i<h?'on':'')+'">❤</i>';
-  return '<div class="hrt"><b>마음</b><span class="hd">'+d+'</span><small>'+(n?'받은 선물 '+n+'번 · ':'')+'가득 차면 선물</small></div>';
+  const pc=abilPct(p);
+  return '<div class="hrt"><b>마음</b><span class="hd">'+d+'</span><small>'+(n?'받은 선물 '+n+'번 · ':'')+'가득 차면 선물</small>'+
+    '<small class="hab">'+(pc?'✨ 능력: '+escH(abilTxt(p,pc)):'✨ 선물을 받으면 능력이 생겨요: '+escH(abilTxt(p)))+'</small></div>';
 }
 function heartAdd(p,el){
   if(inTut())return;
@@ -4093,7 +4133,7 @@ function heartAdd(p,el){
   if(st.heart[p]>=HEART_MAX){
     st.heart[p]=0;st.hlv[p]=(st.hlv[p]||0)+1;
     const g=st.hlv[p]%3===0?2:1;spawnBox(g);
-    whenFree(()=>{sfx('badge');showReward(petName(p)+'의 마음 선물','<div class="bigrw">'+bi(boxImg(g),BOXN[g],'')+'</div>',petName(p)+josa(petName(p),'이','가')+' 마음을 담아 선물을 줬어요.\n상자가 임시 칸에 도착했어요.');},1500);
+    whenFree(()=>{sfx('badge');showReward(petName(p)+'의 마음 선물','<div class="bigrw">'+bi(boxImg(g),BOXN[g],'')+'</div>',petName(p)+josa(petName(p),'이','가')+' 마음을 담아 선물을 줬어요.\n✨ 능력: '+abilTxt(p,abilPct(p)));},1500);
   }
 }
 /* ---------- 지도 조각: 보리 이야기를 다 읽은 뒤 보리 부탁을 들어주면 조각이 모이고, 3개마다 지도의 흐릿한 곳이 하나씩 밝혀져요 ---------- */
@@ -4209,6 +4249,7 @@ function renderSnd(){
 /* ---------- event wiring ---------- */
 $('#orders').addEventListener('click',e=>{
   const card=e.target.closest('.order');if(!card||card.classList.contains('done'))return;
+  if(e.target.closest('.oswap')){e.stopPropagation();swapOrder(+card.dataset.k);return;}
   const nd=e.target.closest('.need');
   if(nd&&CH[nd.dataset.c]&&!nd.classList.contains('done')){const k=+card.dataset.k,ni=[...nd.parentNode.children].indexOf(nd);
     if(st.tut===12||!findMatches(k).some(m=>m[0]===ni)){sfx('tap');openChain(nd.dataset.c,+nd.dataset.l);return;}}
