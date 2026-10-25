@@ -2531,7 +2531,7 @@ const PRE_IMGS=['bg/walk.webp?v=3','bg/walk_mid.webp?v=3','bg/path.webp?v=4'],pr
 function toast(msg,light){
   msg=rn(msg);
   const t=$('#toast');t.textContent=msg;t.classList.toggle('light',light!==false);t.classList.add('show');
-  clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2300);
+  clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),Math.min(5000,Math.max(3200,1800+String(msg).length*60)));
 }
 function runFx(el,txt,gold){
   el.textContent=txt;
