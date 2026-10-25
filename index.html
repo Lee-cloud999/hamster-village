@@ -1567,6 +1567,10 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
 #dscene .s-hammock{left:22.7%!important;top:80.9%!important}
 #dscene .s-bowl{left:57.2%!important;top:84.4%!important}
 #dscene .s-wheel.own,#dscene .s-wheel.pv{left:66.7%!important;top:2%!important;width:33%!important;height:21%!important;z-index:0}
+/* 산 가구는 잠긴 칸보다 앞에 */
+#dscene .slot.own{z-index:1}
+#dscene .s-run.own,#dscene .s-wheel.own{z-index:0}
+#dscene .s-hammock.own,#dscene .s-bowl.own{z-index:2}
 /* 최종 단계 재료: 칸 테두리 위에 금색 선을 덧칠하지 않고, 칸 안쪽에 은은한 금빛만 (별 표시는 그대로) */
 .item.max{box-shadow:none}
 .item.max>img,.item.max>.im{filter:drop-shadow(1.5px 0 0 #ffd84a) drop-shadow(-1.5px 0 0 #ffd84a) drop-shadow(0 1.5px 0 #ffd84a) drop-shadow(0 -1.5px 0 #ffd84a)} /* 그림 모양을 따라 얇은 노란 테두리 */
@@ -3938,6 +3942,7 @@ function applyLayout(){
   const lay=st.lay||{};
   document.querySelectorAll('#dscene .slot,#dscene .pg').forEach(el=>{
     const v=lay[layKey(el)];
+    if(el.dataset.spot&&!owned(el.dataset.spot)&&!(decEdit&&DE_TEST)){['left','top','scale','z-index'].forEach(k=>el.style.removeProperty(k));return;}
     el.classList.toggle('esel',decEdit&&decPick===layKey(el));
     if(!v)return;
     if(v.l!=null){el.style.setProperty('left',v.l+'%','important');el.style.setProperty('top',v.t+'%','important');}
