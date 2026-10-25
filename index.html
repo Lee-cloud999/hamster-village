@@ -3941,13 +3941,13 @@ function editable(el){return !!el&&(el.classList.contains('pg')||(!!el.dataset.s
 function setDecEdit(on){decEdit=on;decPick=null;dSel=null;$('#decor').classList.toggle('edit',on);sfx('tap');renderDecor();}
 function renderDecEdit(){
   const box=$('#dEdit');if(!box)return;
-  if(!decEdit){box.innerHTML='<button class="btn dedit-go" type="button" data-de="on">✋ 위치·크기·표정 바꾸기</button>';return;}
+  if(!decEdit){box.innerHTML='<button class="btn dedit-go" type="button" data-de="on">위치·크기·표정 바꾸기</button>';return;}
   let h='<div class="de-tip">끌어서 옮기고, 눌러서 고르면 크기와 표정을 바꿀 수 있어요</div>';
   if(decPick){
     const isPet=decPick[0]==='p',id=decPick.slice(1),v=(st.lay||{})[decPick]||{};
     const nm=isPet?petName(+id):(SPOTS.find(x=>x.id===id)||{}).n;
     h+='<div class="de-row"><b>'+escH(nm||'')+'</b><span class="de-sz"><button class="btn" type="button" data-de="smaller">－</button><em>'+Math.round((v.s||1)*100)+'%</em><button class="btn" type="button" data-de="bigger">＋</button></span><button class="btn" type="button" data-de="reset1">처음 자리로</button></div>'+
-      '<div class="de-row de-z"><span>순서</span><button class="btn" type="button" data-de="back">⬇ 뒤로</button><button class="btn" type="button" data-de="front">⬆ 앞으로</button></div>';
+      '<div class="de-row de-z"><span>순서</span><button class="btn" type="button" data-de="back">뒤로</button><button class="btn" type="button" data-de="front">앞으로</button></div>';
     if(isPet&&EXPRU[+id]){const cur=(st.pemo||{})[id]||1;
       h+='<div class="de-emo">'+EMO_NAMES.map((n,k)=>'<button type="button" class="'+(cur===k+1?'on':'')+'" data-emo="'+(k+1)+'"><img src="'+emoU(+id,k+1)+'" alt=""><small>'+n+'</small></button>').join('')+'</div>';}
   }
