@@ -4537,7 +4537,7 @@ $('#dPanel').addEventListener('click',e=>{
   if(t.hasAttribute('data-buy'))buyDecor();
   else if(t.hasAttribute('data-restyle'))restyle();
 });
-$('#dexGrid').addEventListener('click',e=>{const c=e.target.closest('.dcell[data-p]');if(c){dexSel=+c.dataset.p;sfx('tap');renderDex();}});
+$('#dexGrid').addEventListener('click',e=>{const c=e.target.closest('.dcell[data-p]');if(c){dexSel=+c.dataset.p;sfx('tap');renderDex();const m=$('#dexMgr');if(m)m.scrollTop=0;}});
 $('#dexMgr').addEventListener('click',e=>{
   const b=e.target.closest('button[data-a]');if(!b||b.disabled)return;
   const p=+b.dataset.p;
