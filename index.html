@@ -1530,9 +1530,11 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
 .prp .pgot{font-size:12px;color:#d9735c;font-weight:800;padding:0 6px}
 .prp .prow.got{opacity:.75}
 /* 콩이네 방: 콩이가 들어갈 만큼 쳇바퀴를 크게 (바닥 높이는 그대로, 위로 키움), 그릇은 조금 오른쪽으로 */
-#dscene .s-run{left:29%!important;top:66%!important;width:28%!important;height:25.5%!important}
+/* 콩이네 방 가구를 오른쪽으로: 해먹(앞) · 쳇바퀴(뒤, 해먹에 살짝 가려도 됨) · 그릇(문 앞) */
+#dscene .s-hammock{left:25%!important;z-index:2}
+#dscene .s-run{left:32%!important;top:66%!important;width:28%!important;height:25.5%!important;z-index:0!important}
+#dscene .s-bowl{left:56.5%!important;z-index:2}
 #dscene .s-run .dimg{object-position:center bottom!important}
-.s-bowl{left:56%!important}
 /* 최종 단계 재료: 칸 테두리 위에 금색 선을 덧칠하지 않고, 칸 안쪽에 은은한 금빛만 (별 표시는 그대로) */
 .item.max{box-shadow:none}
 .item.max>img,.item.max>.im{filter:drop-shadow(1.5px 0 0 #ffd84a) drop-shadow(-1.5px 0 0 #ffd84a) drop-shadow(0 1.5px 0 #ffd84a) drop-shadow(0 -1.5px 0 #ffd84a)} /* 그림 모양을 따라 얇은 노란 테두리 */
