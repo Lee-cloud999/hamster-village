@@ -1581,6 +1581,11 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
 .sheet{--evp:14px}
 .sheet:not(#decor):not(#reward)>header{position:sticky;top:calc(-1 * var(--evp));z-index:5;background:var(--panel);margin:calc(-1 * var(--evp)) calc(-1 * var(--evp)) 6px;padding:var(--evp) calc(var(--evp) + 40px) 8px var(--evp);border-radius:inherit}
 .sheet:not(#decor):not(#reward)>header .x[data-close]{top:calc(var(--evp) - 4px);right:calc(var(--evp) - 4px)}
+/* 창 안 버튼·스위치: 고르기·hover가 0.2초 동안 부드럽게 바뀜 */
+.sheet .btn,.sheet .x,.dtab,.sw,.de-emo button{transition:background-color .2s ease,color .2s ease,border-color .2s ease,box-shadow .2s ease,opacity .2s ease,transform .12s ease}
+.sw::after{transition:transform .2s ease,background-color .2s ease}
+@media (hover:hover){.sheet .btn:not(:disabled):not(.on):not(.main):hover,.dtab:not(.on):hover,.sheet .x:hover{background-color:#fff3ef;border-color:#ffcfc4}}
+@media (prefers-reduced-motion: reduce){.sheet .btn,.sheet .x,.dtab,.sw,.sw::after,.de-emo button{transition:none}}
 /* 최종 단계 재료: 칸 테두리 위에 금색 선을 덧칠하지 않고, 칸 안쪽에 은은한 금빛만 (별 표시는 그대로) */
 .item.max{box-shadow:none}
 .item.max>img,.item.max>.im{filter:drop-shadow(1.5px 0 0 #ffd84a) drop-shadow(-1.5px 0 0 #ffd84a) drop-shadow(0 1.5px 0 #ffd84a) drop-shadow(0 -1.5px 0 #ffd84a)} /* 그림 모양을 따라 얇은 노란 테두리 */
