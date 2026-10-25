@@ -3,7 +3,7 @@ import numpy as np, sys, os
 from scipy import ndimage
 SRC=sys.argv[1];OUT=sys.argv[2];os.makedirs(OUT,exist_ok=True)
 T=np.array([176,128,92],float)   # 부드러운 연갈색
-PROTECT={'fence_6','snack_3','snack_1','bowl_1','bowl_5','snack_5','bowl_2','hammock_5','bed_6','run_3','hammock_4','bed_5'}
+PROTECT={'fence_6','snack_3','snack_1','bowl_1','bowl_5','snack_5','bowl_2','hammock_5','bed_6','hammock_4','bed_5'}
 COOL={'wheel_2'}
 ACORN={'snack_1','bowl_1'}
 def run(p,name):
