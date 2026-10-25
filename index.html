@@ -1559,6 +1559,9 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
 .de-emo img{width:100%;max-width:36px;aspect-ratio:1;object-fit:contain}.de-emo small{font-size:9.5px;color:#8a6a3a;white-space:nowrap}
 .de-emo button{padding:3px 0!important}
 #dEdit{gap:6px}.de-row{padding:6px 10px}
+#deOut{width:100%;height:120px;font-size:11px;border-radius:12px;border:1.5px solid #ffad9e;padding:6px;box-sizing:border-box;background:#fff;color:#222}
+.de-test{background:#fff0ec}.de-test span{font-size:12px;color:#d9735c;flex:1}
+#decor.edit #dscene .slot.pv{opacity:1}
 /* 최종 단계 재료: 칸 테두리 위에 금색 선을 덧칠하지 않고, 칸 안쪽에 은은한 금빛만 (별 표시는 그대로) */
 .item.max{box-shadow:none}
 .item.max>img,.item.max>.im{filter:drop-shadow(1.5px 0 0 #ffd84a) drop-shadow(-1.5px 0 0 #ffd84a) drop-shadow(0 1.5px 0 #ffd84a) drop-shadow(0 -1.5px 0 #ffd84a)} /* 그림 모양을 따라 얇은 노란 테두리 */
@@ -3896,10 +3899,10 @@ let sceneOut=null;
 function renderScene(){
   let h='';
   SPOTS.forEach(sp=>{
-    const showIt=owned(sp.id)||dSel===sp.id;
+    const showIt=owned(sp.id)||dSel===sp.id||(decEdit&&DE_TEST);
     const cls='slot s-'+sp.id+(dSel===sp.id?' on':'')+(owned(sp.id)?'':(showIt?' pv':' empty'))+(dJust===sp.id?' popin':'');
     h+='<button class="'+cls+'" type="button" data-spot="'+sp.id+'" aria-label="'+sp.n+'">';
-    if(showIt)h+=spotHTML(sp.id,shownStyle(sp.id));
+    if(showIt)h+=spotHTML(sp.id,shownStyle(sp.id)??0);
     else if(spotOpen(sp))h+='<span>'+sp.n+'</span><span class="pc">'+COIN+sp.cost+'</span>';
     else h+='<span class="pc lk">'+LOCK+'</span>';
     h+='</button>';
@@ -3914,7 +3917,7 @@ function renderScene(){
   }
   const lay=st.lay||{};
   const guests=st.unlocked.filter(p=>!st.petHide[p]&&(p<=1||sceneOut.indexOf(p)>=0||lay['p'+p]||decEdit));
-  const GP={0:[58,340],1:[38,527],2:[176,50,15],3:[40,62],4:[112,64],5:[22,96],6:[252,18,14],7:[222,86,16.5]},SURF=[[82,98],[304,134],[130,62],[180,58],[230,66],[196,340]];let si=0;
+  const GP={0:[58,340],1:[38,527],2:[170,104,15],3:[40,62],4:[112,64],5:[22,96],6:[288,78,14],7:[222,86,16.5]},SURF=[[82,98],[304,134],[130,62],[180,58],[230,66],[196,340]];let si=0;
   h+='<span class="rlbl" style="left:35%;top:41.5%">'+escH(petName(0))+'네 방</span><span class="rlbl" style="left:39%;top:72%">'+(st.unlocked.indexOf(1)>=0?escH(petName(1))+'네 방':'빈 방')+'</span>';
   h+=guests.map((p,k)=>{const pos=GP[p]||SURF[(si++)%SURF.length];return '<button class="pg" type="button" data-pet="'+p+'" style="left:'+(pos[0]/3.8)+'%;top:'+(pos[1]/6.12)+'%;'+(pos[2]?'width:'+pos[2]+'%;':'')+'animation-delay:'+(-k*.45)+'s" aria-label="'+escH(petName(p))+'">'+petFace(p)+'</button>';}).join('');
   $('#dscene').innerHTML=h;
@@ -3922,7 +3925,7 @@ function renderScene(){
   dJust=null;
 }
 /* ---------- 마을 꾸미기: 위치·크기 바꾸기 + 주민 표정 (st.lay = {'sbed'|'p3': {l,t,s}}, st.pemo = {주민: 표정 1~8}) ---------- */
-let decEdit=false,decPick=null;
+let decEdit=false,decPick=null;const DE_TEST=/[?&]test\b/.test(location.search);
 const EMO_NAMES=['기본','기쁨','신남','감동','놀람','배고픔','졸림','시무룩'];
 function petFace(p){const e=st.pemo&&st.pemo[p];return e&&EXPRU[p]?'<span class="fc"><img class="rim" src="'+emoU(p,e)+'" alt="" draggable="false"></span>':face(p);}
 const layKey=el=>el.classList.contains('pg')?'p'+el.dataset.pet:'s'+el.dataset.spot;
@@ -3937,7 +3940,7 @@ function applyLayout(){
     if(v.z!=null)el.style.setProperty('z-index',String(v.z),'important');
   });
 }
-function editable(el){return !!el&&(el.classList.contains('pg')||(!!el.dataset.spot&&owned(el.dataset.spot)));}
+function editable(el){return !!el&&(el.classList.contains('pg')||(!!el.dataset.spot&&(owned(el.dataset.spot)||DE_TEST)));}
 function setDecEdit(on){decEdit=on;decPick=null;dSel=null;$('#decor').classList.toggle('edit',on);sfx('tap');renderDecor();}
 function renderDecEdit(){
   const box=$('#dEdit');if(!box)return;
@@ -3951,6 +3954,7 @@ function renderDecEdit(){
     if(isPet&&EXPRU[+id]){const cur=(st.pemo||{})[id]||1;
       h+='<div class="de-emo">'+EMO_NAMES.map((n,k)=>'<button type="button" class="'+(cur===k+1?'on':'')+'" data-emo="'+(k+1)+'"><img src="'+emoU(+id,k+1)+'" alt=""><small>'+n+'</small></button>').join('')+'</div>';}
   }
+  if(DE_TEST)h+='<div class="de-row de-test"><span>테스트: 모든 주민·가구가 보여요</span><button class="btn" type="button" data-de="copy">위치 복사</button></div><textarea id="deOut" readonly hidden></textarea>';
   h+='<div class="de-row de-end"><button class="btn" type="button" data-de="resetall">모두 처음으로</button><button class="btn main" type="button" data-de="off">완료</button></div>';
   box.innerHTML=h;
 }
@@ -3988,6 +3992,13 @@ function renderDecEdit(){
     if(a==='front'||a==='back'){const el=[...document.querySelectorAll('#dscene .slot,#dscene .pg')].find(x=>layKey(x)===decPick);
       const z0=parseInt(getComputedStyle(el).zIndex)||1;st.lay=st.lay||{};const v=st.lay[decPick]||{};
       v.z=Math.max(0,Math.min(20,(v.z!=null?v.z:z0)+(a==='front'?1:-1)));st.lay[decPick]=v;save();sfx('tap');applyLayout();renderDecEdit();toast(a==='front'?'한 칸 앞으로':'한 칸 뒤로');return;}
+    if(a==='copy'){const S=$('#dscene'),W=S.clientWidth,H=S.clientHeight,lines=[];
+      document.querySelectorAll('#dscene .pg,#dscene .slot').forEach(el=>{const cs=getComputedStyle(el),k=layKey(el),v=(st.lay||{})[k]||{};
+        const nm=el.classList.contains('pg')?petName(+el.dataset.pet):(SPOTS.find(x=>x.id===el.dataset.spot)||{}).n;
+        lines.push(nm+' '+k+' l='+(parseFloat(cs.left)/W*100).toFixed(1)+' t='+(parseFloat(cs.top)/H*100).toFixed(1)+' s='+(v.s||1)+' z='+cs.zIndex);});
+      const txt='[햄스터 마을 배치]\n'+lines.join('\n'),ta=$('#deOut');ta.hidden=false;ta.value=txt;ta.select();
+      (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>toast('복사했어요! 클로드에게 붙여 넣어 주세요'),()=>{try{document.execCommand('copy');toast('복사했어요! 클로드에게 붙여 넣어 주세요');}catch(_){toast('아래 글을 길게 눌러 복사해 주세요');}});
+      sfx('tap');return;}
     if(a==='reset1'){if(st.lay)delete st.lay[decPick];if(decPick[0]==='p'&&st.pemo)delete st.pemo[decPick.slice(1)];save();sfx('tap');renderScene();renderDecEdit();return;}
     if(a==='resetall'){askConfirm('모든 가구·주민 위치와 크기, 표정을 처음으로 되돌릴까요?','되돌리기',()=>{st.lay={};st.pemo={};save();decPick=null;renderScene();renderDecEdit();});return;}
   });
