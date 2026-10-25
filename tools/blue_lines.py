@@ -1,7 +1,8 @@
 from PIL import Image
 import numpy as np, sys, os
 from scipy import ndimage
-T=np.array([176,128,92],float)
+import os as _o
+T=np.array([int(x) for x in _o.environ.get('OUTLINE','176,128,92').split(',')],float)
 src,mode,names=sys.argv[1],sys.argv[2],sys.argv[3].split(',')
 yy,xx=np.mgrid[-4:5,-4:5];disk=(yy**2+xx**2)<=16
 yy2,xx2=np.mgrid[-6:7,-6:7];disk2=(yy2**2+xx2**2)<=36

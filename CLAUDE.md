@@ -39,7 +39,7 @@
 - 상점: 에너지, 생성기 강화(GU), 보드 정리. 에너지 칸을 누르면 충전 창(#ebuy)
 
 - 가구·장식 그림(DEC_B64): 2026-10-25 크레용 손그림으로 교체 중. 원본 조각은 press/sprites/<자리>_<번호>.webp. 아직 예전 그림: sign 4~6, rug 4~6, house(안 씀). 사용자가 보내는 시트는 투명 배경(가끔 가짜 체크무늬 배경 — 테두리에서 채우기로 지움) → 덩어리별로 잘라 300px WebP
-- 외곽선: 진한 갈색 선을 부드러운 연갈색(#b0805c)으로 — tools/soften_outline.py <원본폴더> <출력폴더> (원본은 press/sprites_orig, 게임용은 press/sprites). 새 광장 소품 15종은 press/plaza (아직 게임 자리 없음; 해먹·그네·이정표는 중복이라 뺌)
+- 외곽선: 캐릭터와 맞추려고 고른 진갈색(#6b442a)으로 통일 (2026-10-25, 처음엔 연갈색이었음) — OUTLINE=107,68,42 python3 tools/soften_outline.py <원본폴더> <출력폴더> → calm_blue → blue_lines 순서 (원본은 press/sprites_orig, 게임용은 press/sprites). 새 광장 소품 15종은 press/plaza (아직 게임 자리 없음; 해먹·그네·이정표는 중복이라 뺌)
 - 진한 파랑·남색 소품(bed_5·hammock_4·run_3·mail_2·fence_3·wheel_5)은 채도를 45% 낮춤, 광장 소품 물(fountain·bridge·pond)은 40% — tools/calm_blue.py 이름,이름 [폴더] [비율]. run_3은 안쪽 선까지 연갈색, 물 주위 선도 연갈색 — tools/blue_lines.py <폴더> water|thin 이름,이름
 - 콩이네 방: 쳇바퀴는 콩이가 들어갈 만큼 크게(#dscene .s-run 28%×25.5%, 바닥 맞춤, z-index 0으로 뒤), 해먹 left 25%(앞), 그릇 left 56.5%
 
