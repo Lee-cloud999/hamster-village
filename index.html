@@ -1535,6 +1535,30 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
 #dscene .s-run{left:32%!important;top:66%!important;width:28%!important;height:25.5%!important;z-index:0!important}
 #dscene .s-bowl{left:56.5%!important;z-index:2}
 #dscene .s-run .dimg{object-position:center bottom!important}
+/* 마을 꾸미기 편집 모드 */
+#dEdit{display:grid;gap:8px;margin:6px 0 2px}
+#dEdit .dedit-go{justify-self:center;font-size:13px;padding:6px 14px}
+#decor.sel #dEdit{display:none}
+#decor.edit .zones,#decor.edit #dPanel{display:none!important}
+#decor.edit #dscene .slot,#decor.edit #dscene .pg{touch-action:none;cursor:grab}
+#decor.edit #dscene .slot.empty{opacity:.35;pointer-events:none}
+#decor.edit #dscene .pg{animation:none!important}
+#dscene .slot.esel,#dscene .pg.esel{outline:2px dashed #ff9f86;outline-offset:2px;border-radius:10px}
+#dscene .dragging{opacity:.85;z-index:7!important;cursor:grabbing}
+#dscene .slot,#dscene .pg{transform-origin:50% 100%}
+.de-tip{font-size:12px;color:#d9735c;text-align:center}
+.de-row{display:flex;align-items:center;gap:8px;justify-content:space-between;background:#fff;border-radius:14px;padding:8px 10px}
+.de-row b{font-size:14px;color:#6b3f20}
+.de-sz{display:flex;align-items:center;gap:6px}.de-sz em{font-style:normal;font-size:13px;min-width:44px;text-align:center;color:#6b3f20}
+.de-sz .btn{width:34px;height:34px;padding:0;justify-content:center;font-size:18px}
+.de-end{background:none;padding:0}
+.de-z span{font-size:13px;color:#8a6a3a;flex:1}.de-z .btn{font-size:13px;padding:6px 10px}
+.de-emo{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;background:#fff;border-radius:14px;padding:6px}
+.de-emo button{border:2px solid transparent;border-radius:12px;background:#fdf6ef;padding:4px 2px;display:grid;justify-items:center;gap:2px}
+.de-emo button.on{border-color:#ffad9e;background:#fff0ec}
+.de-emo img{width:100%;max-width:36px;aspect-ratio:1;object-fit:contain}.de-emo small{font-size:9.5px;color:#8a6a3a;white-space:nowrap}
+.de-emo button{padding:3px 0!important}
+#dEdit{gap:6px}.de-row{padding:6px 10px}
 /* 최종 단계 재료: 칸 테두리 위에 금색 선을 덧칠하지 않고, 칸 안쪽에 은은한 금빛만 (별 표시는 그대로) */
 .item.max{box-shadow:none}
 .item.max>img,.item.max>.im{filter:drop-shadow(1.5px 0 0 #ffd84a) drop-shadow(-1.5px 0 0 #ffd84a) drop-shadow(0 1.5px 0 #ffd84a) drop-shadow(0 -1.5px 0 #ffd84a)} /* 그림 모양을 따라 얇은 노란 테두리 */
@@ -1658,6 +1682,7 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
 <section class="sheet" id="decor" role="dialog" aria-label="마을 꾸미기" hidden style="max-height:92%">
   <header><h2>마을 꾸미기</h2><button class="x" data-close aria-label="닫기">✕</button></header>
   <div class="dsw"><div class="scene" id="dscene"></div></div>
+  <div id="dEdit"></div>
   <div class="zones" id="zones"></div>
   <div id="dPanel" style="display:grid;gap:8px"></div>
 </section>
@@ -3887,13 +3912,86 @@ function renderScene(){
     const n=Math.min(zones.length,2+(Math.random()<.5?1:0));
     sceneOut=zones.slice(0,n).map(z=>z[Math.floor(Math.random()*z.length)]);
   }
-  const guests=st.unlocked.filter(p=>!st.petHide[p]&&(p<=1||sceneOut.indexOf(p)>=0));
+  const lay=st.lay||{};
+  const guests=st.unlocked.filter(p=>!st.petHide[p]&&(p<=1||sceneOut.indexOf(p)>=0||lay['p'+p]||decEdit));
   const GP={0:[58,340],1:[38,527],2:[176,50,15],3:[40,62],4:[112,64],5:[22,96],6:[252,18,14],7:[222,86,16.5]},SURF=[[82,98],[304,134],[130,62],[180,58],[230,66],[196,340]];let si=0;
   h+='<span class="rlbl" style="left:35%;top:41.5%">'+escH(petName(0))+'네 방</span><span class="rlbl" style="left:39%;top:72%">'+(st.unlocked.indexOf(1)>=0?escH(petName(1))+'네 방':'빈 방')+'</span>';
-  h+=guests.map((p,k)=>{const pos=GP[p]||SURF[(si++)%SURF.length];return '<button class="pg" type="button" data-pet="'+p+'" style="left:'+(pos[0]/3.8)+'%;top:'+(pos[1]/6.12)+'%;'+(pos[2]?'width:'+pos[2]+'%;':'')+'animation-delay:'+(-k*.45)+'s" aria-label="'+escH(petName(p))+'">'+face(p)+'</button>';}).join('');
+  h+=guests.map((p,k)=>{const pos=GP[p]||SURF[(si++)%SURF.length];return '<button class="pg" type="button" data-pet="'+p+'" style="left:'+(pos[0]/3.8)+'%;top:'+(pos[1]/6.12)+'%;'+(pos[2]?'width:'+pos[2]+'%;':'')+'animation-delay:'+(-k*.45)+'s" aria-label="'+escH(petName(p))+'">'+petFace(p)+'</button>';}).join('');
   $('#dscene').innerHTML=h;
+  applyLayout();
   dJust=null;
 }
+/* ---------- 마을 꾸미기: 위치·크기 바꾸기 + 주민 표정 (st.lay = {'sbed'|'p3': {l,t,s}}, st.pemo = {주민: 표정 1~8}) ---------- */
+let decEdit=false,decPick=null;
+const EMO_NAMES=['기본','기쁨','신남','감동','놀람','배고픔','졸림','시무룩'];
+function petFace(p){const e=st.pemo&&st.pemo[p];return e&&EXPRU[p]?'<span class="fc"><img class="rim" src="'+emoU(p,e)+'" alt="" draggable="false"></span>':face(p);}
+const layKey=el=>el.classList.contains('pg')?'p'+el.dataset.pet:'s'+el.dataset.spot;
+function applyLayout(){
+  const lay=st.lay||{};
+  document.querySelectorAll('#dscene .slot,#dscene .pg').forEach(el=>{
+    const v=lay[layKey(el)];
+    el.classList.toggle('esel',decEdit&&decPick===layKey(el));
+    if(!v)return;
+    if(v.l!=null){el.style.setProperty('left',v.l+'%','important');el.style.setProperty('top',v.t+'%','important');}
+    if(v.s&&v.s!==1)el.style.setProperty('scale',String(v.s));
+    if(v.z!=null)el.style.setProperty('z-index',String(v.z),'important');
+  });
+}
+function editable(el){return !!el&&(el.classList.contains('pg')||(!!el.dataset.spot&&owned(el.dataset.spot)));}
+function setDecEdit(on){decEdit=on;decPick=null;dSel=null;$('#decor').classList.toggle('edit',on);sfx('tap');renderDecor();}
+function renderDecEdit(){
+  const box=$('#dEdit');if(!box)return;
+  if(!decEdit){box.innerHTML='<button class="btn dedit-go" type="button" data-de="on">✋ 위치·크기·표정 바꾸기</button>';return;}
+  let h='<div class="de-tip">끌어서 옮기고, 눌러서 고르면 크기와 표정을 바꿀 수 있어요</div>';
+  if(decPick){
+    const isPet=decPick[0]==='p',id=decPick.slice(1),v=(st.lay||{})[decPick]||{};
+    const nm=isPet?petName(+id):(SPOTS.find(x=>x.id===id)||{}).n;
+    h+='<div class="de-row"><b>'+escH(nm||'')+'</b><span class="de-sz"><button class="btn" type="button" data-de="smaller">－</button><em>'+Math.round((v.s||1)*100)+'%</em><button class="btn" type="button" data-de="bigger">＋</button></span><button class="btn" type="button" data-de="reset1">처음 자리로</button></div>'+
+      '<div class="de-row de-z"><span>순서</span><button class="btn" type="button" data-de="back">⬇ 뒤로</button><button class="btn" type="button" data-de="front">⬆ 앞으로</button></div>';
+    if(isPet&&EXPRU[+id]){const cur=(st.pemo||{})[id]||1;
+      h+='<div class="de-emo">'+EMO_NAMES.map((n,k)=>'<button type="button" class="'+(cur===k+1?'on':'')+'" data-emo="'+(k+1)+'"><img src="'+emoU(+id,k+1)+'" alt=""><small>'+n+'</small></button>').join('')+'</div>';}
+  }
+  h+='<div class="de-row de-end"><button class="btn" type="button" data-de="resetall">모두 처음으로</button><button class="btn main" type="button" data-de="off">완료</button></div>';
+  box.innerHTML=h;
+}
+(function(){
+  const sc=()=>$('#dscene');let dr=null;
+  document.addEventListener('pointerdown',e=>{
+    if(!decEdit)return;const el=e.target.closest&&e.target.closest('#dscene .slot,#dscene .pg');if(!editable(el))return;
+    e.preventDefault();const cs=getComputedStyle(el);
+    dr={el:el,id:e.pointerId,x:e.clientX,y:e.clientY,l:parseFloat(cs.left),t:parseFloat(cs.top),moved:false};
+    try{el.setPointerCapture(e.pointerId);}catch(_){}
+  },true);
+  document.addEventListener('pointermove',e=>{
+    if(!dr||e.pointerId!==dr.id)return;const dx=e.clientX-dr.x,dy=e.clientY-dr.y;
+    if(!dr.moved&&Math.hypot(dx,dy)<6)return;dr.moved=true;
+    const S=sc(),W=S.clientWidth,H=S.clientHeight,el=dr.el;
+    const l=Math.max(-el.offsetWidth*.4,Math.min(W-el.offsetWidth*.6,dr.l+dx)),t=Math.max(-el.offsetHeight*.3,Math.min(H-el.offsetHeight*.7,dr.t+dy));
+    el.style.setProperty('left',l+'px','important');el.style.setProperty('top',t+'px','important');el.classList.add('dragging');
+  },true);
+  const end=e=>{
+    if(!dr||e.pointerId!==dr.id)return;const el=dr.el,k=layKey(el);el.classList.remove('dragging');
+    if(dr.moved){const S=sc(),cs=getComputedStyle(el);st.lay=st.lay||{};const v=st.lay[k]||{};
+      v.l=+(parseFloat(cs.left)/S.clientWidth*100).toFixed(2);v.t=+(parseFloat(cs.top)/S.clientHeight*100).toFixed(2);st.lay[k]=v;save();sfx('move');}
+    else sfx('tap');
+    decPick=k;dr=null;applyLayout();renderDecEdit();
+  };
+  document.addEventListener('pointerup',end,true);document.addEventListener('pointercancel',end,true);
+  document.addEventListener('click',e=>{if(decEdit&&e.target.closest&&e.target.closest('#dscene')){e.stopPropagation();e.preventDefault();}},true);
+  $('#dEdit').addEventListener('click',e=>{
+    const b=e.target.closest('button');if(!b)return;
+    if(b.dataset.emo){const p=decPick.slice(1);st.pemo=st.pemo||{};st.pemo[p]=+b.dataset.emo;if(st.pemo[p]===1)delete st.pemo[p];save();sfx('tap');renderScene();renderDecEdit();return;}
+    const a=b.dataset.de;
+    if(a==='on'){setDecEdit(true);return;}
+    if(a==='off'){setDecEdit(false);toast('배치를 저장했어요');return;}
+    if(a==='bigger'||a==='smaller'){st.lay=st.lay||{};const v=st.lay[decPick]||{};v.s=Math.max(.5,Math.min(2.2,+((v.s||1)+(a==='bigger'?.1:-.1)).toFixed(2)));st.lay[decPick]=v;save();sfx('tap');renderScene();renderDecEdit();return;}
+    if(a==='front'||a==='back'){const el=[...document.querySelectorAll('#dscene .slot,#dscene .pg')].find(x=>layKey(x)===decPick);
+      const z0=parseInt(getComputedStyle(el).zIndex)||1;st.lay=st.lay||{};const v=st.lay[decPick]||{};
+      v.z=Math.max(0,Math.min(20,(v.z!=null?v.z:z0)+(a==='front'?1:-1)));st.lay[decPick]=v;save();sfx('tap');applyLayout();renderDecEdit();toast(a==='front'?'한 칸 앞으로':'한 칸 뒤로');return;}
+    if(a==='reset1'){if(st.lay)delete st.lay[decPick];if(decPick[0]==='p'&&st.pemo)delete st.pemo[decPick.slice(1)];save();sfx('tap');renderScene();renderDecEdit();return;}
+    if(a==='resetall'){askConfirm('모든 가구·주민 위치와 크기, 표정을 처음으로 되돌릴까요?','되돌리기',()=>{st.lay={};st.pemo={};save();decPick=null;renderScene();renderDecEdit();});return;}
+  });
+})();
 function rwChips(z){
   const r=DZ[z].rw;
   let h='<span class="rc">'+COIN+'<b>'+r.coins+'</b></span>';
@@ -3903,7 +4001,7 @@ function rwChips(z){
   return h;
 }
 function renderDecor(){
-  renderScene();
+  renderScene();renderDecEdit();
   try{const bs=document.querySelector('#dscene .slot.s-bed');if(bs)bs.classList.toggle('hint',!SPOTS.some(x=>owned(x.id))&&dSel==null);}catch(e){}
   const cz=curZone();
   $('#zones').innerHTML=DZ.map((z,k)=>{
