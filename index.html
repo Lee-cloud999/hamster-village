@@ -1571,6 +1571,12 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
 #dscene .slot.own{z-index:1}
 #dscene .s-run.own,#dscene .s-wheel.own{z-index:0}
 #dscene .s-hammock.own,#dscene .s-bowl.own{z-index:2}
+/* 주민 도감: 위(제목·탭·주민 사진)는 고정, 아래 이야기만 스크롤 */
+#dex:has(#dexResP:not([hidden])){display:flex;flex-direction:column;overflow:hidden}
+#dex:has(#dexResP:not([hidden]))>*{flex-shrink:0}
+#dex #dexResP:not([hidden]){display:flex;flex-direction:column;flex:1 1 auto;min-height:0}
+#dex #dexResP>*{flex-shrink:0}
+#dex #dexResP>#dexMgr{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 /* 최종 단계 재료: 칸 테두리 위에 금색 선을 덧칠하지 않고, 칸 안쪽에 은은한 금빛만 (별 표시는 그대로) */
 .item.max{box-shadow:none}
 .item.max>img,.item.max>.im{filter:drop-shadow(1.5px 0 0 #ffd84a) drop-shadow(-1.5px 0 0 #ffd84a) drop-shadow(0 1.5px 0 #ffd84a) drop-shadow(0 -1.5px 0 #ffd84a)} /* 그림 모양을 따라 얇은 노란 테두리 */
