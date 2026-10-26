@@ -1603,7 +1603,6 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
 .heart{color:#ff8fa3}.mi{font-weight:700;color:#b9a48c}
 .orw .ox img.ui{width:15px;height:15px;vertical-align:-2px}
 .sico .pimg{width:36px;height:36px;object-fit:contain}
-button.lvchip{border:0;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}button.lvchip:active{transform:scale(.94)}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png?v=7" alt=""></div>
@@ -1615,7 +1614,7 @@ button.lvchip{border:0;font:inherit;cursor:pointer;-webkit-tap-highlight-color:t
 
 <main class="app">
   <div class="stat">
-    <button class="lvchip" id="lvChip" type="button" aria-label="프로필 보기"><small>LV</small><b id="lvl">1</b></button>
+    <div class="lvchip"><small>LV</small><b id="lvl">1</b></div>
     <div class="xp" aria-label="레벨 진행도">
       <div class="bar"><i id="xpfill"></i></div>
       <span id="xptxt">0/48</span>
@@ -1741,11 +1740,6 @@ button.lvchip{border:0;font:inherit;cursor:pointer;-webkit-tap-highlight-color:t
   </div>
 </section>
 
-<section class="sheet" id="prof" role="dialog" aria-label="프로필" hidden>
-  <header><h2>프로필</h2><button class="x" data-close aria-label="닫기">✕</button></header>
-  <div class="dp-t"><b id="profT"></b><small id="profS"></small></div>
-  <div class="pstats" id="pstats"></div>
-</section>
 
 
 <section class="sheet" id="dev" role="dialog" aria-label="테스트 모드" hidden>
@@ -4119,7 +4113,7 @@ function faceE(p,e){const h=face(p);return e&&EXPRU[p]?h.replace(RESU[p],emoU(p,
 function face(p){return RESU[p]?'<span class="fc"><img class="rim" src="'+RESU[p]+'" alt="" draggable="false"></span>':'<span class="fc">🐹<sup>'+CUST[p][1]+'</sup></span>';}
 const decoCount=()=>Object.keys(st.dec).length;
 function storyRead(){let n=0;Object.keys(st.read||{}).forEach(k=>{n+=st.read[k]||0;});return n;}
-const heartsOf=()=>st.nDeliv+3*storyRead();
+
 function chapterState(p,k){
   const rd=st.read[p]||0;
   if(k<rd)return 'read';
@@ -4398,14 +4392,6 @@ function renderDex(){
     '<button class="btn" type="button" data-a="toggle" data-p="'+p+'">'+(hide?'마을에 두기':'마을에서 빼기')+'</button>';
 }
 
-/* ---------- profile ---------- */
-function fmtPT(ms){const m=Math.floor(ms/60000),h=Math.floor(m/60);return h?h+'시간 '+(m%60)+'분':m+'분';}
-function renderProf(){
-  noteFound();
-  $('#profT').textContent='레벨 '+st.lv;
-  $('#profS').textContent='';
-  $('#pstats').innerHTML=[['플레이 시간',fmtPT(st.playMs)],['합친 횟수',st.nMerge+'번'],['도운 부탁',st.nDeliv+'번'],['마음',heartsOf()],['읽은 이야기',storyRead()+'편'],['주민',st.unlocked.length+'명']].map(x=>'<div class="pstat"><b>'+x[1]+'</b><small>'+x[0]+'</small></div>').join('');
-}
 
 /* ---------- settings ---------- */
 function renderSnd(){
@@ -4495,7 +4481,7 @@ $('#goalChip').addEventListener('click',()=>{
 });
 document.querySelector('.dtabs').addEventListener('click',e=>{const b=e.target.closest('.dtab');if(!b)return;dexTab=b.dataset.dtab;sfx('tap');renderDex();});
 
-$('#lvChip').addEventListener('click',()=>{sfx('tap');renderProf();openSheet('prof');});
+
 $('#sndBtn').addEventListener('click',()=>{sfx('tap');renderSnd();openSheet('snd');});
 
 $('#scrim').addEventListener('click',dismissTop);
