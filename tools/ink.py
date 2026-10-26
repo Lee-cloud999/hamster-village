@@ -4,8 +4,8 @@ import numpy as np
 from PIL import Image
 from scipy import ndimage
 T=np.array([107,68,42],float)
-def recolor(im):
-    a=np.array(im.convert('RGBA')).astype(float); r,g,b,al=a[...,0],a[...,1],a[...,2],a[...,3]
+def ink_mask(a):
+    r,g,b,al=a[...,0],a[...,1],a[...,2],a[...,3]
     sil=al>20; L=0.299*r+0.587*g+0.114*b
     cand=sil&(r<175)&(L<72)&(r-b>40)&(g<0.45*r)
     rim=sil&~ndimage.binary_erosion(sil,iterations=max(3,int(min(a.shape[:2])*0.025)))
@@ -19,6 +19,10 @@ def recolor(im):
         big=np.isin(tl,1+np.where(tsz>(R*5)**2)[0])
         keep&=~ndimage.binary_dilation(big,iterations=2)
     keep=ndimage.binary_dilation(keep,iterations=1)&sil&(L<100)&(r>=b)&(g<0.55*r)
+    return keep,L
+def recolor(im):
+    a=np.array(im.convert('RGBA')).astype(float)
+    keep,L=ink_mask(a)
     w=np.clip((120-L)/45,0,1)*keep
     ref=np.median(L[keep]) if keep.any() else 55
     shade=np.clip(L/ref,0.6,1.5)[...,None]
