@@ -3510,7 +3510,7 @@ function cellHTML(i){
     if(sel===i&&it)cls+=' sel';
     else if(sel!=null&&canMerge(sel,i))cls+=' match';
     h+='<div class="'+cls+'" data-i="'+i+'"'+(it?' aria-label="'+nm(it.c,it.l)+' '+it.l+'단계"':'')+'>'+
-      (it?'<div class="item c-'+it.c+(it.l===MAXLV?' max':'')+'">'+em(it.c,it.l)+(it.l===MAXLV&&!isSpecial(it.c)?'<span class="star">★</span>':'')+(it.c==='tg'?'<span class="tgn">'+(it.n==null?10:it.n)+'</span>':'')+(it.c==='bx'?(boxLeft(it)>0?'<span class="bxt">'+fmtMS(boxLeft(it))+'</span>':'<span class="tgn">'+(it.q?it.q.length:BOX_CNT[it.l])+'</span>'+(!it.q&&!it.t?'':'')):'')+'</div>':'')+
+      (it?'<div class="item c-'+it.c+(it.l===MAXLV?' max':'')+'">'+em(it.c,it.l)+(it.l===MAXLV&&!isSpecial(it.c)?'<span class="star">★</span>':'')+(it.c==='tg'?'<span class="tgn">'+(it.n==null?10:it.n)+'</span>':'')+(it.c==='bx'?(boxLeft(it)>0?'<span class="bxt">'+fmtMS(boxLeft(it))+'</span>':''):'')+'</div>':'')+
       '</div>';
   return h;
 }
