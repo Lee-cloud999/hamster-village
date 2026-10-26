@@ -2870,24 +2870,25 @@ const boxImg=g=>(g===2||g===3)?'<img class="ui" src="'+BOXGU[g]+'" alt="" dragga
 const randTool=()=>{const r=Math.random();return r<.45?1:r<.8?2:3;};
 function boxContents(g){
   const keys=openChains(),pick=()=>keys[rnd(keys.length)],q=[];
-  /* 상자 합치기 (다른 머지 게임처럼 '두 개 합치면 개수 두 배 + 덤 하나'):
-     나무 3개 → 은 7개(나무 둘 = 6 + 1) → 금 15개(은 둘 = 14 + 1). 재료 단계는 비슷하게, 덤은 에너지·꿀단지·도구.
+  /* 상자 합치기 (다른 머지 게임처럼 '두 개 합치면 두 배 + 덤 하나'):
+     나무 5개 → 은 11개(나무 둘 = 10 + 1). 금은 개수를 16개로 줄이는 대신 3단계 위주로 — 값어치는 '은 둘 + 덤'과 같게.
      도구는 귀하게(나무 4%, 은 20%, 금 40%) */
   const mat=p3=>[pick(),Math.random()<p3?3:2];
   if(g===1){
-    for(let k=0;k<3;k++){
+    for(let k=0;k<5;k++){
       const r=Math.random();
-      if(k===2&&r<.04){q.push(['tl',randTool()]);continue;}
-      if(k===2&&r<.3){q.push(['en',Math.random()<.75?1:2]);continue;}
+      if(k===4&&r<.04){q.push(['tl',randTool()]);continue;}
+      if(k===4&&r<.3){q.push(['en',Math.random()<.75?1:2]);continue;}
       q.push(mat(.3));}
   }else if(g===2){
-    for(let k=0;k<5;k++)q.push(mat(.35));
+    for(let k=0;k<9;k++)q.push(mat(.32));
     q.push(['en',Math.random()<.6?1:2]);
-    const r=Math.random();q.push(r<.2?['tl',randTool()]:r<.5?['tg',1]:mat(.35));
+    const r=Math.random();q.push(r<.2?['tl',randTool()]:r<.5?['tg',1]:mat(.32));
   }else{
-    for(let k=0;k<12;k++)q.push(mat(.4));
+    const gm=()=>{const r=Math.random();return [pick(),r<.1?2:r<.9?3:4];};
+    for(let k=0;k<13;k++)q.push(gm());
     q.push(['en',2]);q.push(['tg',1]);
-    q.push(Math.random()<.4?['tl',randTool()]:mat(.4));
+    q.push(Math.random()<.4?['tl',randTool()]:gm());
   }
   for(let k=q.length-1;k>0;k--){const r=rnd(k+1);[q[k],q[r]]=[q[r],q[k]];}
   return q;
@@ -3178,7 +3179,7 @@ function bigChips(L){
   const r=rewardOf(L);
   let h='<div class="bi"><span class="bimg">'+COIN+'</span><b>'+r.coins+'</b><small>코인</small></div>';
   if(r.item)h+=itemBig(r.item);
-  if(r.box)h+='<div class="bi"><span class="bimg">'+boxImg(r.boxG)+'</span><b>'+BOXN[r.boxG||1]+'</b><small>'+(r.boxG===3?'재료·도구·꿀단지':r.boxG===2?'재료·에너지·도구':'재료 3개')+'</small></div>';
+  if(r.box)h+='<div class="bi"><span class="bimg">'+boxImg(r.boxG)+'</span><b>'+BOXN[r.boxG||1]+'</b><small>'+(r.boxG===3?'재료·도구·꿀단지':r.boxG===2?'재료·에너지·도구':'재료 5개')+'</small></div>';
   if(r.energy)h+='<div class="bi"><span class="bimg">'+BOLT+'</span><b>+10</b><small>최대 에너지</small></div>';
   return h;
 }
