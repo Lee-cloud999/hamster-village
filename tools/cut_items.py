@@ -57,3 +57,18 @@ def clear_holes(im,min_px=40,mean_min=249,std_max=3.7):
         soft=ndimage.gaussian_filter(hole.astype(float),0.8)
         a[...,3]=a[...,3]*(1-np.clip(soft*1.3,0,1))
     return Image.fromarray(a.astype(np.uint8),'RGBA')
+
+def line_sizes(ims,step=(1.25,1.04,1.04,1.06,1.12),fit=0.97,S=256):
+    """한 줄(1~6단계)의 크기를 '보이는 면적' 기준으로 맞춤: 단계 사이마다 step배씩 커지게(1→2와 5→6은 크게 차이), 칸을 넘지 않게.
+    넓적한 그림(한 줌, 숲)이 세로로 긴 그림보다 작아 보이는 문제를 막아요. 반환: 각 그림의 256px 캔버스"""
+    ms=[]
+    for im in ims:
+        w,h=im.size; sc=fit*S/max(w,h); a=(np.array(im.getchannel('A'))>128).sum()*sc*sc
+        ms.append(np.sqrt(a)/S)
+    v=[0]*len(ims); v[-1]=ms[-1]
+    st=step if isinstance(step,(list,tuple)) else [step]*(len(ims)-1)
+    for k in range(len(ims)-2,-1,-1): v[k]=min(ms[k],v[k+1]/st[k])
+    out=[]
+    for im,m,t in zip(ims,ms,v):
+        out.append(place(im,fit*t/m,S))
+    return out,v
