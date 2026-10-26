@@ -1603,6 +1603,7 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
 .heart{color:#ff8fa3}.mi{font-weight:700;color:#b9a48c}
 .orw .ox img.ui{width:15px;height:15px;vertical-align:-2px}
 .sico .pimg{width:36px;height:36px;object-fit:contain}
+button.lvchip{border:0;font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}button.lvchip:active{transform:scale(.94)}
 </style>
 <div class="startscr" id="startScr">
   <div class="sface" id="sFace"><img src="icons/bori.png?v=7" alt=""></div>
@@ -1614,7 +1615,7 @@ button:focus,[role=button]:focus,.order:focus{outline:none}
 
 <main class="app">
   <div class="stat">
-    <div class="lvchip"><small>LV</small><b id="lvl">1</b></div>
+    <button class="lvchip" id="lvChip" type="button" aria-label="프로필·배지 보기"><small>LV</small><b id="lvl">1</b></button>
     <div class="xp" aria-label="레벨 진행도">
       <div class="bar"><i id="xpfill"></i></div>
       <span id="xptxt">0/48</span>
@@ -4546,7 +4547,7 @@ $('#goalChip').addEventListener('click',()=>{
 });
 document.querySelector('.dtabs').addEventListener('click',e=>{const b=e.target.closest('.dtab');if(!b)return;dexTab=b.dataset.dtab;sfx('tap');renderDex();});
 
-$('#ttlchip').addEventListener('click',()=>{renderProf();openSheet('prof');});
+$('#ttlchip').addEventListener('click',()=>{renderProf();openSheet('prof');}); $('#lvChip').addEventListener('click',()=>{sfx('tap');renderProf();openSheet('prof');});
 $('#sndBtn').addEventListener('click',()=>{sfx('tap');renderSnd();openSheet('snd');});
 
 $('#scrim').addEventListener('click',dismissTop);
