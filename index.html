@@ -2764,7 +2764,7 @@ function evCheckStart(){
 function renderEvent(){
   $('#evH').innerHTML=evI('evt',34)+' 이벤트';$('#attH').innerHTML=evI('cal',22)+' 출석 도장';
   $('#attRow').innerHTML=attStamps();
-  $('#attInfo').textContent=st.att&&st.att.total?'지금까지 '+st.att.total+'번 출석했어요.':'하루에 한 번 게임을 열면 도장을 찍어요.';
+  $('#attInfo').textContent=st.att&&st.att.total?((st.att.n===7&&st.att.last===todayKey())?'7일 개근! 내일부터 1일차 도장이 다시 시작돼요.':'지금까지 '+st.att.total+'번 출석했어요.'):'하루에 한 번 게임을 열면 도장을 찍어요.';
   const e=evState(),on=evOn(),T=EVENT.tiers.length,tier=evTier();
   $('#evTitle').innerHTML=evI('badge',26)+' '+EVENT.name+' 패스';
   $('#evDays').innerHTML=on?evDaysLeft()+'일 남음':'끝났어요';
