@@ -2861,7 +2861,11 @@ const boxLeft=b=>b&&b.c==='bx'&&b.t?Math.max(0,b.t-Date.now()):0;
 const fmtMS=ms=>{const t=Math.ceil(ms/1000),m=Math.floor(t/60),s2=t%60;return m+':'+String(s2).padStart(2,'0');};
 function openBoxStep(i){
   const b=st.cells[i];if(!b||b.c!=='bx')return;
-  if(!b.q&&!b.t){b.t=Date.now()+BOX_MS[b.l];sel=null;patchCells([i]);pop(i);sfx('tap');save();
+  if(!b.q&&!b.t){
+    /* 상자는 한 번에 하나만 열기: 다른 상자가 열리는 중이면 기다리기 */
+    const busy=st.cells.find((c,k)=>k!==i&&c&&c.c==='bx'&&!c.q&&boxLeft(c)>0);
+    if(busy){toast('다른 상자를 여는 중이에요 · '+fmtMS(boxLeft(busy))+' 뒤에 열 수 있어요');sfx('err');return;}
+    b.t=Date.now()+BOX_MS[b.l];sel=null;patchCells([i]);pop(i);sfx('tap');save();
     toast(BOXN[b.l]+'을(를) 열기 시작했어요 · '+fmtMS(BOX_MS[b.l])+' 뒤에 열려요');return;}
   if(boxLeft(b)>0){toast(fmtMS(boxLeft(b))+' 뒤에 열려요');sfx('err');return;}
   if(!b.q)b.q=boxContents(b.l);
